@@ -30,8 +30,8 @@ class FourTileQuickActionIcon extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF00E5FF).withValues(alpha: 0.35),
-                    const Color(0xFF00B4D8).withValues(alpha: 0.15),
+                    const Color(0xFFE50914).withValues(alpha: 0.42),
+                    const Color(0xFFFF3838).withValues(alpha: 0.20),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.55, 1.0],
@@ -164,7 +164,7 @@ class GlassNavBackground extends StatelessWidget {
 
   const GlassNavBackground({
     super.key,
-    this.blurSigma = 24,
+    this.blurSigma = 26,
     this.borderRadius = 33,
     this.tintOpacity = 0.12,
     this.isOval = false,
@@ -191,17 +191,51 @@ class GlassNavBackground extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF2E2E2E).withValues(alpha: 0.70),
-                    const Color(0xFF141414).withValues(alpha: 0.85),
+                    const Color(0xFF2C2C2C).withValues(alpha: 0.62),
+                    const Color(0xFF101010).withValues(alpha: 0.80),
                   ],
                 ),
                 borderRadius:
                     isOval ? null : BorderRadius.circular(borderRadius),
                 shape: isOval ? BoxShape.circle : BoxShape.rectangle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: Colors.white.withValues(alpha: 0.28),
                   width: 0.8,
                 ),
+              ),
+              child: Stack(
+                fit: StackFit.passthrough,
+                children: [
+                  // Lớp vòm phản quang khúc xạ quang học (Specular Curvature Sheen)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: height * 0.48,
+                    child: IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: isOval
+                              ? null
+                              : BorderRadius.vertical(
+                                  top: Radius.circular(borderRadius),
+                                ),
+                          shape: isOval ? BoxShape.circle : BoxShape.rectangle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.26),
+                              Colors.white.withValues(alpha: 0.04),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.55, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -222,17 +256,19 @@ class GlassNavBackground extends StatelessWidget {
             ? const LiquidOval()
             : LiquidRoundedRectangle(borderRadius: borderRadius),
         settings: const LiquidGlassSettings(
-          thickness: 25,
-          blur: 16.0,
-          glassColor: Color(0x33FFFFFF),
-          lightIntensity: 0.78,
-          refractiveIndex: 1.28,
-          chromaticAberration: 0.0,
-          ambientStrength: 0.16,
-          fresnelStrength: 1.05,
-          saturation: 1.20,
-          edgeAbsorption: 0.07,
-          shadowElevation: 0.0,
+          thickness: 42,
+          blur: 24.0,
+          glassColor: Color(0x38FFFFFF),
+          lightIntensity: 1.25,
+          refractiveIndex: 1.68, // Tăng mạnh độ khúc xạ bẻ cong ảnh theo định luật Snell
+          chromaticAberration: 0.05,
+          ambientStrength: 0.22,
+          fresnelStrength: 1.65,
+          saturation: 1.35,
+          edgeAbsorption: 0.12,
+          lensModel: GlassLensModel.paraxial,
+          glowIntensity: 0.85,
+          shadowElevation: 2.0,
         ),
       ),
     );
@@ -374,8 +410,9 @@ class FloatingGlassBottomBar extends StatelessWidget
               ? BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF26E5DC),
-                      Color(0xFF00B4D8),
+                      Color(0xFFFF2233),
+                      Color(0xFFE50914),
+                      Color(0xFFB80610),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -383,9 +420,14 @@ class FloatingGlassBottomBar extends StatelessWidget
                   borderRadius: BorderRadius.circular(21),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.42),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+                      color: const Color(0xFFE50914).withValues(alpha: 0.58),
+                      blurRadius: 14,
+                      offset: const Offset(0, 3),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFF3344).withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 )
@@ -468,28 +510,51 @@ class _DarkGlassBevelRimPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    final rimPaint = Paint()
+    // 1. Viền khúc xạ tán sắc chính ngoài cùng (Outer Refraction Prism Rim)
+    final outerRimPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8
+      ..strokeWidth = 1.0
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color(0xB0FFFFFF),
-          Color(0x35FFFFFF),
+          Color(0xE0FFFFFF),
+          Color(0x60FFFFFF),
           Color(0x2564748B),
-          Color(0x481E293B),
+          Color(0x401E293B),
         ],
-        stops: [0.0, 0.20, 0.55, 1.0],
+        stops: [0.0, 0.22, 0.60, 1.0],
       ).createShader(rect);
+
+    // 2. Viền khúc xạ ánh sáng vát trong (Inner Caustic Highlight)
+    final innerHighlightPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0x90FFFFFF),
+          Color(0x18FFFFFF),
+          Colors.transparent,
+        ],
+        stops: [0.0, 0.35, 1.0],
+      ).createShader(rect);
+
     if (isOval) {
-      canvas.drawOval(rect.deflate(0.4), rimPaint);
+      canvas.drawOval(rect.deflate(0.5), outerRimPaint);
+      canvas.drawOval(rect.deflate(1.2), innerHighlightPaint);
     } else {
       final outerRRect = RRect.fromRectAndRadius(
-        rect.deflate(0.4),
-        Radius.circular(borderRadius - 0.4),
+        rect.deflate(0.5),
+        Radius.circular(borderRadius - 0.5),
       );
-      canvas.drawRRect(outerRRect, rimPaint);
+      final innerRRect = RRect.fromRectAndRadius(
+        rect.deflate(1.2),
+        Radius.circular(borderRadius - 1.2),
+      );
+      canvas.drawRRect(outerRRect, outerRimPaint);
+      canvas.drawRRect(innerRRect, innerHighlightPaint);
     }
   }
 
