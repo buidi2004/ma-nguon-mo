@@ -1,0 +1,74 @@
+[
+  {
+    "title": "Big Buck Bunny",
+    "description": "Một chú thỏ khổng lồ tốt bụng quyết định trả đũa ba chú sóc bay hay bắt nạt các sinh vật nhỏ bé trong khu rừng tươi đẹp. Một tác phẩm hoạt hình 3D mã nguồn mở kinh điển.",
+    "category": "Hoạt hình",
+    "poster_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/600px-Big_buck_bunny_poster_big.jpg",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "release_year": 2008,
+    "is_featured": true
+  },
+  {
+    "title": "Sintel - Trái Tim Rồng",
+    "description": "Cuộc hành trình đơn độc và đầy trắc trở của cô gái trẻ Sintel vượt qua sa mạc băng giá để tìm lại chú rồng con Scales bị bắt cóc.",
+    "category": "Hoạt hình",
+    "poster_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/600px-Sintel_poster.jpg",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    "release_year": 2010,
+    "is_featured": true
+  },
+  {
+    "title": "Tears of Steel",
+    "description": "Bối cảnh hậu tận thế tại Amsterdam, một nhóm chiến binh và nhà khoa học cố gắng cứu vãn tương lai khỏi sự thống trị của lực lượng người máy robot tàn bạo.",
+    "category": "Viễn tưởng",
+    "poster_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Tears_of_Steel_poster.jpg/600px-Tears_of_Steel_poster.jpg",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    "release_year": 2012,
+    "is_featured": true
+  },
+  {
+    "title": "Elephants Dream",
+    "description": "Hai người đàn ông Proog và Emo khám phá cỗ máy khổng lồ vô tận, đối mặt với những hiện thực ảo ảnh siêu thực trong thế giới máy móc phức tạp.",
+    "category": "Viễn tưởng",
+    "poster_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Elephants_Dream_poster.jpg/600px-Elephants_Dream_poster.jpg",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "release_year": 2006,
+    "is_featured": false
+  },
+  {
+    "title": "For Bigger Blazes",
+    "description": "Những pha hành động mạo hiểm nghẹt thở, những cú nhảy phi thân và tốc độ bùng nổ của các tay đua cự phách đỉnh cao thế giới.",
+    "category": "Hành động",
+    "poster_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "release_year": 2023,
+    "is_featured": false
+  },
+  {
+    "title": "For Bigger Escape",
+    "description": "Cuộc tẩu thoát ngoạn mục khỏi căn cứ ngầm với những màn rượt đuổi bằng mô tô phân khối lớn và hiệu ứng âm thanh sống động.",
+    "category": "Hành động",
+    "poster_url": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    "release_year": 2024,
+    "is_featured": false
+  },
+  {
+    "title": "For Bigger Fun",
+    "description": "Trải nghiệm những khoảnh khắc vui tươi, sảng khoái với những chuyến phiêu lưu dã ngoại khám phá vẻ đẹp kỳ thú của thiên nhiên hoang dã.",
+    "category": "Hài hước",
+    "poster_url": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    "release_year": 2023,
+    "is_featured": false
+  },
+  {
+    "title": "Bullrun Supercar Rally",
+    "description": "Hành trình xuyên lục địa cùng dàn siêu xe tốc độ cao, những cung đường quanh co hiểm trở và tinh thần thể thao cuồng nhiệt.",
+    "category": "Hành động",
+    "poster_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
+    "video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    "release_year": 2022,
+    "is_featured": false
+  }
+]
