@@ -170,26 +170,38 @@ class GlassNavBackground extends StatelessWidget {
     this.isOval = false,
     this.height = 66,
     this.width,
-    this.useBackdropFilter = false,
+    this.useBackdropFilter = true,
   });
 
   @override
   Widget build(BuildContext context) {
     if (useBackdropFilter) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: tintOpacity),
-              borderRadius: isOval ? null : BorderRadius.circular(borderRadius),
-              shape: isOval ? BoxShape.circle : BoxShape.rectangle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 0.8,
+      return _DarkBevelGlassWrapper(
+        borderRadius: borderRadius,
+        isOval: isOval,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF2E2E2E).withValues(alpha: 0.70),
+                    const Color(0xFF141414).withValues(alpha: 0.85),
+                  ],
+                ),
+                borderRadius:
+                    isOval ? null : BorderRadius.circular(borderRadius),
+                shape: isOval ? BoxShape.circle : BoxShape.rectangle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 0.8,
+                ),
               ),
             ),
           ),
@@ -211,10 +223,10 @@ class GlassNavBackground extends StatelessWidget {
             : LiquidRoundedRectangle(borderRadius: borderRadius),
         settings: const LiquidGlassSettings(
           thickness: 25,
-          blur: 4.0,
-          glassColor: Color(0x14FFFFFF),
+          blur: 16.0,
+          glassColor: Color(0x33FFFFFF),
           lightIntensity: 0.78,
-          refractiveIndex: 1.28, // Độ bẻ cong hình ảnh nền theo định luật Snell
+          refractiveIndex: 1.28,
           chromaticAberration: 0.0,
           ambientStrength: 0.16,
           fresnelStrength: 1.05,
@@ -246,10 +258,10 @@ class FloatingGlassBottomBar extends StatelessWidget
 
   static const List<({IconData active, IconData inactive})> _tabIcons = [
     (active: Icons.home_rounded, inactive: Icons.home_outlined),
-    (active: Icons.receipt_long_rounded, inactive: Icons.receipt_long_outlined),
+    (active: Icons.search_rounded, inactive: Icons.search_outlined),
     (
-      active: Icons.card_giftcard_rounded,
-      inactive: Icons.card_giftcard_outlined
+      active: Icons.local_fire_department_rounded,
+      inactive: Icons.local_fire_department_outlined
     ),
     (active: Icons.person_rounded, inactive: Icons.person_outline_rounded),
   ];
@@ -386,7 +398,9 @@ class FloatingGlassBottomBar extends StatelessWidget
             child: AnimatedMorphIcon(
               icon: isSelected ? tab.active : tab.inactive,
               size: 22,
-              color: isSelected ? Colors.white : const Color(0xFF2D3748),
+              color: isSelected
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.60),
               spring: MorphSprings.snappy,
             ),
           ),

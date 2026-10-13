@@ -41,7 +41,7 @@ import '../../features/discover/top10_screen.dart';
 import '../../features/watch/similar_movies_screen.dart';
 import '../../screens/home_screen.dart';
 import '../../screens/player_screen.dart';
-import '../widgets/main_shell.dart';
+import '../../presentation/screens/shell/main_tabs_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -61,7 +61,7 @@ class AppRouter {
       // 4-Tab Bottom Navigation Stateful Shell (S09, S10, S16, S30)
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return MainShell(navigationShell: navigationShell);
+          return MainTabsScreen(navigationShell: navigationShell);
         },
         branches: [
           // Tab 1: Trang chủ (S09)
