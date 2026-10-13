@@ -70,13 +70,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(30),
+                    color: AppColors.success.withAlpha(30),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.green, width: 2),
+                    border: Border.all(color: AppColors.success, width: 2),
                   ),
                   child: const Icon(
                     Icons.check_circle_outline,
-                    color: Colors.green,
+                    color: AppColors.success,
                     size: 64,
                   ),
                 ),
@@ -103,7 +103,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 const SizedBox(height: 32),
                 SizedBox(
                   width: 200,
-                  child: PrimaryButton(
+                  child: PrimaryButton.white(
                     text: 'Quay về Cài đặt',
                     onPressed: () => context.pop(),
                   ),
@@ -255,7 +255,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             const SizedBox(height: 28),
 
             // Submit Button
-            PrimaryButton(
+            PrimaryButton.white(
               text: 'Gửi phản hồi',
               isLoading: _isLoading,
               icon: Icons.send_rounded,

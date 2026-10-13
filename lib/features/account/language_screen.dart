@@ -100,14 +100,16 @@ class _LanguageScreenState extends State<LanguageScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            currentCode == 'vi'
-                                ? 'Xem trước giao diện'
-                                : 'Interface Preview',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              currentCode == 'vi'
+                                  ? 'Xem trước giao diện'
+                                  : 'Interface Preview',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],

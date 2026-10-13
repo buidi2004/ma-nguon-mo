@@ -120,24 +120,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade900.withValues(alpha: 0.2),
+                    color: AppColors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Colors.green.shade600.withValues(alpha: 0.5),
+                      color: AppColors.success.withValues(alpha: 0.5),
                     ),
                   ),
                   child: const Row(
                     children: [
                       Icon(
                         Icons.check_circle_outline,
-                        color: Colors.greenAccent,
+                        color: AppColors.success,
                       ),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Yêu cầu khôi phục đã được xử lý thành công!',
                           style: TextStyle(
-                            color: Colors.greenAccent,
+                            color: AppColors.success,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),

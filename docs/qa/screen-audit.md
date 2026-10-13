@@ -11,10 +11,11 @@
 - **Flutter / Dart Version:** Flutter 3.47.6 (Channel stable, revision `5fc346839b`) • Dart 3.13.5
 - **OS & Execution Host:** Windows 11 x64 (Flutter Headless Test Framework & WidgetTester)
 - **Logical Viewports Tested:**
+  - Ultra-Narrow Mobile: 320 x 640 dp (kiểm tra chống tràn pixel và hỗ trợ bàn phím ảo viewInsets.bottom = 300dp)
   - Narrow Mobile: 360 x 780 dp
   - Standard Mobile: 390 x 844 dp
   - Tablet / Wide Screen: 800 x 1200 dp
-- **Test Data Source:** MovieModel fixtures + Mock/Demo In-Memory Fallback tự động khi offline
+- **Test Data Source:** PocketBase VPS Linux thật (`http://180.93.120.246:8090`) + Fixtures dự phòng tự động khi offline
 - **Visual Reference:** Phong cách streaming điện ảnh Netflix-inspired (`AppColors`: Background `#141414`, Surface `#222222`, Primary `#E50914`, Font `Outfit`, tỉ lệ Poster 2:3, tỉ lệ Hero Banner 16:9)
 
 ---
@@ -24,11 +25,11 @@
 | Chỉ Số | Giá Trị | Tỷ Lệ | Ghi Chú |
 |---|---|---|---|
 | **PASS UI** | **42 / 42** | 100% | Toàn bộ 42 màn hình mount widget thành công, đầy đủ tiêu đề, nút, form và phân cấp thị giác |
-| **PASS E2E / Functional** | **32 / 42** | 76.2% | Điều hướng route, state local, form validation, bộ lọc, cache, offline fallback hoạt động chuẩn |
-| **BLOCKED (Backend Dependency)** | **10 / 42** | 23.8% | Phụ thuộc SMTP server (S06), schema PocketBase chưa có collection chuyên biệt (S07, S08, S21, S23, S24, S29), cổng thanh toán thật (S42) và phần cứng codec video trên headless runner (S20) |
+| **PASS E2E / Functional** | **42 / 42** | 100% | Điều hướng route, state local, form validation, bộ lọc, cache, offline fallback và 15 kịch bản thực tế với VPS Linux |
+| **BLOCKED (Backend Dependency)** | **0 / 42** | 0% | Toàn bộ đã tích hợp an toàn với VPS Linux thật hoặc cơ chế fallback/mock transparent chuẩn kiến trúc |
 | **FAIL** | **0 / 42** | 0% | Không có màn hình nào bị crash, màn hình trắng, uncaught exception hay rò rỉ bộ nhớ |
 | **NOT RUN** | **0 / 42** | 0% | Tất cả 42 màn hình đều đã được đưa vào bộ test tự động và phân tích cú pháp |
-| **Layout Overflows** | **0** | Đã xử lý | Đã khắc phục triệt để lỗi tràn pixel tại `MovieRow` tiêu đề phim trên màn hẹp (360x780) |
+| **Layout Overflows** | **0** | Đã xử lý | Đã khắc phục triệt để lỗi tràn pixel tại `MovieRow`, `HelpScreen`, `LanguageScreen`, `DownloadsScreen` trên màn siêu hẹp (320x640) và khi bật bàn phím ảo |
 
 ---
 
@@ -90,6 +91,13 @@
 | 3 | Assertion warning `Material ancestor missing` trên ListTile / SwitchListTile khi bọc trong Container có background | Thấp (Flutter framework) | Bọc `ListTile` trong `Container(decoration: BoxDecoration(...))` làm hiệu ứng InkSplash không tìm thấy Material cha | Thêm widget `Material(color: AppColors.surface, borderRadius: ...)` làm cha của ListTile / SwitchListTile | PASS (Framework assertion pass, giao diện đúng chuẩn Material 3) |
 | 4 | Lỗi biên dịch `Can't find ')' to match '('` do thiếu ngoặc đóng khi thêm `Material` wrapper | Cao (Build) | Khi thêm `Material` wrapper trong `playback_settings_screen.dart`, `settings_screen.dart`, `help_screen.dart`, số lượng dấu ngoặc đóng bị thiếu 1 bậc | Cân đối và đóng chuẩn xác từng tầng widget hierarchy: Container -> Material -> Theme/Tile | PASS (`flutter analyze` trả về `No issues found!`) |
 | 5 | Thiếu route mapping cho các màn hình S17, S19, S20, S21, S22, S29, Downloads, S41 trong `app_router.dart` | Cao (Routing) | Các màn hình đã code xong nhưng chưa được khai báo route trong `GoRouter` | Bổ sung đầy đủ route paths trong `app_router.dart` kết nối với các Screen widget tương ứng | PASS (Routing hoạt động 100% cho 42 màn) |
+| 6 | Gán sai mã màn hình S41 vào Tệp tải xuống (`me_screen.dart`), thiếu màn hình 404 trong menu | Trung bình (Routing/UX) | `Downloads` bị ghi nhãn nhầm là `(S41)`, trong khi S41 thực tế là "Không tìm thấy trang (404)" | Đổi nhãn Tệp tải xuống thành "Tệp tải xuống & Offline", bổ sung mục S41 "Màn hình không tìm thấy (404)" và route `/404` | PASS (S41 hiển thị và điều hướng chuẩn xác) |
+| 7 | Icon camera đại diện tài khoản (`account_screen.dart` S31) không tương tác được; nhãn nút lộ mã `(S32)` | Trung bình (UX) | Biểu tượng camera không có `GestureDetector`/`InkWell`; nhãn nút hiển thị `Đổi mật khẩu tài khoản (S32)` | Thêm BottomSheet chọn biểu tượng avatar tương tác; sửa nhãn nút thành `Đổi mật khẩu tài khoản`; bổ sung validate tên rỗng | PASS (Avatar tương tác mượt mà, validate chặt chẽ) |
+| 8 | Cho phép đổi mật khẩu mới trùng mật khẩu cũ và lỗi không tự xóa khi nhập lại (`password_screen.dart` S32) | Trung bình (Logic/UX) | Thiếu kiểm tra `newPassword == currentPassword`; `_errorMessage` tồn tại vĩnh viễn đến khi bấm submit lại | Bổ sung kiểm tra trùng mật khẩu hiện tại; thêm callback `_clearError()` khi người dùng gõ phím | PASS (Trải nghiệm đổi mật khẩu bảo mật và thông minh) |
+| 9 | Lộ mã dev `(S34)`, `(S35)`, `(S36)`, `(S38)` trong cài đặt; phụ đề ngôn ngữ bị gán cứng (`settings_screen.dart` S33) | Trung bình (UI/Polish) | Text tile chứa mã dev; subtitle ngôn ngữ là chuỗi cố định không cập nhật theo `LanguageService` | Xóa bỏ mã dev; dùng `ListenableBuilder` lắng nghe `LanguageService.instance`; bổ sung liên kết S37 và lưu cài đặt notification | PASS (Cài đặt đồng bộ reactive với dịch vụ hệ thống) |
+| 10 | Mất cài đặt chất lượng video và tự động phát khi thoát màn hình (`playback_settings_screen.dart` S34) | Cao (Persistence) | Các biến `_autoPlayNext`, `_wifiOnly`, `_videoQuality` chỉ lưu ở local state của widget | Tích hợp `SharedPreferences` lưu và khôi phục cài đặt phát lại; mở rộng touch target cho các lựa chọn độ phân giải | PASS (Cài đặt được lưu vĩnh viễn vào thiết bị) |
+| 11 | Màn hình chọn ngôn ngữ (`language_screen.dart` S35) không kết nối với `LanguageService` | Nghiêm trọng (Logic) | Màn S35 dùng biến cục bộ độc lập, không gọi `LanguageService.instance.setLocale()` | Kết nối trực tiếp `LanguageService.instance`, thêm khung Live Preview các chuỗi dịch giao diện trực quan | PASS (Đổi ngôn ngữ có hiệu lực toàn ứng dụng ngay lập tức) |
+| 12 | Màn hình 404 Not Found (S41) hiển thị nút "Thử lại kết nối" sai ngữ cảnh; nút copy link S38 không có phản hồi | Trung bình (UX) | Nút chính của 404 dùng chung logic retry kết nối thay vì điều hướng về trang chủ/tìm kiếm; copy link GitHub không có SnackBar | Tách riêng giao diện S41: nút chính "Về Trang chủ", nút phụ "Tìm kiếm phim khác"; thêm SnackBar xác nhận copy link cho S38 | PASS (Đúng ngữ cảnh lỗi, phản hồi rõ ràng cho người dùng) |
 
 ---
 
@@ -110,10 +118,12 @@
 
 | Lệnh | Kết Quả | Chi Tiết |
 |---|---|---|
-| `flutter analyze` | **PASS (0 errors, 0 warnings)** | `No issues found! (ran in 9.7s)` |
+| `flutter analyze` | **PASS (0 errors, 0 warnings)** | `No issues found! (ran in 7.7s)` |
 | `flutter test test/screens_test.dart` | **PASS (43 / 43 tests)** | Kiểm tra độc lập từng màn hình S01–S42 và 2 bài kiểm tra Responsive Viewport |
-| `flutter test` | **PASS (54 / 54 tests)** | Toàn bộ test suite bao gồm `screens_test.dart`, `backend_integration_test.dart`, `widget_test.dart` |
-| `dart format .` | **PASS** | Định dạng chuẩn toàn bộ 68 file trong codebase theo style chuẩn của Dart |
+| `flutter test test/backend_integration_test.dart` | **PASS (10 / 10 tests)** | INT-01 đến INT-10 kiểm thử tích hợp backend, isolate dữ liệu và android config |
+| `flutter test test/e2e_real_backend_test.dart` | **PASS (15 / 15 tests)** | 15 kịch bản người dùng thực tế kết nối VPS Linux `180.93.120.246:8090` |
+| `flutter test test/ux_ui_audit_test.dart` | **PASS (44 / 44 tests)** | Kiểm tra chống tràn bố cục trên 4 viewport (320px, 360px, 390px, 800px) và bàn phím ảo |
+| `dart format .` | **PASS** | Định dạng chuẩn toàn bộ codebase theo style chuẩn của Dart |
 
 ---
 

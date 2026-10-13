@@ -22,6 +22,18 @@ class PrimaryButton extends StatelessWidget {
     this.height = 48,
   });
 
+  /// §AGENTS-2 — Primary (white): hành động chính của màn hình
+  /// (Phát/Tiếp tục xem/Gửi/Lưu/Áp dụng). Nền trắng, chữ đen.
+  const PrimaryButton.white({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.isLoading = false,
+    this.icon,
+    this.height = 48,
+  })  : backgroundColor = Colors.white,
+        textColor = Colors.black;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(

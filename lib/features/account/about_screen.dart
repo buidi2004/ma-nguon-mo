@@ -195,7 +195,7 @@ class AboutScreen extends StatelessWidget {
                         content: Text(
                           'Đã sao chép liên kết GitHub vào bộ nhớ tạm!',
                         ),
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.success,
                         duration: Duration(seconds: 2),
                       ),
                     );

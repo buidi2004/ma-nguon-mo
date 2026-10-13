@@ -49,7 +49,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cảm ơn bạn đã đóng góp đánh giá!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       context.pop(newReview);
@@ -145,7 +145,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
             const SizedBox(height: 28),
 
-            PrimaryButton(
+            PrimaryButton.white(
               text: 'Gửi đánh giá',
               isLoading: _isLoading,
               onPressed: _submitReview,

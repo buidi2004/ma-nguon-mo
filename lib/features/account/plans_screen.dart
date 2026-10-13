@@ -139,7 +139,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   content: Text(
                     'Đã kích hoạt mô phỏng ${plan.name} thành công!',
                   ),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                 ),
               );
             },
@@ -376,7 +376,7 @@ class _PlansScreenState extends State<PlansScreen> {
                               const Icon(
                                 Icons.check,
                                 size: 15,
-                                color: Colors.green,
+                                color: AppColors.success,
                               ),
                               const SizedBox(width: 8),
                               Expanded(

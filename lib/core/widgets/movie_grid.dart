@@ -9,6 +9,8 @@ class MovieGrid extends StatelessWidget {
   final bool isLoading;
   final String emptyTitle;
   final String emptyMessage;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
   final void Function(MovieModel movie)? onMovieTap;
   final bool showCategory;
   final bool showRanks;
@@ -22,6 +24,8 @@ class MovieGrid extends StatelessWidget {
     this.emptyTitle = 'Chưa có phim',
     this.emptyMessage =
         'Không tìm thấy bộ phim nào phù hợp trong danh mục này.',
+    this.errorMessage,
+    this.onRetry,
     this.onMovieTap,
     this.showCategory = false,
     this.showRanks = false,
@@ -41,6 +45,10 @@ class MovieGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return StateView.loading();
+    }
+
+    if (errorMessage != null) {
+      return StateView.error(message: errorMessage!, onRetry: onRetry);
     }
 
     if (movies.isEmpty) {

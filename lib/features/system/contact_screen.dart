@@ -102,17 +102,17 @@ class _ContactScreenState extends State<ContactScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.green.shade900.withValues(alpha: 0.3),
+                          color: AppColors.success.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.greenAccent,
+                            color: AppColors.success,
                             width: 2,
                           ),
                         ),
                         child: const Icon(
                           Icons.check,
                           size: 48,
-                          color: Colors.greenAccent,
+                          color: AppColors.success,
                         ),
                       ),
                     ),
@@ -137,7 +137,7 @@ class _ContactScreenState extends State<ContactScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 36),
-                    PrimaryButton(
+                    PrimaryButton.white(
                       text: 'Hoàn tất',
                       onPressed: () {
                         setState(() {
@@ -255,7 +255,7 @@ class _ContactScreenState extends State<ContactScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    PrimaryButton(
+                    PrimaryButton.white(
                       text: 'Gửi phản hồi',
                       isLoading: _isLoading,
                       onPressed: _handleSubmit,

@@ -49,7 +49,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Đã lưu hồ sơ "${_nameController.text.trim()}"!'),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
       ),
     );
     context.pop();
@@ -168,7 +168,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
             const SizedBox(height: 32),
 
-            PrimaryButton(
+            PrimaryButton.white(
               text: isNew ? 'Tạo hồ sơ' : 'Lưu thay đổi',
               onPressed: _save,
             ),

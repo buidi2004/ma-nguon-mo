@@ -62,7 +62,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đổi mật khẩu thành công!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       context.pop();
@@ -194,7 +194,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
 
               const SizedBox(height: 28),
 
-              PrimaryButton(
+              PrimaryButton.white(
                 text: 'Cập nhật mật khẩu',
                 isLoading: _isLoading,
                 onPressed: _handleChangePassword,

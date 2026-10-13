@@ -148,7 +148,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Flexible(
+                          const Expanded(
                             child: Text(
                               'Bộ nhớ thiết bị',
                               maxLines: 1,
@@ -162,7 +162,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                           ),
                           const SizedBox(width: 8),
                           const Text(
-                            'Trống 38.4 GB / 64 GB',
+                            'Trống 38.4 GB',
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
@@ -237,7 +237,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               ),
                               const SizedBox(width: 6),
                               const Text(
-                                'Ứng dụng khác (24.2 GB)',
+                                'Khác (24.2 GB)',
                                 style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 11,
@@ -275,15 +275,20 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'VIDEO ĐÃ TẢI XUỐNG',
-                      style: TextStyle(
-                        color: AppColors.red,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
+                    const Expanded(
+                      child: Text(
+                        'VIDEO ĐÃ TẢI XUỐNG',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       '${_downloadedMovies.length} mục',
                       style: const TextStyle(
@@ -344,8 +349,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: SizedBox(
-                                  width: 100,
-                                  height: 58,
+                                  width: MediaQuery.of(context).size.width < 360
+                                      ? 72
+                                      : 96,
+                                  height:
+                                      MediaQuery.of(context).size.width < 360
+                                      ? 46
+                                      : 56,
                                   child: movie.thumbnailUrl.isNotEmpty
                                       ? CachedNetworkImage(
                                           imageUrl: movie.thumbnailUrl,
@@ -356,7 +366,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                       : Container(color: Colors.white10),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,7 +382,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
-                                    const Row(
+                                    const Wrap(
+                                      spacing: 6,
                                       children: [
                                         Text(
                                           '1080p FHD',
@@ -381,7 +392,6 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                             fontSize: 11,
                                           ),
                                         ),
-                                        SizedBox(width: 8),
                                         Text(
                                           '• 450 MB',
                                           style: TextStyle(

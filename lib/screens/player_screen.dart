@@ -5,6 +5,7 @@ import 'package:chewie/chewie.dart';
 
 import '../models/movie_model.dart';
 import '../services/pocketbase_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/movie_card.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -80,8 +81,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         ],
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         materialProgressColors: ChewieProgressColors(
-          playedColor: const Color(0xFFE50914),
-          handleColor: const Color(0xFFE50914),
+          playedColor: AppColors.red,
+          handleColor: AppColors.red,
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
@@ -92,7 +93,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               children: [
                 const Icon(
                   Icons.error_outline,
-                  color: Color(0xFFE50914),
+                  color: AppColors.red,
                   size: 48,
                 ),
                 const SizedBox(height: 12),
@@ -107,7 +108,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   icon: const Icon(Icons.refresh),
                   label: const Text('Thử lại'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE50914),
+                    backgroundColor: AppColors.red,
                   ),
                 ),
               ],
@@ -154,7 +155,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     final movieTitle = _activeMovie?.title ?? 'Đang tải...';
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -179,7 +180,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           children: [
                             CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFE50914),
+                                AppColors.red,
                               ),
                             ),
                             SizedBox(height: 12),
@@ -202,7 +203,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             children: [
                               const Icon(
                                 Icons.warning_amber_rounded,
-                                color: Color(0xFFE50914),
+                                color: AppColors.red,
                                 size: 40,
                               ),
                               const SizedBox(height: 8),
@@ -218,7 +219,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               ElevatedButton(
                                 onPressed: _initializePlayer,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE50914),
+                                  backgroundColor: AppColors.red,
                                 ),
                                 child: const Text('Thử lại'),
                               ),
@@ -259,7 +260,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE50914),
+                          color: AppColors.red,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -349,7 +350,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               content: Text(
                                 'Đã thêm phim vào danh sách Yêu thích của bạn!',
                               ),
-                              backgroundColor: Color(0xFFE50914),
+                              backgroundColor: AppColors.red,
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -377,7 +378,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Đã sao chép link video: $vUrl'),
-                              backgroundColor: Colors.grey.shade900,
+                              backgroundColor: AppColors.surface,
                             ),
                           );
                         },

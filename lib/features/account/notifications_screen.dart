@@ -160,7 +160,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           // Filter Tabs
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 ChoiceChip(
                   label: const Text('Tất cả'),
@@ -175,7 +177,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 8),
                 ChoiceChip(
                   label: Text('Chưa đọc ($unreadCount)'),
                   selected: _filterOnlyUnread,

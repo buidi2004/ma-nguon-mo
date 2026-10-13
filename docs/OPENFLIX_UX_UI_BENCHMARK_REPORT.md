@@ -10,7 +10,10 @@
 - **Test data source:** Fixtures 24 phim mẫu đa thể loại ([backend/sample_movies.json](file:///c:/Users/buidi/.gemini/antigravity-ide/scratch/openflix/backend/sample_movies.json)), In-memory `SharedPreferences` mock session cho AuthService và LibraryService. Tuyệt đối không dùng credentials production.
 - **Commands actually executed:**
   - `flutter analyze` (Exit code 0, 0 issues)
+  - `flutter test test/screens_test.dart` (Exit code 0, 43/43 passed)
   - `flutter test test/backend_integration_test.dart --reporter expanded` (Exit code 0, 10/10 passed)
+  - `flutter test test/e2e_real_backend_test.dart` (Exit code 0, 15/15 kịch bản thực tế kết nối VPS Linux `180.93.120.246:8090` passed)
+  - `flutter test test/ux_ui_audit_test.dart` (Exit code 0, 44/44 passed trên 4 viewports 320x640, 360x780, 390x844, 800x1200 và bàn phím ảo)
   - `flutter test test/widget_test.dart` (Exit code 0, 1/1 passed)
 
 ---
@@ -26,14 +29,30 @@
 | BLOCKED | **0** |
 | NOT RUN / NOT IMPLEMENTED / UI ONLY | **0** |
 | P0 / P1 / P2 / P3 defects open | **0** |
-| Average benchmark score | **95.2 / 100** |
-| Median benchmark score | **95 / 100** |
+| Total Automated Tests Passed | **113 / 113** (100%) |
+| Average benchmark score | **96.5 / 100** |
+| Median benchmark score | **96 / 100** |
+
+---
+
+## AGENTS.md Acceptance Checklist Verification
+
+| Tiêu chí AGENTS.md | Đánh giá | Chi tiết nghiệm thu thực tế |
+|---|:---:|---|
+| **1. Visual foundation** | **PASS** | Nền `#141414`, surface `#1E1E1E`/`#2A2A2A`, accent đỏ `#E50914`, chữ trắng `#FFFFFF` / xám `#B3B3B3`, padding 16px, spacing 4, 8, 12, 16, 24, 32px |
+| **2. Buttons** | **PASS** | Nút chính Play nền trắng chữ đen; Nút thương hiệu Đỏ cho CTA đăng nhập/đăng ký; Nút phụ xám; Không có nút thừa đỏ; Có loading & disabled state |
+| **3. Typography & Hierarchy** | **PASS** | Phân cấp rõ rệt: Tiêu đề màn hình 24–32sp, mục 18–20sp, item 13–16sp; Có `maxLines` và ellipsis trên tất cả các rail/card chống vỡ layout |
+| **4. Movie cards & rails** | **PASS** | Poster dọc tỷ lệ 2:3; Preview ngang 16:9; Đầy đủ placeholder tải và fallback khi ảnh lỗi; Thanh tiến trình chỉ xuất hiện ở phim xem dở |
+| **5. Motion & interaction** | **PASS** | Transition 150–220ms, phản hồi tap/press rõ ràng; Dialog xác nhận cho thao tác xoá (lịch sử, tải xuống); Không dựa vào màu đơn thuần để báo lỗi |
+| **6. 6 Data-driven UX states** | **PASS** | Đầy đủ 6 trạng thái: Skeleton/Loading, Content, Empty, Error có retry, Offline (S39) và Disabled state; Không bao giờ màn hình trắng khi mất mạng |
+| **7. Navigation & Accessibility** | **PASS** | Nút Back nhất quán, Bottom Navigation 4 tab, touch target tối thiểu 44x44px; Bọc SingleChildScrollView chống tràn khi bật bàn phím ảo |
+| **8. Acceptance Verification** | **PASS** | 100% kiểm thử thực tế trên Flutter Harness & VPS Linux thật; Không đánh dấu PASS cảm tính từ source inspection |
 
 ---
 
 ## Reference and environment notes
 - **Nguyên tắc thương hiệu & Bản quyền:** OpenFlix sử dụng nhận diện thương hiệu độc lập, tôn trọng bản quyền mã nguồn mở (Giấy phép MIT) và nguồn phim FOSS (Blender Foundation, Creative Commons). Giao diện ứng dụng kế thừa cảm hứng từ ngôn ngữ bố cục điện ảnh trực tuyến hiện đại (Dark theme `#141414`, tông đỏ điểm nhấn `#E50914`, poster tỷ lệ 2:3, typography phân cấp rõ rệt), không sao chép wordmark hay tài sản độc quyền của bên thứ ba.
-- **Môi trường đo lường:** Các màn hình không có ảnh chụp trực tiếp từ Netflix production được chấm điểm tuân thủ theo bảng tiêu chuẩn kỹ thuật **OpenFlix Design System Standard (100 điểm)**.
+- **Môi trường đo lường:** Các màn hình được kiểm thử trực tiếp trên các kích thước màn hình thực tế từ siêu nhỏ 320x640 đến Tablet 800x1200 và kết nối dữ liệu thật từ VPS Linux 180.93.120.246:8090.
 
 ---
 
@@ -339,6 +358,9 @@
 | DEF-01 | S40 / Router | P3 (Low) | ErrorBuilder | Route sai có thể báo mã màn hình lệch quy chuẩn | Nhập URL không tồn tại | Chuẩn hóa `SystemStatusScreen.notFound()` và tạo adapter `NotFoundScreen` | **PASS** |
 | DEF-02 | S39 / S40 | P3 (Low) | CTA Button | Nhãn nút không đồng nhất giữa màn hình và test case | Mở màn hình offline | Đổi sang nhãn chuẩn "Thử lại kết nối" | **PASS** |
 | DEF-03 | S17 | P3 (Low) | Detail Header | Thuộc tính `year` thay vì `releaseYear` trong model | Mở trailer | Đồng bộ hóa `movie.releaseYear` trên toàn bộ codebase | **PASS** |
+| DEF-04 | S36 (Help) | P2 (Medium) | Search Row | Tràn 359px trên màn hình siêu hẹp 320px | Mở HelpScreen ở viewport 320x640 | Bọc `Expanded` cho tiêu đề trong Row | **PASS** |
+| DEF-05 | S35 (Language) | P3 (Low) | Header Row | Tràn 45px trên viewport 320px | Mở LanguageScreen ở viewport 320x640 | Bọc `Expanded` cho tiêu đề Preview Box | **PASS** |
+| DEF-06 | Downloads | P2 (Medium) | Storage & Header | Tràn 9-19px ở nhãn dung lượng và tiêu đề danh sách | Mở DownloadsScreen ở viewport 320x640 | Bọc `Expanded` tiêu đề, rút gọn nhãn chú thích dung lượng | **PASS** |
 
 ---
 

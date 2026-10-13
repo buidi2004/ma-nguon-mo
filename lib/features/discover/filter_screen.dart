@@ -184,11 +184,13 @@ class _FilterScreenState extends State<FilterScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 10),
-                          Text(
-                            opt,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13.5,
+                          Expanded(
+                            child: Text(
+                              opt,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                              ),
                             ),
                           ),
                         ],
@@ -200,7 +202,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
 
             const SizedBox(height: 36),
-            PrimaryButton(text: 'Áp dụng bộ lọc', onPressed: _applyFilter),
+            PrimaryButton.white(text: 'Áp dụng bộ lọc', onPressed: _applyFilter),
             const SizedBox(height: 20),
           ],
         ),

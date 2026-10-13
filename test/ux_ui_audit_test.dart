@@ -46,13 +46,19 @@ Widget _wrap(
   Size size = const Size(390, 844),
   EdgeInsets viewInsets = EdgeInsets.zero,
 }) {
-  return MediaQuery(
-    data: MediaQueryData(size: size, viewInsets: viewInsets),
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
-      home: child,
-    ),
+  return MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: buildAppTheme(),
+    builder: (context, widgetChild) {
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          size: size,
+          viewInsets: viewInsets,
+        ),
+        child: widgetChild ?? const SizedBox.shrink(),
+      );
+    },
+    home: child,
   );
 }
 
@@ -86,7 +92,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Không được phát sinh lỗi layout/overflow
-      expect(tester.takeException(), isNull);
+      var err = tester.takeException();
+      if (err != null) {
+        debugPrint(err.toString());
+      }
+      expect(err, isNull, reason: 'Viewport $vp: $err');
 
       if (testKeyboard) {
         // Giả lập bàn phím ảo đẩy lên 300px
@@ -94,7 +104,11 @@ void main() {
           _wrap(screen, size: vp, viewInsets: const EdgeInsets.only(bottom: 300)),
         );
         await tester.pump(const Duration(milliseconds: 100));
-        expect(tester.takeException(), isNull);
+        err = tester.takeException();
+        if (err != null) {
+          debugPrint(err.toString());
+        }
+        expect(err, isNull, reason: 'Keyboard Viewport $vp: $err');
       }
     }
   }

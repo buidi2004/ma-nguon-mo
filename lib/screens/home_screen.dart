@@ -306,8 +306,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           : '🟢 Đã kết nối PocketBase API',
                       style: TextStyle(
                         color: _pbService.isUsingOfflineMock
-                            ? Colors.amberAccent
-                            : Colors.greenAccent,
+                            ? AppColors.warning
+                            : AppColors.success,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -496,8 +496,8 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(
               Icons.cloud_done_rounded,
               color: _pbService.isUsingOfflineMock
-                  ? Colors.amberAccent
-                  : Colors.greenAccent,
+                  ? AppColors.warning
+                  : AppColors.success,
               size: 22,
             ),
             tooltip: 'Kết nối máy chủ',

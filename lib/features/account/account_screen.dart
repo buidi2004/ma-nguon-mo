@@ -49,7 +49,7 @@ class _AccountScreenState extends State<AccountScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Đã cập nhật thông tin tài khoản thành công!'),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
       ),
     );
   }
@@ -103,7 +103,7 @@ class _AccountScreenState extends State<AccountScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã cập nhật ảnh đại diện hồ sơ!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       },
@@ -280,7 +280,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
           const SizedBox(height: 24),
 
-          PrimaryButton(
+          PrimaryButton.white(
             text: 'Lưu thay đổi',
             isLoading: _isLoading,
             onPressed: _handleSave,

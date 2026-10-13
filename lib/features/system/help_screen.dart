@@ -107,12 +107,14 @@ class _HelpScreenState extends State<HelpScreen> {
                       size: 28,
                     ),
                     SizedBox(width: 10),
-                    Text(
-                      'Chúng tôi có thể giúp gì cho bạn?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        'Chúng tôi có thể giúp gì cho bạn?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -278,7 +280,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                   content: Text(
                                     'Đã sao chép số tổng đài 1800 6868!',
                                   ),
-                                  backgroundColor: Colors.green,
+                                  backgroundColor: AppColors.success,
                                 ),
                               );
                             },

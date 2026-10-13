@@ -121,7 +121,10 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                     color: AppColors.surface,
                     border: Border(bottom: BorderSide(color: Colors.white10)),
                   ),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Text(
                         'Chọn mùa: ',
@@ -131,7 +134,6 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,

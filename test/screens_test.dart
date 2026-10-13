@@ -296,8 +296,8 @@ void main() {
     ) async {
       await tester.pumpWidget(buildTestableWidget(const MeScreen()));
       expect(find.text('Tài khoản & Cá nhân'), findsOneWidget);
-      expect(find.text('MỤC CÁ NHÂN (NHÓM D)'), findsOneWidget);
-      expect(find.text('TÀI KHOẢN & HỆ THỐNG (NHÓM E & F)'), findsOneWidget);
+      expect(find.text('NỘI DUNG CỦA TÔI'), findsOneWidget);
+      expect(find.text('TÀI KHOẢN & DỊCH VỤ'), findsOneWidget);
     });
 
     testWidgets('S31: Account screen renders user profile fields', (
@@ -398,6 +398,7 @@ void main() {
       );
       expect(find.text('S41'), findsOneWidget);
       expect(find.text('Không tìm thấy trang (404)'), findsOneWidget);
+      expect(find.text('Về Trang chủ'), findsOneWidget);
     });
   });
 

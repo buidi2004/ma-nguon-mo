@@ -273,7 +273,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: PrimaryButton(
+              child: PrimaryButton.white(
                 text: 'Áp dụng cài đặt',
                 onPressed: _applySettings,
               ),
