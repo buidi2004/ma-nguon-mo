@@ -199,12 +199,15 @@ void main() {
     test('INT-09: Empty/offline/timeout (Cơ chế Offline Fallback & SystemStatusScreen)', () async {
       final pb = PocketBaseService.instance;
 
-      // Cố tình trỏ tới server không tồn tại để kích hoạt offline fallback
-      pb.updateBaseUrl('http://192.0.2.1:8099'); // Non-routable IP
+      // Cố tình trỏ tới server không tồn tại để kích hoạt offline fallback ngay lập tức (1ms)
+      pb.updateBaseUrl('http://127.0.0.1:59999'); // Local closed port -> instant refused
       final fallbackMovies = await pb.getMovies();
 
       expect(fallbackMovies, isNotEmpty);
       expect(pb.isUsingOfflineMock, isTrue);
+
+      // Khôi phục lại Base URL thật
+      pb.updateBaseUrl('http://180.93.120.246:8090');
 
       // Khởi tạo SystemStatusScreen offline/error/notFound
       final offlineScreen = SystemStatusScreen.offline();

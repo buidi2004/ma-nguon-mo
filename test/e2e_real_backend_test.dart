@@ -299,8 +299,8 @@ void main() {
       expect(pb.isUsingOfflineMock, isFalse);
       print(' [Step 7.1] Trạng thái bình thường: Đã nhận dữ liệu từ VPS Linux (isUsingOfflineMock = false)');
 
-      // 2. Sự cố: Trỏ tới IP mạng chết để giả lập rớt mạng
-      pb.updateBaseUrl('http://192.0.2.1:8099');
+      // 2. Sự cố: Trỏ tới port đóng cục bộ để giả lập rớt mạng tức thì (1ms)
+      pb.updateBaseUrl('http://127.0.0.1:59999');
       final fallbackMovies = await pb.getMovies();
       expect(fallbackMovies, isNotEmpty);
       expect(pb.isUsingOfflineMock, isTrue);
