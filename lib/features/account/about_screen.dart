@@ -187,7 +187,16 @@ class AboutScreen extends StatelessWidget {
                   onPressed: () {
                     Clipboard.setData(
                       const ClipboardData(
-                        text: 'https://github.com/your-username/openflix',
+                        text: 'https://github.com/openflix/openflix',
+                      ),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Đã sao chép liên kết GitHub vào bộ nhớ tạm!',
+                        ),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },

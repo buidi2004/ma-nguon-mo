@@ -308,21 +308,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {
-                          if (_videoPlayerController.value.isPlaying) {
-                            _videoPlayerController.pause();
+                          if (_videoPlayerController?.value.isPlaying == true) {
+                            _videoPlayerController?.pause();
                           } else {
-                            _videoPlayerController.play();
+                            _videoPlayerController?.play();
                           }
                           setState(() {});
                         },
                         icon: Icon(
-                          _videoPlayerController.value.isPlaying
+                          _videoPlayerController?.value.isPlaying == true
                               ? Icons.pause
                               : Icons.play_arrow,
                           color: Colors.black,
                         ),
                         label: Text(
-                          _videoPlayerController.value.isPlaying
+                          _videoPlayerController?.value.isPlaying == true
                               ? 'Tạm dừng'
                               : 'Phát lại',
                           style: const TextStyle(
