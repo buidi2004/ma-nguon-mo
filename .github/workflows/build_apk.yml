@@ -58,7 +58,7 @@ jobs:
         run: flutter analyze
 
       - name: Run Automated Tests
-        run: flutter test test/screens_test.dart test/backend_integration_test.dart test/ux_ui_audit_test.dart
+        run: flutter test test/screens_test.dart test/backend_integration_test.dart test/ux_ui_audit_test.dart test/glass_bar_test.dart
 
       - name: Build Release APK
         run: flutter build apk --release
