@@ -164,7 +164,7 @@ class GlassNavBackground extends StatelessWidget {
 
   const GlassNavBackground({
     super.key,
-    this.blurSigma = 26,
+    this.blurSigma = 18,
     this.borderRadius = 33,
     this.tintOpacity = 0.12,
     this.isOval = false,
@@ -191,8 +191,8 @@ class GlassNavBackground extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF2C2C2C).withValues(alpha: 0.62),
-                    const Color(0xFF101010).withValues(alpha: 0.80),
+                    const Color(0xFF2C2C2C).withValues(alpha: 0.48),
+                    const Color(0xFF101010).withValues(alpha: 0.68),
                   ],
                 ),
                 borderRadius:

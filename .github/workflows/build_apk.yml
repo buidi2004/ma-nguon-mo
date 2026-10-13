@@ -66,37 +66,38 @@ jobs:
       - name: Copy & Rename APK
         run: |
           mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-release.apk dist/OpenFlix-v1.0.0-release.apk
+          cp build/app/outputs/flutter-apk/app-release.apk dist/OpenFlix-v2.0.0-release.apk
           ls -lh dist/
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: OpenFlix-Android-APK
-          path: dist/OpenFlix-v1.0.0-release.apk
+          path: dist/OpenFlix-v2.0.0-release.apk
           retention-days: 30
 
       - name: Create GitHub Release (On Tag or Manual Trigger)
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0-release' }}
-          name: ${{ startsWith(github.ref, 'refs/tags/') && format('OpenFlix Release APK {0}', github.ref_name) || 'OpenFlix Release APK v1.0.0' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2.0.0-release' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && format('OpenFlix Release APK {0}', github.ref_name) || 'OpenFlix Release APK v2.0.0' }}
           generate_release_notes: true
           draft: false
           prerelease: false
           body: |
-            ### 🎬 OpenFlix Android Release APK
+            ### 🎬 OpenFlix Android Release APK v2.0.0
             
-            - **Phiên bản:** v1.0.0
+            - **Phiên bản:** v2.0.0
             - **Cấu hình:** Android Release (Signed với debug key tương thích sẵn cho cài đặt trực tiếp)
+            - **Navbar:** Floating Glass Bottom Bar với hiệu ứng kính mờ tinh tế, độ trong suốt quang học cao & nút Active đỏ rực rỡ chuẩn phong cách Netflix.
             - **Backend:** PocketBase Linux VPS `180.93.120.246:8090` (40 phim FOSS chuẩn điện ảnh)
             - **Giao diện:** 42 màn hình chuẩn Netflix-inspired Dark Theme
             - **Tương thích:** Android 5.0 (API 21) trở lên (arm64-v8a, armeabi-v7a, x86_64)
             
             #### 📥 Tải xuống cài đặt:
-            Tải file **OpenFlix-v1.0.0-release.apk** bên dưới và cài đặt trực tiếp trên thiết bị Android của bạn.
+            Tải file **OpenFlix-v2.0.0-release.apk** bên dưới và cài đặt trực tiếp trên thiết bị Android của bạn.
           files: |
-            dist/OpenFlix-v1.0.0-release.apk
+            dist/OpenFlix-v2.0.0-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

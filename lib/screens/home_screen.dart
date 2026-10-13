@@ -415,16 +415,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isFilteringCategory = _selectedCategory != 'Tất cả';
     return Scaffold(
       backgroundColor: AppColors.background,
-      // AppBar trong suốt đè lên HeroBanner
-      extendBodyBehindAppBar: !_isSearching,
+      // AppBar trong suốt CHỈ đè lên HeroBanner khi ở trang chủ đầy đủ
+      extendBodyBehindAppBar: !_isSearching && !isFilteringCategory,
       appBar: AppBar(
-        backgroundColor: _isSearching
+        backgroundColor: (_isSearching || isFilteringCategory)
             ? AppColors.background
             : Colors.black.withValues(alpha: 0.3),
         elevation: 0,
-        titleSpacing: 12,
+        titleSpacing: (isFilteringCategory && !_isSearching) ? 0 : 12,
+        leading: (isFilteringCategory && !_isSearching)
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 19,
+                  color: Colors.white,
+                ),
+                tooltip: 'Về trang chủ',
+                onPressed: () => _onCategorySelected('Tất cả'),
+              )
+            : null,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
@@ -458,21 +470,67 @@ class _HomeScreenState extends State<HomeScreen> {
                       : null,
                 ),
               )
-            : Row(
-                children: [
-                  // OpenFlix Red Wordmark chuẩn Netflix
-                  const Text(
-                    'OPENFLIX',
-                    style: TextStyle(
-                      color: AppColors.red,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 21,
-                      letterSpacing: 2.0,
-                    ),
+            : isFilteringCategory
+                ? Row(
+                    children: [
+                      Text(
+                        _selectedCategory,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.red.withValues(alpha: 0.20),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.red.withValues(alpha: 0.50),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          '${_filteredMovies.length} phim',
+                          style: const TextStyle(
+                            color: AppColors.red,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : const Row(
+                    children: [
+                      // OpenFlix Red Wordmark chuẩn Netflix
+                      Text(
+                        'OPENFLIX',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 21,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
         actions: [
+          if (isFilteringCategory && !_isSearching)
+            IconButton(
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: Colors.white70,
+                size: 22,
+              ),
+              tooltip: 'Xem tất cả phim',
+              onPressed: () => _onCategorySelected('Tất cả'),
+            ),
           IconButton(
             icon: Icon(
               _isSearching ? Icons.close : Icons.search,
@@ -657,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Chip lọc danh mục phong cách tối giản
   Widget _buildCategoryFilterRow() {
     return Container(
-      height: 40,
+      height: 38,
       margin: const EdgeInsets.only(top: 8, bottom: 4),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -670,18 +728,34 @@ class _HomeScreenState extends State<HomeScreen> {
           final isSelected = cat == _selectedCategory;
           return GestureDetector(
             onTap: () => _onCategorySelected(cat),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white : AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
+                color: isSelected ? AppColors.red : AppColors.surface,
+                borderRadius: BorderRadius.circular(19),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.red
+                      : Colors.white.withValues(alpha: 0.15),
+                  width: 0.8,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.red.withValues(alpha: 0.40),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Text(
                 cat,
                 style: TextStyle(
-                  color: isSelected ? Colors.black : AppColors.textPrimary,
-                  fontSize: 12,
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  fontSize: 12.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -692,21 +766,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Lưới 3 cột poster khi tìm kiếm hoặc lọc danh mục (theo mục 3 trong docs/fe.md)
+  /// Lưới 3 cột poster khi tìm kiếm hoặc lọc danh mục chuẩn điện ảnh Netflix
   Widget _buildSearchOrFilterGrid() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildCategoryFilterRow(),
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-          child: Text(
-            'Kết quả (${_filteredMovies.length} phim)',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
+          padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Danh sách ${_selectedCategory != 'Tất cả' ? _selectedCategory : 'kết quả'} (${_filteredMovies.length} phim)',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (_selectedCategory != 'Tất cả')
+                GestureDetector(
+                  onTap: () => _onCategorySelected('Tất cả'),
+                  child: const Text(
+                    'Xem tất cả >',
+                    style: TextStyle(
+                      color: AppColors.red,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         Expanded(
@@ -716,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.search_off,
+                        Icons.search_off_rounded,
                         size: 56,
                         color: AppColors.textMuted,
                       ),
@@ -733,46 +824,191 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : GridView.builder(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 110),
                   itemCount: _filteredMovies.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     childAspectRatio: 2 / 3,
-                    crossAxisSpacing: 6,
-                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 10,
                   ),
                   itemBuilder: (context, index) {
                     final movie = _filteredMovies[index];
                     return GestureDetector(
                       onTap: () => _openMovieDetail(movie),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: CachedNetworkImage(
-                            imageUrl: movie.posterUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (_, _) =>
-                                const ColoredBox(color: AppColors.surface),
-                            errorWidget: (_, _, _) => Container(
-                              color: AppColors.surface,
-                              padding: const EdgeInsets.all(4),
-                              child: Center(
-                                child: Text(
-                                  movie.title,
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.textSecondary,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.40),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              // 1. Ảnh Poster
+                              CachedNetworkImage(
+                                imageUrl: movie.posterUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (_, _) => Container(
+                                  color: AppColors.surface,
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          AppColors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (_, _, _) => Container(
+                                  color: AppColors.surface,
+                                  padding: const EdgeInsets.all(6),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.movie_outlined,
+                                        color: AppColors.textMuted,
+                                        size: 24,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        movie.title,
+                                        maxLines: 2,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
+
+                              // 2. Lớp phủ Vignette chuyển tiếp tinh tế ở đáy poster
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.transparent,
+                                        Colors.black.withValues(alpha: 0.50),
+                                        Colors.black.withValues(alpha: 0.92),
+                                      ],
+                                      stops: const [0.0, 0.45, 0.70, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 3. Viền Hairline tinh xảo
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.14),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 4. Badge chất lượng (HD / MỚI)
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: movie.isNew
+                                        ? AppColors.red
+                                        : Colors.black.withValues(alpha: 0.65),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.25),
+                                      width: 0.6,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    movie.isNew ? 'MỚI' : 'HD',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 5. Tiêu đề và Năm phát hành ở đáy poster
+                              Positioned(
+                                left: 6,
+                                right: 6,
+                                bottom: 6,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      movie.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.2,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black,
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${movie.releaseYear}',
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.70),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
                     );
                   },
                 ),

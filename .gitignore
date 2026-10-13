@@ -50,3 +50,6 @@ app.*.map.json
 .agent/
 .agents/
 /dist/
+*.apk
+.kotlin/
+android/.kotlin/
