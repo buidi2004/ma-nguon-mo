@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 
 /// Script nap nhanh 8 bo phim mau vao PocketBase
@@ -48,6 +49,10 @@ void main(List<String> args) async {
     }
   }
 
-  print('\n🎉 Hoan thanh! Da nap thanh cong $successCount / ${movies.length} bo phim.');
-  print('Kiem tra API tai: $baseUrl/api/collections/movies/records?sort=-created');
+  print(
+    '\n🎉 Hoan thanh! Da nap thanh cong $successCount / ${movies.length} bo phim.',
+  );
+  print(
+    'Kiem tra API tai: $baseUrl/api/collections/movies/records?sort=-created',
+  );
 }

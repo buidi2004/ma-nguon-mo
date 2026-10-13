@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Phân Tích & Thiết Kế Kiến Trúc - OpenFlix</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Mermaid.js for Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#FEE2E2',
+        primaryTextColor: '#991B1B',
+        primaryBorderColor: '#DC2626',
+        lineColor: '#DC2626',
+        secondaryColor: '#FEF2F2',
+        tertiaryColor: '#FFFFFF'
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --primary: #E50914;
+      --primary-dark: #B20710;
+      --primary-light: #FEE2E2;
+      --slate-900: #0F172A;
+      --slate-800: #1E293B;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-100: #F1F5F9;
+      --slate-50: #F8FAFC;
+      --border: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.65;
+      color: var(--slate-800);
+      background-color: #FAFAFA;
+      padding: 40px 20px;
+    }
+
+    .report-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      padding: 56px 64px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    /* Print action bar */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .print-btn {
+      background-color: var(--primary);
+      color: #FFF;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .print-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* Cover / Header Header */
+    .header-box {
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 24px;
+      margin-bottom: 36px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: var(--slate-600);
+      font-style: italic;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--slate-600);
+    }
+    .meta-item strong {
+      color: var(--slate-900);
+    }
+
+    /* Headings */
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-top: 36px;
+      margin-bottom: 14px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary);
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--slate-800);
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      font-size: 14.5px;
+    }
+
+    /* Callout Card */
+    .callout {
+      background-color: var(--slate-50);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .callout strong {
+      color: var(--slate-900);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px 0;
+      font-size: 13.5px;
+    }
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    th {
+      background-color: #1E293B;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: var(--slate-50);
+    }
+    tr:hover {
+      background-color: #F8FAFC;
+    }
+
+    /* Diagrams */
+    .diagram-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      font-size: 14.5px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      background-color: var(--slate-100);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #C026D3;
+    }
+
+    /* Print optimization */
+    @media print {
+      body {
+        padding: 0;
+        background: #FFF;
+      }
+      .report-container {
+        max-width: 100%;
+        padding: 20px 0;
+        border: none;
+        box-shadow: none;
+      }
+      .action-bar {
+        display: none;
+      }
+      h2 {
+        page-break-after: avoid;
+      }
+      table, .diagram-card {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-container">
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div>
+        <strong>Tài liệu thiết kế kiến trúc phần mềm OpenFlix</strong>
+      </div>
+      <button class="print-btn" onclick="window.print()">
+        🖨️ In hoặc Lưu thành PDF (Ctrl + P)
+      </button>
+    </div>
+
+    <!-- Header / Cover Header -->
+    <div class="header-box">
+      <span class="badge">Báo cáo Kỹ thuật & Thiết kế Kiến trúc</span>
+      <h1>HỆ THỐNG XEM PHIM TRỰC TUYẾN OPENFLIX</h1>
+      <p class="subtitle">Phát triển bằng Flutter Framework & PocketBase Backend-as-a-Service (BaaS)</p>
+      
+      <div class="meta-grid">
+        <div class="meta-item"><strong>Học phần:</strong> Lập trình Di động / Kỹ thuật Phần mềm</div>
+        <div class="meta-item"><strong>Nền tảng:</strong> Flutter 3.x, Dart 3.x, PocketBase</div>
+        <div class="meta-item"><strong>Kiến trúc:</strong> Clean Layered (Presentation - Service - Model)</div>
+        <div class="meta-item"><strong>Giấy phép:</strong> Mã nguồn mở MIT License</div>
+      </div>
+    </div>
+
+    <!-- Principles Callout -->
+    <div class="callout">
+      <strong>💡 HAI NGUYÊN LÝ CỐT LÕI CẦN NHỚ KHI THUYẾT TRÌNH:</strong>
+      <ol style="margin-top: 8px; margin-left: 20px;">
+        <li><strong>App chỉ hỏi PocketBase để lấy metadata phim</strong> (tên, mô tả, năm, thể loại, link poster, link video). PocketBase không gánh tải file đa phương tiện lớn.</li>
+        <li><strong>Video và poster được tải/stream trực tiếp từ máy chủ media chuyên dụng</strong> (CDN / Cloud Storage) chứ không đi vòng qua PocketBase.</li>
+      </ol>
+    </div>
+
+    <!-- 1. YÊU CẦU HỆ THỐNG -->
+    <h2>1. Phân Tích Yêu Cầu</h2>
+
+    <h3>1.1. Yêu cầu chức năng (Functional Requirements - FR)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 10%;">Mã</th>
+          <th style="width: 70%;">Nội dung yêu cầu</th>
+          <th style="width: 20%;">Mức độ ưu tiên</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>FR1</strong></td>
+          <td>Hiển thị danh sách phim lấy từ server</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR2</strong></td>
+          <td>Hiển thị banner các phim có <code>is_featured = true</code></td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR3</strong></td>
+          <td>Nhóm phim theo thể loại, mỗi thể loại là một hàng cuộn ngang</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR4</strong></td>
+          <td>Tìm phim theo từ khóa trong tên hoặc nội dung mô tả</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR5</strong></td>
+          <td>Xem chi tiết phim (poster, mô tả, năm phát hành, thể loại)</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR6</strong></td>
+          <td>Phát video: play/pause, tua ±10s, thanh tiến trình, xoay toàn màn hình</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR7</strong></td>
+          <td>Quản trị viên thêm/sửa/xóa phim và đánh dấu nổi bật qua Admin UI</td>
+          <td><span style="color: #DC2626; font-weight: 600;">Bắt buộc</span></td>
+        </tr>
+        <tr>
+          <td><strong>FR8</strong></td>
+          <td>Hiển thị trạng thái loading và thông báo lỗi khi mất mạng (fallback offline)</td>
+          <td><span style="color: #2563EB; font-weight: 600;">Nên có</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>1.2. Yêu cầu phi chức năng (Non-Functional Requirements)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Nhóm tiêu chuẩn</th>
+          <th style="width: 75%;">Nội dung quy định</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Hiệu năng</strong></td>
+          <td>Tải danh sách một lần (fetch-once), tìm kiếm lọc tức thì trên máy (in-memory). Mục tiêu: màn hình chính hiện trong 1-2 giây trên kết nối 4G/Wifi.</td>
+        </tr>
+        <tr>
+          <td><strong>Bảo mật</strong></td>
+          <td>Người dùng chỉ được đọc công khai (Public Read). Thao tác Create/Update/Delete khóa chặt chẽ, chỉ quản trị viên được ghi qua Admin UI.</td>
+        </tr>
+        <tr>
+          <td><strong>Tương thích</strong></td>
+          <td>Hệ điều hành Android (xuất bản APK release độc lập), hỗ trợ tự động xoay ngang khi xem video.</td>
+        </tr>
+        <tr>
+          <td><strong>Khả năng bảo trì</strong></td>
+          <td>Tách lớp độc lập <code>models</code>, <code>services</code>, <code>screens</code>, <code>widgets</code> để sửa một phần không ảnh hưởng phần khác.</td>
+        </tr>
+        <tr>
+          <td><strong>Mã nguồn mở</strong></td>
+          <td>Dùng toàn bộ thư viện mở, giấy phép tự do MIT / Apache 2.0, tài liệu README đầy đủ.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Giới hạn phạm vi (Project Boundary):</strong> Ứng dụng không có đăng nhập tài khoản cá nhân, không có thanh toán trực tuyến, không có lịch sử xem qua cloud. Đây là bản demo tập trung cốt lõi vào trải nghiệm lướt và xem phim mượt mà.
+    </div>
+
+    <!-- 2. TÁC NHÂN VÀ USE CASE -->
+    <h2>2. Tác Nhân & Biểu Đồ Use Case</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%;">Tác nhân</th>
+          <th style="width: 65%;">Use Case tương ứng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Người xem</strong><br><small style="color: #64748B;">(Không cần tài khoản)</small></td>
+          <td>
+            • <strong>UC1:</strong> Xem danh sách theo thể loại<br>
+            • <strong>UC2:</strong> Xem banner nổi bật<br>
+            • <strong>UC3:</strong> Tìm kiếm phim<br>
+            • <strong>UC4:</strong> Xem chi tiết phim<br>
+            • <strong>UC5:</strong> Phát phim
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Quản trị viên</strong><br><small style="color: #64748B;">(Admin)</small></td>
+          <td>
+            • <strong>UC6:</strong> Thêm/sửa/xóa phim<br>
+            • <strong>UC7:</strong> Đánh dấu phim nổi bật (is_featured)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><strong>Quan hệ giữa các use case khi vẽ sơ đồ:</strong></p>
+    <ul>
+      <li><code>UC3 &lt;&lt;extend&gt;&gt; UC1</code>: Vì tìm kiếm là thao tác tùy chọn mở rộng trên danh sách phim.</li>
+      <li><code>UC5 &lt;&lt;include&gt;&gt; UC4</code>: Vì phải mở thông tin chi tiết phim thì mới phát video được.</li>
+      <li><code>UC7 &lt;&lt;extend&gt;&gt; UC6</code>: Vì gắn cờ nổi bật là tùy chọn khi thêm/sửa bản ghi phim.</li>
+      <li><strong>Hệ thống ngoài (vẽ ngoài khung hệ thống):</strong> Máy chủ media (phục vụ streaming video & poster).</li>
+    </ul>
+
+    <!-- 3. PHÂN TẦNG APP FLUTTER -->
+    <h2>3. Phân Tầng Trong App Flutter</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Tầng (Layer)</th>
+          <th style="width: 35%;">Thành phần mã nguồn</th>
+          <th style="width: 40%;">Trách nhiệm chính</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Presentation</strong></td>
+          <td><code>HomeScreen</code>, <code>PlayerScreen</code>, <code>MovieCard</code></td>
+          <td>Hiển thị dữ liệu lên giao diện và tiếp nhận cử chỉ chạm của người dùng.</td>
+        </tr>
+        <tr>
+          <td><strong>Service</strong></td>
+          <td><code>PocketBaseService</code></td>
+          <td>Duy nhất nơi biết URL server và cách gọi API mạng.</td>
+        </tr>
+        <tr>
+          <td><strong>Model</strong></td>
+          <td><code>MovieModel</code></td>
+          <td>Chuyển bản ghi JSON / RecordModel PocketBase thành đối tượng Dart.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Quy tắc phụ thuộc đơn hướng:</strong> Screen gọi Service, Service tạo Model. Screen không bao giờ gọi trực tiếp thư viện <code>pocketbase</code>. Nhờ vậy, nếu thay PocketBase bằng backend khác, bạn chỉ phải chỉnh sửa duy nhất một file <code>pocketbase_service.dart</code>.
+    </div>
+
+    <!-- 4. THIẾT KẾ DỮ LIỆU -->
+    <h2>4. Thiết Kế Dữ Liệu (ER Diagram)</h2>
+    <p>Hệ thống chỉ có một thực thể trung tâm. PocketBase tự sinh các trường <code>id</code>, <code>created</code>, <code>updated</code>.</p>
+
+    <div class="diagram-card">
+      <pre class="mermaid">
+erDiagram
+    MOVIES {
+        string id PK "Khóa chính tự sinh"
+        string title "Tên tác phẩm"
+        string description "Mô tả nội dung"
+        string category "Thể loại phim"
+        string poster_url "Link poster"
+        string video_url "Link phát video mp4"
+        int release_year "Năm sản xuất"
+        bool is_featured "Cờ nổi bật"
+        datetime created "Thời gian tạo"
+        datetime updated "Thời gian cập nhật"
+    }
+      </pre>
+    </div>
+
+    <p><em>Nếu thầy hỏi "sao không chuẩn hóa?":</em> Trường <code>category</code> để dạng text vì dự án demo chỉ có 3-4 thể loại chính và cần tối ưu tốc độ triển khai. Khi mở rộng, hệ thống tách thành bảng <code>categories</code> với quan hệ 1-N (một thể loại có nhiều phim) và đổi <code>category</code> thành khóa ngoại.</p>
+
+    <!-- 5. THIẾT KẾ API -->
+    <h2>5. Thiết Kế Giao Tiếp API</h2>
+    <p>PocketBase tự động sinh REST API đầy đủ cho collection <code>movies</code>, không cần tự viết code backend.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Mục đích</th>
+          <th style="width: 55%;">Phương thức và đường dẫn</th>
+          <th style="width: 20%;">Chủ thể gọi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lấy danh sách phim</td>
+          <td><code>GET /api/collections/movies/records?sort=-release_year</code></td>
+          <td>App Flutter</td>
+        </tr>
+        <tr>
+          <td>Lấy một phim</td>
+          <td><code>GET /api/collections/movies/records/{id}</code></td>
+          <td>App (nếu cần)</td>
+        </tr>
+        <tr>
+          <td>Tìm kiếm phía server</td>
+          <td><code>GET .../records?filter=(title~'bunny')</code></td>
+          <td>Phương án phụ</td>
+        </tr>
+        <tr>
+          <td>Thêm/sửa/xóa phim</td>
+          <td><code>POST / PATCH / DELETE .../records</code></td>
+          <td>Chỉ Admin qua Web UI</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 6. THIẾT KẾ LỚP -->
+    <h2>6. Thiết Kế Lớp (Class Diagram)</h2>
+    <div class="diagram-card">
+      <pre class="mermaid">
+classDiagram
+    class Movie {
+        +String id
+        +String title
+        +String description
+        +String category
+        +String posterUrl
+        +String videoUrl
+        +int releaseYear
+        +bool isFeatured
+        +fromRecord(RecordModel) Movie
+    }
+    class PocketBaseService {
+        +PocketBase pb$
+        +fetchMovies() List~Movie~
+    }
+    class HomeScreen
+    class PlayerScreen {
+        -VideoPlayerController _video
+        -ChewieController _chewie
+        -skip(int seconds)
+    }
+    class MovieCard
+    HomeScreen ..> PocketBaseService : gọi
+    PocketBaseService ..> Movie : tạo
+    HomeScreen o-- MovieCard
+    HomeScreen ..> PlayerScreen : điều hướng
+    PlayerScreen --> Movie
+      </pre>
+    </div>
+
+    <!-- 7. LUỒNG XỬ LÝ CHÍNH -->
+    <h2>7. Luồng Xử Lý Chính: Mở App và Xem Phim</h2>
+    <div class="diagram-card">
+      <pre class="mermaid">
+sequenceDiagram
+    actor U as Người dùng
+    participant H as HomeScreen
+    participant S as PocketBaseService
+    participant P as PocketBase
+    participant V as PlayerScreen
+    participant M as Máy chủ media
+
+    U->>H: Mở app
+    H->>S: fetchMovies()
+    S->>P: GET /api/collections/movies/records
+    P-->>S: JSON danh sách phim
+    S-->>H: danh sách Movie
+    H-->>U: Hiển thị banner và các hàng phim
+    U->>H: Chọn một phim
+    H->>V: Navigator.push(movie)
+    V->>M: HTTP GET video_url
+    M-->>V: Luồng video
+    V-->>U: Phát video
+      </pre>
+    </div>
+
+    <!-- 8. QUYẾT ĐỊNH THIẾT KẾ -->
+    <h2>8. Quyết Định Thiết Kế & Đánh Đổi (Trade-offs)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Quyết định</th>
+          <th style="width: 40%;">Lý do lựa chọn</th>
+          <th style="width: 35%;">Đánh đổi & Cách xử lý</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Video lưu ngoài, DB chỉ lưu link</strong></td>
+          <td>Gói miễn phí của PocketHost hạn chế dung lượng. Link <code>.mp4</code> phát được ngay với tốc độ CDN tối đa.</td>
+          <td>Phụ thuộc bên thứ ba, link hỏng là không phát được. Dự phòng link Google Cloud uy tín.</td>
+        </tr>
+        <tr>
+          <td><strong>Tìm kiếm lọc trên máy</strong></td>
+          <td>Dữ liệu 8-10 phim, tìm tức thì không tốn request mạng.</td>
+          <td>Không mở rộng được khi có hàng chục nghìn phim (lúc đó chuyển sang dùng filter API).</td>
+        </tr>
+        <tr>
+          <td><strong>Tải danh sách một lần</strong></td>
+          <td>Đơn giản, ít lỗi gián đoạn giao diện.</td>
+          <td>Dữ liệu không tự cập nhật nếu admin sửa khi app đang mở (bổ sung kéo xuống làm mới).</td>
+        </tr>
+        <tr>
+          <td><strong>Không có đăng nhập</strong></td>
+          <td>Tập trung vào luồng xem phim trong phạm vi đồ án.</td>
+          <td>Ai cũng xem được, chưa có cá nhân hóa (dành cho giai đoạn phát triển sau).</td>
+        </tr>
+        <tr>
+          <td><strong>PocketBase thay cho tự viết backend</strong></td>
+          <td>Một file chạy, có sẵn REST API, Admin UI, SQLite.</td>
+          <td>Ít linh hoạt hơn backend viết tay từ đầu nhưng tối ưu cho ứng dụng MVP FOSS.</td>
+        </tr>
+        <tr>
+          <td><strong>Chewie bọc video_player</strong></td>
+          <td>Có sẵn giao diện điều khiển và fullscreen xoay ngang.</td>
+          <td>Phải tự bổ sung thêm nút tua ±10s.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><strong>Về bảo mật:</strong> App không chứa API key hay mật khẩu nào, chỉ có URL server công khai. Quyền ghi bị khóa ở phía server, nên dù ai trích xuất hay dịch ngược file APK cũng không sửa được dữ liệu.</p>
+
+    <!-- 9. RỦI RO VÀ HƯỚNG PHÁT TRIỂN -->
+    <h2>9. Rủi Ro & Hướng Phát Triển</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%;">Rủi ro tiềm ẩn</th>
+          <th style="width: 65%;">Cách giảm thiểu đã thực hiện</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Link video bên ngoài ngừng hoạt động</strong></td>
+          <td>Upload sẵn 2-3 phim vào trường file của PocketBase làm dự phòng; lưu trữ file video dự phòng.</td>
+        </tr>
+        <tr>
+          <td><strong>Mất mạng khi đang demo</strong></td>
+          <td>Chuẩn bị video quay màn hình sẵn; app có sẵn cơ chế offline fallback (không bao giờ crash).</td>
+        </tr>
+        <tr>
+          <td><strong>Instance PocketHost ngủ do không dùng</strong></td>
+          <td>Mở thử và gửi request đánh thức instance trước giờ báo cáo 10 phút.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Hướng phát triển (Đưa vào cuối slide):</strong> Đăng nhập và danh sách yêu thích (dùng collection <code>users</code> có sẵn của PocketBase), lưu vị trí đang xem dở, tìm kiếm phía server, bộ lọc theo năm, tải offline.
+    </div>
+
+    <div style="margin-top: 40px; text-align: right; font-size: 13px; color: #94A3B8;">
+      <em>Báo cáo Đồ án OpenFlix • Xuất bản tự động hoàn chỉnh</em>
+    </div>
+  </div>
+
+</body>
+</html>

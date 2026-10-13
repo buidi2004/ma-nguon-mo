@@ -8,5 +8,9 @@ void main() {
 
     // Verify OpenFlix title exists
     expect(find.text('OPENFLIX'), findsOneWidget);
+
+    // Advance timer để hoàn tất chuyển hướng Splash
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pumpAndSettle();
   });
 }

@@ -1,9 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../models/movie_model.dart';
+import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
-import '../widgets/movie_card.dart';
-import 'player_screen.dart';
+import '../theme/app_theme.dart';
+import '../widgets/hero_banner.dart';
+import '../widgets/movie_row.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,45 +33,59 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
     });
 
-    final movies = await _pbService.getMovies();
-    final featured = await _pbService.getFeaturedMovies();
+    try {
+      final movies = await _pbService.getMovies();
+      final featured = await _pbService.getFeaturedMovies();
 
-    setState(() {
-      _allMovies = movies;
-      _filteredMovies = movies;
-      if (featured.isNotEmpty) {
-        _featuredMovie = featured.first;
-      } else if (movies.isNotEmpty) {
-        _featuredMovie = movies.first;
-      }
-      _isLoading = false;
-    });
+      if (!mounted) return;
+
+      setState(() {
+        _allMovies = movies;
+        _filteredMovies = movies;
+        if (featured.isNotEmpty) {
+          _featuredMovie = featured.first;
+        } else if (movies.isNotEmpty) {
+          _featuredMovie = movies.first;
+        } else {
+          _featuredMovie = null;
+        }
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _onSearchChanged(String query) {
-    if (query.trim().isEmpty) {
-      setState(() {
-        _filteredMovies = _selectedCategory == 'Tất cả'
-            ? _allMovies
-            : _allMovies.where((m) => m.category == _selectedCategory).toList();
-      });
-      return;
-    }
-
-    final lower = query.toLowerCase().trim();
+    final trimmed = query.trim().toLowerCase();
     setState(() {
-      _filteredMovies = _allMovies.where((m) {
-        final matchesQuery = m.title.toLowerCase().contains(lower) ||
-            m.description.toLowerCase().contains(lower);
-        final matchesCategory =
-            _selectedCategory == 'Tất cả' || m.category == _selectedCategory;
-        return matchesQuery && matchesCategory;
-      }).toList();
+      if (trimmed.isEmpty && _selectedCategory == 'Tất cả') {
+        _filteredMovies = _allMovies;
+      } else {
+        _filteredMovies = _allMovies.where((m) {
+          final matchesQuery =
+              trimmed.isEmpty ||
+              m.title.toLowerCase().contains(trimmed) ||
+              m.description.toLowerCase().contains(trimmed);
+          final matchesCategory =
+              _selectedCategory == 'Tất cả' || m.category == _selectedCategory;
+          return matchesQuery && matchesCategory;
+        }).toList();
+      }
     });
   }
 
@@ -86,6 +104,170 @@ class _HomeScreenState extends State<HomeScreen> {
     return set.toList();
   }
 
+  void _playMovie(MovieModel movie) {
+    context.push('/watch/${movie.id}');
+  }
+
+  void _openMovieDetail(MovieModel movie) {
+    context.push('/movie/${movie.id}');
+  }
+
+  /// Netflix-style Quick Details Bottom Sheet
+  void _showMovieDetailModal(MovieModel movie) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Thanh kéo modal trên cùng
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Thông tin nhanh với ảnh thu nhỏ
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        imageUrl: movie.posterUrl,
+                        width: 76,
+                        height: 114,
+                        fit: BoxFit.cover,
+                        placeholder: (_, _) =>
+                            const ColoredBox(color: AppColors.surfaceLight),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            movie.title,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Text(
+                                '${movie.releaseYear}',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: AppColors.textMuted,
+                                    width: 0.8,
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                child: const Text(
+                                  'HD',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                movie.category,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            movie.description,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Nút Phát toàn chiều ngang
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _playMovie(movie);
+                    },
+                    icon: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.black,
+                      size: 24,
+                    ),
+                    label: const Text(
+                      'Phát',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _openServerConfigDialog() {
     final urlController = TextEditingController(text: _pbService.baseUrl);
 
@@ -95,15 +277,21 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E1E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               title: const Row(
                 children: [
-                  Icon(Icons.cloud_outlined, color: Color(0xFFE50914)),
+                  Icon(Icons.cloud_outlined, color: AppColors.red),
                   SizedBox(width: 8),
                   Text(
                     'Cấu hình PocketBase',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -114,8 +302,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       _pbService.isUsingOfflineMock
-                          ? 'Trạng thái: 🟡 Đang dùng dữ liệu Demo offline'
-                          : 'Trạng thái: 🟢 Đã kết nối PocketBase API',
+                          ? '🟡 Đang dùng Mock Data offline'
+                          : '🟢 Đã kết nối PocketBase API',
                       style: TextStyle(
                         color: _pbService.isUsingOfflineMock
                             ? Colors.amberAccent
@@ -126,8 +314,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 14),
                     const Text(
-                      'Địa chỉ máy chủ PocketBase / PocketHost:',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      'Địa chỉ máy chủ PocketBase:',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
@@ -135,15 +326,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: const TextStyle(color: Colors.white, fontSize: 13),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFF2A2A2A),
+                        fillColor: AppColors.background,
                         hintText: 'https://xxx.pockethost.io',
-                        hintStyle: const TextStyle(color: Colors.white38),
+                        hintStyle: const TextStyle(color: AppColors.textMuted),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -155,26 +348,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         nav.pop();
                         scaffoldMsg.showSnackBar(
                           const SnackBar(
-                            content: Text('Đang nạp 8 bộ phim mẫu vào PocketBase...'),
+                            content: Text(
+                              'Đang nạp dữ liệu phim mẫu vào PocketBase...',
+                            ),
                             backgroundColor: Colors.blueAccent,
                           ),
                         );
-                        final count = await _pbService.seedRemotePocketBase(targetUrl);
+                        final count = await _pbService.seedRemotePocketBase(
+                          targetUrl,
+                        );
                         scaffoldMsg.showSnackBar(
                           SnackBar(
-                            content: Text('Đã nạp thành công $count phim vào PocketBase!'),
-                            backgroundColor: const Color(0xFFE50914),
+                            content: Text(
+                              'Đã nạp thành công $count phim vào PocketBase!',
+                            ),
+                            backgroundColor: AppColors.red,
                           ),
                         );
                         _pbService.updateBaseUrl(targetUrl);
                         _loadData();
                       },
                       icon: const Icon(Icons.upload_file, size: 18),
-                      label: const Text('1-Click: Nạp 8 phim mẫu lên Server'),
+                      label: const Text('Nạp dữ liệu phim mẫu lên Server'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE50914),
+                        backgroundColor: AppColors.red,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 38),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
                     ),
                   ],
@@ -183,7 +385,10 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng', style: TextStyle(color: Colors.white54)),
+                  child: const Text(
+                    'Đóng',
+                    style: TextStyle(color: AppColors.textMuted),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -194,6 +399,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                   child: const Text('Lưu & Tải lại'),
                 ),
@@ -208,46 +416,70 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF141414),
+      backgroundColor: AppColors.background,
+      // AppBar trong suốt đè lên HeroBanner
+      extendBodyBehindAppBar: !_isSearching,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF141414).withValues(alpha: 0.95),
+        backgroundColor: _isSearching
+            ? AppColors.background
+            : Colors.black.withValues(alpha: 0.3),
         elevation: 0,
-        titleSpacing: 16,
+        titleSpacing: 12,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
                 onChanged: _onSearchChanged,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'Tìm kiếm tên phim, nội dung...',
-                  hintStyle: TextStyle(color: Colors.white38),
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: 'Tìm phim, diễn viên, thể loại...',
+                  hintStyle: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 14,
+                  ),
                   border: InputBorder.none,
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.clear,
+                            color: Colors.white70,
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                        )
+                      : null,
                 ),
               )
             : Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE50914),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'OPENFLIX',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        letterSpacing: 1.5,
-                      ),
+                  // OpenFlix Red Wordmark chuẩn Netflix
+                  const Text(
+                    'OPENFLIX',
+                    style: TextStyle(
+                      color: AppColors.red,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 21,
+                      letterSpacing: 2.0,
                     ),
                   ),
                 ],
               ),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search, color: Colors.white),
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: Colors.white,
+              size: 24,
+            ),
+            tooltip: _isSearching ? 'Đóng tìm kiếm' : 'Tìm kiếm',
             onPressed: () {
               setState(() {
                 if (_isSearching) {
@@ -262,110 +494,195 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: Icon(
-              Icons.dns_rounded,
-              color: _pbService.isUsingOfflineMock ? Colors.amberAccent : Colors.greenAccent,
+              Icons.cloud_done_rounded,
+              color: _pbService.isUsingOfflineMock
+                  ? Colors.amberAccent
+                  : Colors.greenAccent,
+              size: 22,
             ),
-            tooltip: 'Cài đặt kết nối PocketBase',
+            tooltip: 'Kết nối máy chủ',
             onPressed: _openServerConfigDialog,
           ),
+          const SizedBox(width: 4),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        color: const Color(0xFFE50914),
-        backgroundColor: const Color(0xFF222222),
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE50914)),
-                ),
-              )
-            : SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Thanh lọc Thể loại (Category Filter Chips)
-                    _buildCategoryChips(),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                strokeWidth: 3,
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              color: AppColors.red,
+              backgroundColor: AppColors.surface,
+              child: _buildBody(),
+            ),
+    );
+  }
 
-                    // Nếu đang tìm kiếm hoặc chọn danh mục cụ thể -> hiển thị Grid kết quả
-                    if (_isSearching || _selectedCategory != 'Tất cả')
-                      _buildSearchResults()
-                    else ...[
-                      // 1. Banner nổi bật trên cùng (Hero Banner)
-                      if (_featuredMovie != null) _buildFeaturedHeroBanner(_featuredMovie!),
-
-                      const SizedBox(height: 12),
-
-                      // 2. Các hàng danh mục phim cuộn ngang chuẩn Netflix
-                      _buildMovieSection(
-                        title: 'Phim Thịnh Hành',
-                        movies: _allMovies,
-                      ),
-
-                      _buildMovieSection(
-                        title: 'Hoạt Hình Đặc Sắc',
-                        movies: _allMovies
-                            .where((m) => m.category.toLowerCase().contains('hoạt'))
-                            .toList(),
-                      ),
-
-                      _buildMovieSection(
-                        title: 'Khoa Học Viễn Tưởng',
-                        movies: _allMovies
-                            .where((m) => m.category.toLowerCase().contains('viễn'))
-                            .toList(),
-                      ),
-
-                      _buildMovieSection(
-                        title: 'Hành Động Đỉnh Cao',
-                        movies: _allMovies
-                            .where((m) => m.category.toLowerCase().contains('hành'))
-                            .toList(),
-                      ),
-
-                      const SizedBox(height: 32),
-                    ],
-                  ],
+  Widget _buildBody() {
+    if (_allMovies.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.movie_filter_outlined,
+              size: 64,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Chưa có dữ liệu phim nào',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _openServerConfigDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
+              child: const Text('Cấu hình / Nạp dữ liệu mẫu'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Nếu đang tìm kiếm hoặc chọn lọc thể loại
+    if (_isSearching || _selectedCategory != 'Tất cả') {
+      return _buildSearchOrFilterGrid();
+    }
+
+    // Giao diện chính Netflix: HeroBanner + các hàng phim cuộn ngang
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Hero Banner nổi bật trên cùng
+          if (_featuredMovie != null)
+            HeroBanner(
+              movie: _featuredMovie!,
+              onPlay: () => _playMovie(_featuredMovie!),
+              onInfo: () => _showMovieDetailModal(_featuredMovie!),
+            ),
+
+          // 2. Chip lọc thể loại nhỏ gọn đè nhẹ dưới Hero
+          _buildCategoryFilterRow(),
+
+          const SizedBox(height: 4),
+
+          // 3. Hàng "Tiếp tục xem của bạn" chuẩn Netflix (S26)
+          ListenableBuilder(
+            listenable: LibraryService.instance,
+            builder: (context, _) {
+              final progressIds = LibraryService.instance.progressMap.keys
+                  .toSet();
+              final continueMovies = _allMovies
+                  .where((m) => progressIds.contains(m.id))
+                  .toList();
+              if (continueMovies.isEmpty) return const SizedBox.shrink();
+              return MovieRow(
+                title: 'Tiếp tục xem của bạn',
+                movies: continueMovies,
+                onTap: _openMovieDetail,
+                onSeeAll: () => context.push('/me/continue'),
+              );
+            },
+          ),
+
+          // 4. Hàng Top 10 Phim Thịnh Hành (S17)
+          MovieRow(
+            title: 'Top 10 Phim Thịnh Hành',
+            movies: _allMovies.take(10).toList(),
+            onTap: _openMovieDetail,
+            onSeeAll: () => context.push('/top10'),
+          ),
+
+          // 5. Các hàng phim cuộn ngang chuẩn Netflix 3.4 peek ratio
+          MovieRow(
+            title: 'Phim thịnh hành',
+            movies: _allMovies,
+            onTap: _openMovieDetail,
+            onSeeAll: () => context.push('/see-all/trending'),
+          ),
+
+          MovieRow(
+            title: 'Hoạt hình đặc sắc',
+            movies: _allMovies
+                .where((m) => m.category.toLowerCase().contains('hoạt'))
+                .toList(),
+            onTap: _openMovieDetail,
+            onSeeAll: () => context.push('/genre/Hoạt hình'),
+          ),
+
+          MovieRow(
+            title: 'Khoa học viễn tưởng',
+            movies: _allMovies
+                .where((m) => m.category.toLowerCase().contains('viễn'))
+                .toList(),
+            onTap: _openMovieDetail,
+            onSeeAll: () => context.push('/genre/Viễn tưởng'),
+          ),
+
+          MovieRow(
+            title: 'Hành động & Phiêu lưu',
+            movies: _allMovies
+                .where(
+                  (m) =>
+                      m.category.toLowerCase().contains('hành') ||
+                      m.category.toLowerCase().contains('phiêu'),
+                )
+                .toList(),
+            onTap: _openMovieDetail,
+            onSeeAll: () => context.push('/genre/Hành động'),
+          ),
+
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
 
-  /// Thanh chọn Thể loại phim (Chips)
-  Widget _buildCategoryChips() {
+  /// Chip lọc danh mục phong cách tối giản
+  Widget _buildCategoryFilterRow() {
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      height: 40,
+      margin: const EdgeInsets.only(top: 8, bottom: 4),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: _categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final cat = _categories[index];
           final isSelected = cat == _selectedCategory;
           return GestureDetector(
             onTap: () => _onCategorySelected(cat),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFE50914) : const Color(0xFF262626),
+                color: isSelected ? Colors.white : AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? const Color(0xFFE50914) : Colors.white12,
-                ),
               ),
-              child: Center(
-                child: Text(
-                  cat,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white70,
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
+              child: Text(
+                cat,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ),
@@ -375,290 +692,92 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Banner Hero phim nổi bật trên cùng
-  Widget _buildFeaturedHeroBanner(MovieModel movie) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => PlayerScreen(movie: movie)),
-        );
-      },
-      child: Container(
-        height: 380,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Poster nền
-              CachedNetworkImage(
-                imageUrl: movie.posterUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: const Color(0xFF222222)),
-                errorWidget: (context, url, error) => Container(color: const Color(0xFF1E1E1E)),
-              ),
-
-              // Gradient phủ mờ từ đen sang trong suốt
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    stops: const [0.0, 0.45, 1.0],
-                    colors: [
-                      Colors.black.withValues(alpha: 0.95),
-                      Colors.black.withValues(alpha: 0.4),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-
-              // Huy hiệu Phim nổi bật góc trên trái
-              Positioned(
-                top: 14,
-                left: 14,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE50914).withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    '★ PHIM NỔI BẬT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Nội dung và Nút Play ở chân Banner
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      movie.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        shadows: [
-                          Shadow(blurRadius: 8, color: Colors.black, offset: Offset(0, 2)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Text(
-                          movie.category,
-                          style: const TextStyle(
-                            color: Color(0xFFE50914),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '• ${movie.releaseYear}',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      movie.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 12,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PlayerScreen(movie: movie),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 26),
-                            label: const Text(
-                              'XEM NGAY',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PlayerScreen(movie: movie),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.info_outline, color: Colors.white, size: 20),
-                            label: const Text(
-                              'CHI TIẾT',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.white60),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Phần danh mục phim cuộn ngang
-  Widget _buildMovieSection({required String title, required List<MovieModel> movies}) {
-    if (movies.isEmpty) return const SizedBox.shrink();
-
+  /// Lưới 3 cột poster khi tìm kiếm hoặc lọc danh mục (theo mục 3 trong docs/fe.md)
+  Widget _buildSearchOrFilterGrid() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildCategoryFilterRow(),
         Padding(
-          padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
           child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            itemCount: movies.length,
-            itemBuilder: (context, index) {
-              return MovieCard(movie: movies[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Hiển thị lưới kết quả tìm kiếm hoặc lọc
-  Widget _buildSearchResults() {
-    if (_filteredMovies.isEmpty) {
-      return Container(
-        height: 300,
-        alignment: Alignment.center,
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search_off, size: 48, color: Colors.white38),
-            SizedBox(height: 12),
-            Text(
-              'Không tìm thấy bộ phim nào phù hợp!',
-              style: TextStyle(color: Colors.white60, fontSize: 14),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
             'Kết quả (${_filteredMovies.length} phim)',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 15,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _filteredMovies.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.68,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              final movie = _filteredMovies[index];
-              return MovieCard(
-                movie: movie,
-                width: double.infinity,
-                height: double.infinity,
-                showCategory: true,
-              );
-            },
-          ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: _filteredMovies.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 56,
+                        color: AppColors.textMuted,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Không tìm thấy bộ phim phù hợp',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : GridView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  itemCount: _filteredMovies.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 2 / 3,
+                    crossAxisSpacing: 6,
+                    mainAxisSpacing: 6,
+                  ),
+                  itemBuilder: (context, index) {
+                    final movie = _filteredMovies[index];
+                    return GestureDetector(
+                      onTap: () => _openMovieDetail(movie),
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: CachedNetworkImage(
+                            imageUrl: movie.posterUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, _) =>
+                                const ColoredBox(color: AppColors.surface),
+                            errorWidget: (_, _, _) => Container(
+                              color: AppColors.surface,
+                              padding: const EdgeInsets.all(4),
+                              child: Center(
+                                child: Text(
+                                  movie.title,
+                                  maxLines: 2,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

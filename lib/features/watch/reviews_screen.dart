@@ -1,0 +1,257 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../models/movie_model.dart';
+import '../../services/pocketbase_service.dart';
+import '../../theme/app_theme.dart';
+
+class ReviewItem {
+  final String author;
+  final int rating;
+  final String comment;
+  final String timeAgo;
+
+  ReviewItem({
+    required this.author,
+    required this.rating,
+    required this.comment,
+    required this.timeAgo,
+  });
+}
+
+class ReviewsScreen extends StatefulWidget {
+  final String movieId;
+
+  const ReviewsScreen({super.key, required this.movieId});
+
+  @override
+  State<ReviewsScreen> createState() => _ReviewsScreenState();
+}
+
+class _ReviewsScreenState extends State<ReviewsScreen> {
+  final _pbService = PocketBaseService.instance;
+  MovieModel? _movie;
+  bool _isLoading = true;
+
+  final List<ReviewItem> _reviews = [
+    ReviewItem(
+      author: 'Trần Minh Quân',
+      rating: 5,
+      comment: 'Kỹ xảo 3D của Blender thực sự đỉnh cao! Cốt truyện ngắn gọn nhưng rất xúc động và nhân văn.',
+      timeAgo: '2 giờ trước',
+    ),
+    ReviewItem(
+      author: 'Lê Hoàng Nam',
+      rating: 5,
+      comment: 'Âm thanh vòm sống động, nhịp phim cuốn hút. Rất thích các phân cảnh hành động mạo hiểm.',
+      timeAgo: '1 ngày trước',
+    ),
+    ReviewItem(
+      author: 'Nguyễn Thị Mai',
+      rating: 4,
+      comment: 'Phim rất hay và phù hợp cho cả gia đình cùng xem vào dịp cuối tuần. Đánh giá 4 sao!',
+      timeAgo: '3 ngày trước',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    final movie = await _pbService.getMovieById(widget.movieId);
+    if (!mounted) return;
+    setState(() {
+      _movie = movie;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = _movie?.title ?? 'Đánh giá phim';
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final res = await context.push<ReviewItem>(
+            '/movie/${widget.movieId}/reviews/new',
+          );
+          if (res != null) {
+            setState(() {
+              _reviews.insert(0, res);
+            });
+          }
+        },
+        backgroundColor: AppColors.red,
+        icon: const Icon(Icons.rate_review, color: Colors.white),
+        label: const Text(
+          'Viết đánh giá',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Khung tổng quan điểm số
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          const Text(
+                            '4.8',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          Row(
+                            children: List.generate(
+                              5,
+                              (i) => const Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_reviews.length} đánh giá',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 24),
+                      const Expanded(
+                        child: Text(
+                          'Đa số khán giả đánh giá tác phẩm này rất xuất sắc về mặt hình ảnh và kỹ xảo điện ảnh.',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                const Text(
+                  'BÌNH LUẬN NỔI BẬT TỪ CỘNG ĐỒNG',
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                ..._reviews.map((rev) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: AppColors.red.withValues(
+                                alpha: 0.2,
+                              ),
+                              child: Text(
+                                rev.author[0],
+                                style: const TextStyle(
+                                  color: AppColors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                rev.author,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              rev.timeAgo,
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: List.generate(
+                            5,
+                            (i) => Icon(
+                              i < rev.rating ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          rev.comment,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 60),
+              ],
+            ),
+    );
+  }
+}

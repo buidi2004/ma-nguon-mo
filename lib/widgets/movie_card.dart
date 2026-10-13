@@ -1,41 +1,43 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../models/movie_model.dart';
-import '../screens/player_screen.dart';
+import '../theme/app_theme.dart';
 
 class MovieCard extends StatelessWidget {
   final MovieModel movie;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final bool showCategory;
+  final VoidCallback? onTap;
+  final double? progressRatio;
+  final int? rank;
 
   const MovieCard({
     super.key,
     required this.movie,
-    this.width = 135,
-    this.height = 200,
+    this.width,
+    this.height,
     this.showCategory = false,
+    this.onTap,
+    this.progressRatio,
+    this.rank,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PlayerScreen(movie: movie),
-          ),
-        );
-      },
+      onTap: onTap ?? () => context.push('/movie/${movie.id}'),
       child: Container(
         width: width,
-        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
+          color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withAlpha(128),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -46,7 +48,7 @@ class MovieCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Ảnh bìa Poster phim
+              // Poster Image
               CachedNetworkImage(
                 imageUrl: movie.posterUrl,
                 fit: BoxFit.cover,
@@ -54,11 +56,13 @@ class MovieCard extends StatelessWidget {
                   color: const Color(0xFF222222),
                   child: const Center(
                     child: SizedBox(
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE50914)),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.red,
+                        ),
                       ),
                     ),
                   ),
@@ -69,7 +73,11 @@ class MovieCard extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.movie_outlined, color: Colors.white54, size: 36),
+                      const Icon(
+                        Icons.movie_outlined,
+                        color: Colors.white54,
+                        size: 32,
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         movie.title,
@@ -87,30 +95,78 @@ class MovieCard extends StatelessWidget {
                 ),
               ),
 
-              // Gradient bóng mờ phía dưới chân poster
+              // Bottom Shadow Gradient
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
+                  height: 70,
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.9),
-                        Colors.transparent,
-                      ],
+                      colors: [Colors.black, Colors.transparent],
                     ),
                   ),
                 ),
               ),
 
-              // Tên phim ở chân poster
+              // Movie Rank (for Top 10)
+              if (rank != null) ...[
+                Positioned(
+                  bottom: -10,
+                  left: 2,
+                  child: Text(
+                    '$rank',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white.withAlpha(220),
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 10,
+                          offset: Offset(2, 2),
+                        ),
+                        Shadow(color: AppColors.red, blurRadius: 12),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              // New/Featured Badge
+              if (movie.isNew) ...[
+                Positioned(
+                  top: 6,
+                  left: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.red,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'MỚI',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              // Title and Category Info
               Positioned(
-                bottom: 8,
-                left: 8,
+                bottom: progressRatio != null ? 8 : 6,
+                left: rank != null ? 36 : 8,
                 right: 8,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,24 +189,28 @@ class MovieCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Row(
                       children: [
                         Text(
                           '${movie.releaseYear}',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: Colors.white.withAlpha(180),
                             fontSize: 10,
                           ),
                         ),
                         if (showCategory) ...[
                           const SizedBox(width: 4),
-                          Text(
-                            '• ${movie.category}',
-                            style: const TextStyle(
-                              color: Color(0xFFE50914),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Text(
+                              '• ${movie.category}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.red,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -160,23 +220,22 @@ class MovieCard extends StatelessWidget {
                 ),
               ),
 
-              // Nút Play nhỏ trên góc
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 16,
+              // Progress Bar (Continue Watching)
+              if (progressRatio != null) ...[
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: progressRatio,
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.red,
+                    ),
+                    minHeight: 3.5,
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

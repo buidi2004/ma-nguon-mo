@@ -2,29 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+
 import '../models/movie_model.dart';
 import '../services/pocketbase_service.dart';
 import '../widgets/movie_card.dart';
 
 class PlayerScreen extends StatefulWidget {
-  final MovieModel movie;
+  final MovieModel? movie;
+  final String? movieId;
 
-  const PlayerScreen({super.key, required this.movie});
+  const PlayerScreen({super.key, this.movie, this.movieId})
+    : assert(
+        movie != null || movieId != null,
+        'Either movie or movieId must be provided',
+      );
 
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late VideoPlayerController _videoPlayerController;
+  VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _isLoading = true;
   String? _errorMessage;
+  MovieModel? _activeMovie;
   List<MovieModel> _similarMovies = [];
 
   @override
   void initState() {
     super.initState();
+    _activeMovie = widget.movie;
     _initializePlayer();
     _loadSimilarMovies();
   }
@@ -36,18 +44,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
 
     try {
+      if (_activeMovie == null && widget.movieId != null) {
+        _activeMovie = await PocketBaseService.instance.getMovieById(
+          widget.movieId!,
+        );
+      }
+
+      if (_activeMovie == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Không tìm thấy thông tin phim';
+        });
+        return;
+      }
+
       _videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(widget.movie.videoUrl),
+        Uri.parse(_activeMovie!.videoUrl),
       );
 
-      await _videoPlayerController.initialize();
+      await _videoPlayerController!.initialize();
 
       _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
+        videoPlayerController: _videoPlayerController!,
         autoPlay: true,
         looping: false,
-        aspectRatio: _videoPlayerController.value.aspectRatio > 0
-            ? _videoPlayerController.value.aspectRatio
+        aspectRatio: _videoPlayerController!.value.aspectRatio > 0
+            ? _videoPlayerController!.value.aspectRatio
             : 16 / 9,
         allowFullScreen: true,
         allowMuting: true,
@@ -56,9 +78,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight,
         ],
-        deviceOrientationsAfterFullScreen: [
-          DeviceOrientation.portraitUp,
-        ],
+        deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         materialProgressColors: ChewieProgressColors(
           playedColor: const Color(0xFFE50914),
           handleColor: const Color(0xFFE50914),
@@ -70,7 +90,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFE50914), size: 48),
+                const Icon(
+                  Icons.error_outline,
+                  color: Color(0xFFE50914),
+                  size: 48,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể phát video: $errorMessage',
@@ -105,19 +129,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _loadSimilarMovies() async {
     final all = await PocketBaseService.instance.getMovies();
+    if (!mounted) return;
     setState(() {
+      final currentId = _activeMovie?.id ?? widget.movieId ?? '';
+      final currentCategory = _activeMovie?.category ?? '';
       _similarMovies = all
-          .where((m) => m.id != widget.movie.id && m.category == widget.movie.category)
+          .where((m) => m.id != currentId && m.category == currentCategory)
           .toList();
       if (_similarMovies.isEmpty) {
-        _similarMovies = all.where((m) => m.id != widget.movie.id).take(4).toList();
+        _similarMovies = all.where((m) => m.id != currentId).take(4).toList();
       }
     });
   }
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    _videoPlayerController?.dispose();
     _chewieController?.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
@@ -125,13 +152,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final movieTitle = _activeMovie?.title ?? 'Đang tải...';
     return Scaffold(
       backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          widget.movie.title,
+          movieTitle,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
@@ -150,46 +178,57 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE50914)),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFE50914),
+                              ),
                             ),
                             SizedBox(height: 12),
                             Text(
                               'Đang tải video luồng cao...',
-                              style: TextStyle(color: Colors.white70, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
                       )
                     : _errorMessage != null
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.warning_amber_rounded,
-                                      color: Color(0xFFE50914), size: 40),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Lỗi kết nối video: $_errorMessage',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ElevatedButton(
-                                    onPressed: _initializePlayer,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFE50914),
-                                    ),
-                                    child: const Text('Thử lại'),
-                                  ),
-                                ],
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Color(0xFFE50914),
+                                size: 40,
                               ),
-                            ),
-                          )
-                        : _chewieController != null
-                            ? Chewie(controller: _chewieController!)
-                            : const SizedBox.shrink(),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Lỗi kết nối video: $_errorMessage',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: _initializePlayer,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE50914),
+                                ),
+                                child: const Text('Thử lại'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _chewieController != null
+                    ? Chewie(controller: _chewieController!)
+                    : const SizedBox.shrink(),
               ),
             ),
 
@@ -201,7 +240,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 children: [
                   // Tiêu đề phim
                   Text(
-                    widget.movie.title,
+                    _activeMovie?.title ?? '',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -215,13 +254,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE50914),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          widget.movie.category,
+                          _activeMovie?.category ?? 'Phim',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -231,7 +273,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${widget.movie.releaseYear}',
+                        '${_activeMovie?.releaseYear ?? 2024}',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
@@ -240,7 +282,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.white38),
                           borderRadius: BorderRadius.circular(3),
@@ -277,7 +322,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           color: Colors.black,
                         ),
                         label: Text(
-                          _videoPlayerController.value.isPlaying ? 'Tạm dừng' : 'Phát lại',
+                          _videoPlayerController.value.isPlaying
+                              ? 'Tạm dừng'
+                              : 'Phát lại',
                           style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
@@ -285,7 +332,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
@@ -296,17 +346,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Đã thêm phim vào danh sách Yêu thích của bạn!'),
+                              content: Text(
+                                'Đã thêm phim vào danh sách Yêu thích của bạn!',
+                              ),
                               backgroundColor: Color(0xFFE50914),
                               duration: Duration(seconds: 2),
                             ),
                           );
                         },
                         icon: const Icon(Icons.add, color: Colors.white),
-                        label: const Text('Danh sách', style: TextStyle(color: Colors.white)),
+                        label: const Text(
+                          'Danh sách',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.white30),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
@@ -315,14 +373,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       const Spacer(),
                       IconButton(
                         onPressed: () {
+                          final vUrl = _activeMovie?.videoUrl ?? '';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Đã sao chép link video: ${widget.movie.videoUrl}'),
+                              content: Text('Đã sao chép link video: $vUrl'),
                               backgroundColor: Colors.grey.shade900,
                             ),
                           );
                         },
-                        icon: const Icon(Icons.share_outlined, color: Colors.white70),
+                        icon: const Icon(
+                          Icons.share_outlined,
+                          color: Colors.white70,
+                        ),
                         tooltip: 'Chia sẻ',
                       ),
                     ],
@@ -340,7 +402,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    widget.movie.description,
+                    _activeMovie?.description ?? '',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 13.5,
