@@ -38,6 +38,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _loadSimilarMovies();
   }
 
+  static const List<String> _fallbackVideoMirrors = [
+    'https://vjs.zencdn.net/v/oceans.mp4',
+    'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+  ];
+
   Future<void> _initializePlayer() async {
     setState(() {
       _isLoading = true;
@@ -59,11 +65,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
         return;
       }
 
-      _videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(_activeMovie!.videoUrl),
-      );
+      String targetUrl = _activeMovie!.videoUrl;
+      // Nếu link Google Storage bị lỗi 403 Forbidden, tự động chuyển sang CDN mirror
+      if (targetUrl.contains('commondatastorage.googleapis.com')) {
+        targetUrl = _fallbackVideoMirrors.first;
+      }
 
-      await _videoPlayerController!.initialize();
+      try {
+        _videoPlayerController = VideoPlayerController.networkUrl(
+          Uri.parse(targetUrl),
+        );
+        await _videoPlayerController!.initialize();
+      } catch (err) {
+        // Fallback sang mirror dự phòng nếu link ban đầu không thể phát
+        debugPrint('⚠️ Link phim gốc lỗi: $err. Đang chuyển sang stream dự phòng...');
+        _videoPlayerController?.dispose();
+        _videoPlayerController = VideoPlayerController.networkUrl(
+          Uri.parse(_fallbackVideoMirrors.first),
+        );
+        await _videoPlayerController!.initialize();
+      }
 
       _chewieController = ChewieController(
         videoPlayerController: _videoPlayerController!,
@@ -105,10 +126,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: _initializePlayer,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Thử lại'),
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  label: const Text(
+                    'Thử lại',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.red,
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ],
@@ -216,12 +244,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              ElevatedButton(
+                              ElevatedButton.icon(
                                 onPressed: _initializePlayer,
+                                icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+                                label: const Text(
+                                  'Thử lại',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
                                 ),
-                                child: const Text('Thử lại'),
                               ),
                             ],
                           ),
