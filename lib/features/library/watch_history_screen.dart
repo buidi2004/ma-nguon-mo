@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
@@ -64,43 +65,41 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
             ),
             actions: [
               if (activeMovies.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.delete_sweep_outlined),
-                  tooltip: 'Xóa toàn bộ lịch sử',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        backgroundColor: AppColors.surface,
-                        title: const Text(
-                          'Xóa lịch sử xem',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GlassButton.capsule(
+                    text: 'Xóa tất cả',
+                    icon: Icons.delete_sweep_outlined,
+                    style: GlassButtonStyle.neutralDark,
+                    height: 34,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    onPressed: () {
+                      showGlassDialog(
+                        context: context,
+                        title: 'Xóa lịch sử xem?',
                         content: const Text(
                           'Bạn có chắc chắn muốn xóa toàn bộ lịch sử xem phim?',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
                         ),
                         actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text(
-                              'Hủy',
-                              style: TextStyle(color: Colors.white70),
-                            ),
+                          GlassButton.neutral(
+                            text: 'Hủy',
+                            onPressed: () => Navigator.pop(context),
                           ),
-                          ElevatedButton(
+                          GlassButton.brand(
+                            text: 'Xóa tất cả',
                             onPressed: () {
-                              Navigator.pop(ctx);
                               _libService.clearAll();
+                              Navigator.pop(context);
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.red,
-                            ),
-                            child: const Text('Xóa tất cả'),
                           ),
                         ],
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
             ],
           ),
@@ -125,6 +124,7 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
                         const SizedBox(height: 16),
                         const Text(
                           'Chưa có lịch sử xem phim',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 17,
@@ -138,7 +138,15 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
+                            height: 1.4,
                           ),
+                        ),
+                        const SizedBox(height: 24),
+                        GlassButton.primary(
+                          text: 'Khám phá phim ngay',
+                          icon: Icons.explore_outlined,
+                          height: 44,
+                          onPressed: () => context.go('/'),
                         ),
                       ],
                     ),
@@ -173,6 +181,9 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
                             width: 50,
                             height: 75,
                             fit: BoxFit.cover,
+                            memCacheWidth: 150,
+                            memCacheHeight: 225,
+                            maxHeightDiskCache: 300,
                             placeholder: (_, _) =>
                                 const ColoredBox(color: AppColors.surfaceLight),
                           ),
@@ -198,12 +209,10 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
                             ),
                           ),
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                        trailing: GlassIconButton.circle(
+                          size: 36,
+                          iconSize: 20,
+                          icon: Icons.play_arrow_rounded,
                           onPressed: () => context.push('/movie/${movie.id}'),
                         ),
                         onTap: () => context.push('/movie/${movie.id}'),

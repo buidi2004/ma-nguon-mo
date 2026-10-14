@@ -31,8 +31,8 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.height = 48,
-  })  : backgroundColor = Colors.white,
-        textColor = Colors.black;
+  }) : backgroundColor = Colors.white,
+       textColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {

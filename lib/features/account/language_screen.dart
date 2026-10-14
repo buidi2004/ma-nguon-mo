@@ -105,6 +105,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
                               currentCode == 'vi'
                                   ? 'Xem trước giao diện'
                                   : 'Interface Preview',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -178,9 +180,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
         children: [
           Icon(icon, color: Colors.white70, size: 14),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
           ),
         ],
       ),

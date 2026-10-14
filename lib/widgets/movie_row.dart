@@ -9,6 +9,7 @@ class MovieRow extends StatelessWidget {
   final List<MovieModel> movies;
   final void Function(MovieModel movie) onTap;
   final VoidCallback? onSeeAll;
+  final bool isTop10;
 
   const MovieRow({
     super.key,
@@ -16,6 +17,7 @@ class MovieRow extends StatelessWidget {
     required this.movies,
     required this.onTap,
     this.onSeeAll,
+    this.isTop10 = false,
   });
 
   @override
@@ -34,6 +36,7 @@ class MovieRow extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 20, 12, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Text(
@@ -67,66 +70,142 @@ class MovieRow extends StatelessWidget {
         ),
         SizedBox(
           height: posterHeight,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: movies.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 6),
-            itemBuilder: (context, index) {
-              final movie = movies[index];
-              return GestureDetector(
-                onTap: () => onTap(movie),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: CachedNetworkImage(
-                      imageUrl: movie.posterUrl,
+          child: RepaintBoundary(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: movies.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              itemBuilder: (context, index) {
+                final movie = movies[index];
+                final imageWidget = ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: CachedNetworkImage(
+                    imageUrl: movie.posterUrl,
+                    width: posterWidth,
+                    height: posterHeight,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 350,
+                    memCacheHeight: 525,
+                    maxHeightDiskCache: 600,
+                    placeholder: (_, _) => Container(
                       width: posterWidth,
                       height: posterHeight,
-                      fit: BoxFit.cover,
-                      placeholder: (_, _) => Container(
-                        width: posterWidth,
-                        height: posterHeight,
-                        color: AppColors.surface,
-                        child: const Center(
-                          child: Icon(
-                            Icons.movie_outlined,
-                            color: Colors.white24,
-                            size: 28,
-                          ),
+                      color: AppColors.surface,
+                      child: const Center(
+                        child: Icon(
+                          Icons.movie_outlined,
+                          color: Colors.white24,
+                          size: 28,
                         ),
                       ),
-                      errorWidget: (_, _, _) => Container(
-                        width: posterWidth,
-                        height: posterHeight,
-                        color: AppColors.surface,
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.broken_image_outlined,
-                              color: Colors.white38,
-                              size: 24,
+                    ),
+                    errorWidget: (_, _, _) => Container(
+                      width: posterWidth,
+                      height: posterHeight,
+                      color: AppColors.surface,
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.broken_image_outlined,
+                            color: Colors.white38,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            movie.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              movie.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 );
-            },
+
+                Widget content = imageWidget;
+                if (isTop10) {
+                  final rank = index + 1;
+                  content = SizedBox(
+                    width: posterWidth,
+                    height: posterHeight,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        imageWidget,
+                        // Lớp gradient chân card giúp số xếp hạng nổi bật rõ nét
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 54,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(
+                                bottom: Radius.circular(4),
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withAlpha(210),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Số thứ tự Top 10 phóng to chuẩn phong cách Netflix (Double-text Stroke)
+                        Positioned(
+                          left: 4,
+                          bottom: -6,
+                          child: Stack(
+                            children: [
+                              // Viền đen stroke đậm
+                              Text(
+                                '$rank',
+                                style: TextStyle(
+                                  fontSize: 52,
+                                  fontWeight: FontWeight.w900,
+                                  foreground: Paint()
+                                    ..style = PaintingStyle.stroke
+                                    ..strokeWidth = 4.5
+                                    ..color = Colors.black,
+                                ),
+                              ),
+                              // Thân số màu trắng / đỏ Top 3
+                              Text(
+                                '$rank',
+                                style: TextStyle(
+                                  fontSize: 52,
+                                  fontWeight: FontWeight.w900,
+                                  color: rank <= 3
+                                      ? AppColors.red
+                                      : Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return GestureDetector(
+                  onTap: () => onTap(movie),
+                  child: content,
+                );
+              },
+            ),
           ),
         ),
       ],

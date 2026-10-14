@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -56,6 +56,7 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Text(
                     'Nền tảng xem phim mã nguồn mở',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -74,38 +75,23 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   const Spacer(),
 
-                  // Nút Đăng nhập
-                  PrimaryButton(
+                  // Nút Đăng nhập - Kính ánh đỏ Netflix
+                  GlassButton.brand(
                     text: 'Đăng nhập',
+                    borderRadius: 14,
+                    width: double.infinity,
+                    height: 48,
                     onPressed: () => context.push('/login'),
                   ),
 
                   const SizedBox(height: 12),
 
-                  // Nút Đăng ký tài khoản
-                  SizedBox(
+                  // Nút Đăng ký tài khoản - Kính viên thuốc bo cong hoàn toàn
+                  GlassButton.capsule(
+                    text: 'Tạo tài khoản mới',
                     width: double.infinity,
                     height: 48,
-                    child: OutlinedButton(
-                      onPressed: () => context.push('/register'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(
-                          color: Colors.white30,
-                          width: 1.2,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: const Text(
-                        'Tạo tài khoản mới',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    onPressed: () => context.push('/register'),
                   ),
 
                   const SizedBox(height: 16),

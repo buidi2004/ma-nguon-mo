@@ -151,10 +151,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               child: SwitchListTile(
                 title: const Text(
                   'Chế độ trẻ em',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.white, fontSize: 14),
                 ),
                 subtitle: const Text(
                   'Chỉ hiển thị các nội dung hoạt hình và phim phù hợp mọi lứa tuổi',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

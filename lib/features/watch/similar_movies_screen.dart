@@ -59,6 +59,8 @@ class _SimilarMoviesScreenState extends State<SimilarMoviesScreen> {
           _currentMovie != null
               ? 'Tương tự: ${_currentMovie!.title}'
               : 'Phim tương tự',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

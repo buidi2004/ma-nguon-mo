@@ -20,6 +20,7 @@ class PocketBaseService {
   String _currentBaseUrl = 'http://180.93.120.246:8090';
   late PocketBase _pb;
   bool _isUsingOfflineMock = false;
+  List<MovieModel>? _cachedMovies;
 
   String get baseUrl => _currentBaseUrl;
   bool get isUsingOfflineMock => _isUsingOfflineMock;
@@ -27,26 +28,41 @@ class PocketBaseService {
   void _initPb(String url) {
     _currentBaseUrl = url.replaceAll(RegExp(r'/+$'), '');
     _pb = PocketBase(_currentBaseUrl);
+    _cachedMovies = null;
   }
 
   void updateBaseUrl(String newUrl) {
     _initPb(newUrl);
   }
 
-  /// Lấy toàn bộ danh sách phim từ PocketBase
-  Future<List<MovieModel>> getMovies() async {
+  /// Xóa bộ nhớ đệm để ép nạp lại dữ liệu
+  void clearCache() {
+    _cachedMovies = null;
+  }
+
+  /// Lấy toàn bộ danh sách phim từ PocketBase (có bộ nhớ đệm trong RAM)
+  Future<List<MovieModel>> getMovies({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedMovies != null && _cachedMovies!.isNotEmpty) {
+      return _cachedMovies!;
+    }
+
     try {
       final records = await _pb
           .collection('movies')
           .getFullList(sort: '-created');
 
       _isUsingOfflineMock = false;
-      return records.map((record) => MovieModel.fromRecord(record)).toList();
+      final result = records
+          .map((record) => MovieModel.fromRecord(record))
+          .toList();
+      _cachedMovies = result;
+      return result;
     } catch (e) {
       debugPrint(
         '⚠️ Không thể kết nối tới PocketBase ($e). Đang chuyển sang dữ liệu mẫu offline.',
       );
       _isUsingOfflineMock = true;
+      _cachedMovies = _mockMovies;
       return _mockMovies;
     }
   }
@@ -74,6 +90,11 @@ class PocketBaseService {
   /// Lấy danh sách Top 10 phim
   Future<List<MovieModel>> getTop10Movies() async {
     final all = await getMovies();
+    final ranked = all.where((m) => m.rank != null && m.rank! > 0).toList()
+      ..sort((a, b) => a.rank!.compareTo(b.rank!));
+    if (ranked.isNotEmpty) {
+      return ranked.take(10).toList();
+    }
     return all.take(10).toList();
   }
 
@@ -148,7 +169,8 @@ class PocketBaseService {
       description: 'Lấy bối cảnh tương lai hậu tận thế tại Amsterdam, một nhóm chiến binh và nhà khoa học cố gắng cứu vãn tương lai loài người khỏi sự thống trị của người máy tàn bạo.',
       category: 'Viễn tưởng',
       posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Tears_of_Steel_poster.jpg/600px-Tears_of_Steel_poster.jpg',
-      videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      videoUrl:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       releaseYear: 2012,
       isFeatured: true,
     ),
@@ -230,7 +252,8 @@ class PocketBaseService {
       description: 'Trong thành phố robot tương lai, một người đàn ông già tìm cách cứu robot đồng hành của mình bằng cách lấy cắp pin năng lượng cuối cùng.',
       category: 'Viễn tưởng',
       posterUrl: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80',
-      videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      videoUrl:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       releaseYear: 2022,
       isFeatured: false,
       isNew: true,
@@ -283,7 +306,8 @@ class PocketBaseService {
       description: 'Trong đô thị ngập tràn ánh đèn neon, một thám tử tư điều tra vụ mất tích bí ẩn của một người máy AI mang ý thức độc lập.',
       category: 'Viễn tưởng',
       posterUrl: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&auto=format&fit=crop&q=80',
-      videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      videoUrl:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       releaseYear: 2024,
       isFeatured: false,
       isNew: true,

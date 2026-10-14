@@ -61,6 +61,7 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 const Text(
                   'Ứng dụng xem phim trực tuyến mã nguồn mở',
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
@@ -120,6 +121,8 @@ class AboutScreen extends StatelessWidget {
                             children: [
                               Text(
                                 l[0],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -152,6 +155,7 @@ class AboutScreen extends StatelessWidget {
               border: Border.all(color: Colors.white10),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(Icons.code, color: Colors.white, size: 22),
                 const SizedBox(width: 10),
@@ -169,6 +173,8 @@ class AboutScreen extends StatelessWidget {
                       ),
                       Text(
                         'github.com/your-username/openflix',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,

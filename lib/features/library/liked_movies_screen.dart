@@ -160,6 +160,9 @@ class _LikedMoviesScreenState extends State<LikedMoviesScreen> {
                                       child: CachedNetworkImage(
                                         imageUrl: movie.posterUrl,
                                         fit: BoxFit.cover,
+                                        memCacheWidth: 350,
+                                        memCacheHeight: 525,
+                                        maxHeightDiskCache: 600,
                                         placeholder: (_, _) => const ColoredBox(
                                           color: AppColors.surface,
                                         ),

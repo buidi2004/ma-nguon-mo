@@ -32,11 +32,11 @@ ThemeData buildAppTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.red,
-        surface: AppColors.surface,
-        onSurface: AppColors.textPrimary,
-      ),
+  colorScheme: const ColorScheme.dark(
+    primary: AppColors.red,
+    surface: AppColors.surface,
+    onSurface: AppColors.textPrimary,
+  ),
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
     elevation: 0,

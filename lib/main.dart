@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:transit_kit/transit_kit.dart';
 
 import 'core/router/app_router.dart';
 import 'theme/app_theme.dart';
@@ -14,6 +15,16 @@ void main() {
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: AppColors.background,
       systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  // Cấu hình chuyển cảnh toàn cục chuẩn điện ảnh Netflix (Bản V2)
+  GlobalTransitionConfig.instance.setDefaults(
+    const TransitionOverride(
+      duration: Duration(milliseconds: 220),
+      reverseDuration: Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
     ),
   );
 

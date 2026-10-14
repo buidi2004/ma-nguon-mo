@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
@@ -104,16 +105,11 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton(
+                        GlassButton.primary(
+                          text: 'Khám phá phim ngay',
+                          icon: Icons.explore_outlined,
+                          height: 44,
                           onPressed: () => context.go('/'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.red,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: const Text('Khám phá phim ngay'),
                         ),
                       ],
                     ),
@@ -143,6 +139,7 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                         child: Column(
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // Ảnh thu nhỏ
                                 ClipRRect(
@@ -156,18 +153,21 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                         width: 120,
                                         height: 80,
                                         fit: BoxFit.cover,
+                                        memCacheWidth: 360,
+                                        memCacheHeight: 240,
+                                        maxHeightDiskCache: 400,
                                         placeholder: (_, _) => const ColoredBox(
                                           color: AppColors.surfaceLight,
                                         ),
                                       ),
                                       Positioned.fill(
-                                        child: Container(
-                                          color: Colors.black38,
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.play_arrow,
-                                              color: Colors.white,
-                                              size: 28,
+                                        child: Center(
+                                          child: GlassIconButton.circle(
+                                            size: 38,
+                                            iconSize: 22,
+                                            icon: Icons.play_arrow_rounded,
+                                            onPressed: () => context.push(
+                                              '/watch/${movie.id}',
                                             ),
                                           ),
                                         ),
@@ -194,6 +194,8 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                       const SizedBox(height: 4),
                                       Text(
                                         'Đã xem: ${_formatTime(item.positionSeconds)} / ${_formatTime(item.durationSeconds)}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                           color: AppColors.textSecondary,
                                           fontSize: 12,
@@ -202,6 +204,8 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                       const SizedBox(height: 4),
                                       Text(
                                         'Tiến độ: ${(ratio * 100).toInt()}%',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                           color: AppColors.red,
                                           fontSize: 12,
@@ -211,17 +215,17 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                     ],
                                   ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: AppColors.textMuted,
-                                    size: 20,
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: GlassIconButton.circle(
+                                    size: 32,
+                                    iconSize: 16,
+                                    icon: Icons.close_rounded,
+                                    tooltip: 'Xóa khỏi danh sách xem dở',
+                                    onPressed: () =>
+                                        _libService.removeProgress(movie.id),
                                   ),
-                                  tooltip: 'Xóa khỏi danh sách xem dở',
-                                  onPressed: () =>
-                                      _libService.removeProgress(movie.id),
                                 ),
-                                const SizedBox(width: 4),
                               ],
                             ),
                             // Thanh tiến độ đỏ chuẩn Netflix

@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  carousel_slider:
+    dependency: "direct main"
+    description:
+      name: carousel_slider
+      sha256: febf4b0163e0242adc13d7a863b04965351f59e7dfea56675c7c2caa7bcd7476
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.2"
   characters:
     dependency: transitive
     description:
@@ -714,6 +722,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
+  transit_kit:
+    dependency: "direct main"
+    description:
+      name: transit_kit
+      sha256: "0839fae9801722c3831c9ea7b908ab776cbefdf25bcf3fb0722f24e5814817ca"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   typed_data:
     dependency: transitive
     description:

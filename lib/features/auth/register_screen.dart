@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -118,6 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: Border.all(color: AppColors.red),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           Icons.error_outline,
@@ -128,6 +129,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -208,9 +211,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 24),
 
-                PrimaryButton(
-                  text: 'Đăng ký tài khoản',
+                GlassButton.brand(
+                  text: 'Hoàn tất đăng ký',
                   isLoading: _isLoading,
+                  height: 48,
+                  borderRadius: 10,
                   onPressed: _handleRegister,
                 ),
 

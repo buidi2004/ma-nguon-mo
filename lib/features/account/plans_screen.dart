@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class PlanOption {
@@ -76,80 +76,66 @@ class _PlansScreenState extends State<PlansScreen> {
   ];
 
   void _choosePlan(PlanOption plan) {
-    showDialog(
+    showGlassDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          'Đăng ký ${plan.name}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+      title: 'Đăng ký ${plan.name}',
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Đóng', style: TextStyle(color: Colors.white60)),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Giá gói: ${plan.price}',
-              style: const TextStyle(
-                color: AppColors.red,
-                fontWeight: FontWeight.bold,
+        const SizedBox(width: 8),
+        GlassButton.brand(
+          text: 'Xác nhận kích hoạt',
+          height: 38,
+          borderRadius: 10,
+          onPressed: () {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã kích hoạt mô phỏng ${plan.name} thành công!'),
+                backgroundColor: AppColors.success,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Độ phân giải: ${plan.resolution}',
-              style: const TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.black38,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.amber.withAlpha(128)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.amber, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Đây là giao diện mô phỏng đồ án. Tài khoản của bạn được cấp quyền trải nghiệm đầy đủ miễn phí!',
-                      style: TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            );
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng', style: TextStyle(color: Colors.white60)),
+      ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Giá gói: ${plan.price}',
+            style: const TextStyle(
+              color: AppColors.red,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Đã kích hoạt mô phỏng ${plan.name} thành công!',
+          const SizedBox(height: 8),
+          Text(
+            'Độ phân giải: ${plan.resolution}',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.black38,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.amber, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Đây là giao diện mô phỏng đồ án. Tài khoản của bạn được cấp quyền trải nghiệm đầy đủ miễn phí!',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
                   ),
-                  backgroundColor: AppColors.success,
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
-            child: const Text(
-              'Xác nhận kích hoạt',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              ],
             ),
           ),
         ],
@@ -186,6 +172,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 border: Border.all(color: AppColors.red.withAlpha(128)),
               ),
               child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
                     Icons.verified_user_outlined,
@@ -372,6 +359,7 @@ class _PlansScreenState extends State<PlansScreen> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Icon(
                                 Icons.check,
@@ -382,6 +370,8 @@ class _PlansScreenState extends State<PlansScreen> {
                               Expanded(
                                 child: Text(
                                   perk,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 12,
@@ -393,17 +383,21 @@ class _PlansScreenState extends State<PlansScreen> {
                         ),
                       ],
                       const SizedBox(height: 12),
-                      PrimaryButton(
-                        text: _selectedPlanId == plan.id
-                            ? 'Chọn ${plan.name}'
-                            : 'Xem chi tiết gói',
-                        backgroundColor: _selectedPlanId == plan.id
-                            ? AppColors.red
-                            : AppColors.surface,
-                        textColor: Colors.white,
-                        height: 40,
-                        onPressed: () => _choosePlan(plan),
-                      ),
+                      _selectedPlanId == plan.id
+                          ? GlassButton.brand(
+                              text: 'Chọn ${plan.name}',
+                              height: 42,
+                              borderRadius: 10,
+                              width: double.infinity,
+                              onPressed: () => _choosePlan(plan),
+                            )
+                          : GlassButton.neutral(
+                              text: 'Xem chi tiết gói',
+                              height: 42,
+                              borderRadius: 10,
+                              width: double.infinity,
+                              onPressed: () => _choosePlan(plan),
+                            ),
                     ],
                   ),
                 ),

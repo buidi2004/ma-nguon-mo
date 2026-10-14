@@ -93,6 +93,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 const SizedBox(height: 10),
                 const Text(
                   'Phản hồi của bạn đã được ghi nhận vào hệ thống OpenFlix. Đội ngũ phát triển sẽ xem xét và phản hồi sớm nhất.',
+                  softWrap: true,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,

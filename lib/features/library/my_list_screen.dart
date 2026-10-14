@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
@@ -54,6 +55,47 @@ class _MyListScreenState extends State<MyListScreen> {
                 fontSize: 17,
               ),
             ),
+            actions: [
+              if (ids.isNotEmpty && _movies.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GlassButton.capsule(
+                    text: 'Xóa tất cả',
+                    icon: Icons.delete_outline_rounded,
+                    style: GlassButtonStyle.neutralDark,
+                    height: 34,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    onPressed: () {
+                      showGlassDialog(
+                        context: context,
+                        title: 'Xóa toàn bộ danh sách?',
+                        child: const Text(
+                          'Bạn có chắc chắn muốn xóa toàn bộ các bộ phim đã lưu trong danh sách của bạn?',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                        actions: [
+                          GlassButton.neutral(
+                            text: 'Hủy',
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          GlassButton.brand(
+                            text: 'Xóa tất cả',
+                            onPressed: () {
+                              for (final id in List<String>.from(ids)) {
+                                _libService.toggleMyList(id);
+                              }
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+            ],
           ),
           body: _isLoading
               ? const Center(
@@ -94,16 +136,11 @@ class _MyListScreenState extends State<MyListScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton(
+                        GlassButton.primary(
+                          text: 'Khám phá phim ngay',
+                          icon: Icons.explore_outlined,
+                          height: 44,
                           onPressed: () => context.go('/'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.red,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: const Text('Khám phá phim ngay'),
                         ),
                       ],
                     ),
@@ -130,64 +167,64 @@ class _MyListScreenState extends State<MyListScreen> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: GridView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: _movies.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 2 / 3,
-                                crossAxisSpacing: 6,
-                                mainAxisSpacing: 6,
-                              ),
-                          itemBuilder: (context, index) {
-                            final movie = _movies[index];
-                            if (!ids.contains(movie.id)) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return GestureDetector(
-                              onTap: () => context.push('/movie/${movie.id}'),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: CachedNetworkImage(
-                                        imageUrl: movie.posterUrl,
-                                        fit: BoxFit.cover,
-                                        placeholder: (_, _) => const ColoredBox(
-                                          color: AppColors.surface,
-                                        ),
-                                      ),
-                                    ),
-                                  // Nút xóa nhanh góc trên
-                                  Positioned(
-                                    top: 4,
-                                    right: 4,
-                                    child: GestureDetector(
-                                      onTap: () =>
-                                          _libService.toggleMyList(movie.id),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black87,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                      ),
-                                    ),
+                      Builder(
+                        builder: (context) {
+                          final savedMovies = _movies
+                              .where((m) => ids.contains(m.id))
+                              .toList();
+                          return Expanded(
+                            child: GridView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: savedMovies.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    childAspectRatio: 2 / 3,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 6,
                                   ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                              itemBuilder: (context, index) {
+                                final movie = savedMovies[index];
+
+                                return GestureDetector(
+                                  onTap: () =>
+                                      context.push('/movie/${movie.id}'),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: CachedNetworkImage(
+                                          imageUrl: movie.posterUrl,
+                                          fit: BoxFit.cover,
+                                          memCacheWidth: 350,
+                                          memCacheHeight: 525,
+                                          maxHeightDiskCache: 600,
+                                          placeholder: (_, _) =>
+                                              const ColoredBox(
+                                                color: AppColors.surface,
+                                              ),
+                                        ),
+                                      ),
+                                      // Nút xóa nhanh góc trên - Kính mờ quang học
+                                      Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: GlassIconButton.circle(
+                                          size: 28,
+                                          iconSize: 14,
+                                          icon: Icons.close_rounded,
+                                          onPressed: () => _libService
+                                              .toggleMyList(movie.id),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

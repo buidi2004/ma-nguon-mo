@@ -100,6 +100,7 @@ class _HelpScreenState extends State<HelpScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.help_center_outlined,
@@ -110,6 +111,8 @@ class _HelpScreenState extends State<HelpScreen> {
                     Expanded(
                       child: Text(
                         'Chúng tôi có thể giúp gì cho bạn?',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,
@@ -197,6 +200,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         SizedBox(height: 8),
                         Text(
                           'Gửi phản hồi',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -206,6 +210,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         SizedBox(height: 2),
                         Text(
                           'Phản hồi trong 24h',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
@@ -312,6 +317,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         SizedBox(height: 8),
                         Text(
                           'Tổng đài 24/7',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -321,6 +327,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         SizedBox(height: 2),
                         Text(
                           '1800 6868',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
@@ -367,6 +374,8 @@ class _HelpScreenState extends State<HelpScreen> {
                     child: ExpansionTile(
                       title: Text(
                         faq['question']!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,

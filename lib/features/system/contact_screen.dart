@@ -201,7 +201,11 @@ class _ContactScreenState extends State<ContactScreen> {
                           items: _categories.map((cat) {
                             return DropdownMenuItem(
                               value: cat,
-                              child: Text(cat),
+                              child: Text(
+                                cat,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             );
                           }).toList(),
                         ),

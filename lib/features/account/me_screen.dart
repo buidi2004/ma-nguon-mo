@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -21,9 +22,15 @@ class MeScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/settings'),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GlassIconButton.circle(
+              size: 38,
+              iconSize: 20,
+              icon: Icons.settings_outlined,
+              tooltip: 'Cài đặt',
+              onPressed: () => context.push('/settings'),
+            ),
           ),
         ],
       ),
@@ -45,18 +52,33 @@ class MeScreen extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => context.push('/profiles'),
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppColors.red,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: AppColors.red,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: -4,
+                            right: -4,
+                            child: GlassIconButton.circle(
+                              size: 24,
+                              iconSize: 13,
+                              icon: Icons.edit_rounded,
+                              onPressed: () => context.push('/profiles'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -74,6 +96,8 @@ class MeScreen extends StatelessWidget {
                           children: [
                             Text(
                               auth.userName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -242,46 +266,21 @@ class MeScreen extends StatelessWidget {
             builder: (context, _) {
               final auth = AuthService.instance;
               if (!auth.isLoggedIn) {
-                return SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/welcome'),
-                    icon: const Icon(Icons.login, color: Colors.white),
-                    label: const Text(
-                      'Đăng nhập tài khoản',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
+                return GlassButton.brand(
+                  text: 'Đăng nhập tài khoản',
+                  icon: Icons.login_rounded,
+                  height: 48,
+                  borderRadius: 10,
+                  onPressed: () => context.push('/welcome'),
                 );
               }
-              return SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _confirmLogout(context),
-                  icon: const Icon(Icons.logout, color: AppColors.red, size: 20),
-                  label: const Text(
-                    'Đăng xuất khỏi thiết bị',
-                    style: TextStyle(
-                      color: AppColors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.red),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
+              return GlassDestructiveButton.logout(
+                onPressed: () async {
+                  await AuthService.instance.logout();
+                  if (context.mounted) {
+                    context.go('/welcome');
+                  }
+                },
               );
             },
           ),
@@ -291,42 +290,6 @@ class MeScreen extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text(
-          'Đăng xuất tài khoản',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng OpenFlix không?',
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy', style: TextStyle(color: Colors.white70)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await AuthService.instance.logout();
-              if (context.mounted) {
-                context.go('/welcome');
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
-            child: const Text(
-              'Đăng xuất',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildTile({
     required IconData icon,
@@ -342,6 +305,8 @@ class MeScreen extends StatelessWidget {
           leading: Icon(icon, color: Colors.white, size: 22),
           title: Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,

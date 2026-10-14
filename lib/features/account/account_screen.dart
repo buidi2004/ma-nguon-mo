@@ -57,14 +57,18 @@ class _AccountScreenState extends State<AccountScreen> {
   void _showAvatarPicker() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
+        final double bottomInset = MediaQuery.of(ctx).padding.bottom + 20.0;
         return SafeArea(
+          top: false,
+          bottom: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: EdgeInsets.fromLTRB(20, 20, 20, bottomInset),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,16 +220,16 @@ class _AccountScreenState extends State<AccountScreen> {
           const Center(
             child: Text(
               'Chạm để đổi biểu tượng đại diện',
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ),
           const SizedBox(height: 8),
           Center(
             child: Text(
               _authService.userEmail,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13.5,
@@ -267,6 +271,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
                 child: Text(
                   _authService.userEmail,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),

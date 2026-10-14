@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:transit_kit/transit_kit.dart';
 
 import '../../features/account/about_screen.dart';
 import '../../features/account/account_screen.dart';
@@ -23,6 +24,7 @@ import '../../features/discover/genres_screen.dart';
 import '../../features/discover/hot_screen.dart';
 import '../../features/discover/movie_grid_screen.dart';
 import '../../features/discover/search_screen.dart';
+import '../../features/discover/top10_screen.dart';
 import '../../features/library/continue_watching_screen.dart';
 import '../../features/library/downloads_screen.dart';
 import '../../features/library/liked_movies_screen.dart';
@@ -35,13 +37,12 @@ import '../../features/watch/audio_subtitle_screen.dart';
 import '../../features/watch/detail_screen.dart';
 import '../../features/watch/episodes_screen.dart';
 import '../../features/watch/reviews_screen.dart';
+import '../../features/watch/similar_movies_screen.dart';
 import '../../features/watch/trailer_screen.dart';
 import '../../features/watch/write_review_screen.dart';
-import '../../features/discover/top10_screen.dart';
-import '../../features/watch/similar_movies_screen.dart';
+import '../../presentation/screens/shell/main_tabs_screen.dart';
 import '../../screens/home_screen.dart';
 import '../../screens/player_screen.dart';
-import '../../presentation/screens/shell/main_tabs_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -52,10 +53,14 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
-      // S01: Splash Screen
+      // S01: Splash Screen — Fade êm ái
       GoRoute(
         path: '/splash',
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fade,
+          child: const SplashScreen(),
+        ),
       ),
 
       // 4-Tab Bottom Navigation Stateful Shell (S09, S10, S16, S30)
@@ -69,7 +74,11 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/',
-                builder: (context, state) => const HomeScreen(),
+                pageBuilder: (context, state) => TransitPage(
+                  key: state.pageKey,
+                  type: TransitType.fadeThrough,
+                  child: const HomeScreen(),
+                ),
               ),
             ],
           ),
@@ -78,7 +87,11 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/search',
-                builder: (context, state) => const SearchScreen(),
+                pageBuilder: (context, state) => TransitPage(
+                  key: state.pageKey,
+                  type: TransitType.fadeThrough,
+                  child: const SearchScreen(),
+                ),
               ),
             ],
           ),
@@ -87,7 +100,11 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/hot',
-                builder: (context, state) => const HotScreen(),
+                pageBuilder: (context, state) => TransitPage(
+                  key: state.pageKey,
+                  type: TransitType.fadeThrough,
+                  child: const HotScreen(),
+                ),
               ),
             ],
           ),
@@ -96,223 +113,405 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/me',
-                builder: (context, state) => const MeScreen(),
+                pageBuilder: (context, state) => TransitPage(
+                  key: state.pageKey,
+                  type: TransitType.fadeThrough,
+                  child: const MeScreen(),
+                ),
               ),
             ],
           ),
         ],
       ),
 
-      // ==================== NHÓM A. KHỞI ĐỘNG & TÀI KHOẢN ====================
+      // ==================== NHÓM A. KHỞI ĐỘNG & TÀI KHOẢN (S02 - S08) ====================
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(), // S02
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.sharedAxisX,
+          child: const OnboardingScreen(), // S02
+        ),
       ),
       GoRoute(
         path: '/welcome',
-        builder: (context, state) => const WelcomeScreen(), // S03
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: const WelcomeScreen(), // S03
+        ),
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(), // S04
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeSlideUp,
+          child: const LoginScreen(), // S04
+        ),
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(), // S05
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.sharedAxisX,
+          child: const RegisterScreen(), // S05
+        ),
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(), // S06
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const ForgotPasswordScreen(), // S06
+        ),
       ),
       GoRoute(
         path: '/profiles',
-        builder: (context, state) => const ProfilesScreen(), // S07
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: const ProfilesScreen(), // S07
+        ),
       ),
       GoRoute(
         path: '/profiles/edit/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? 'new';
-          return ProfileEditScreen(profileId: id); // S08
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.modalBottom,
+            fullscreenDialog: true,
+            child: ProfileEditScreen(profileId: id), // S08
+          );
         },
       ),
 
-      // ==================== NHÓM B. KHÁM PHÁ ====================
+      // ==================== NHÓM B. KHÁM PHÁ (S11 - S17) ====================
       GoRoute(
         path: '/search/results',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final query = state.uri.queryParameters['q'] ?? '';
-          return SearchScreen(initialQuery: query);
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fade,
+            child: SearchScreen(initialQuery: query),
+          );
         },
       ),
       GoRoute(
         path: '/search/filter',
-        builder: (context, state) => const FilterScreen(), // S12
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.modalBottom,
+          fullscreenDialog: true,
+          child: const FilterScreen(), // S12
+        ),
       ),
       GoRoute(
         path: '/genres',
-        builder: (context, state) => const GenresScreen(), // S13
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const GenresScreen(), // S13
+        ),
       ),
       GoRoute(
         path: '/genre/:name',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final name = state.pathParameters['name'] ?? 'Tất cả';
-          return MovieGridScreen(title: 'Phim thể loại $name', category: name);
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.cupertino,
+            child: MovieGridScreen(
+              title: 'Phim thể loại $name',
+              category: name,
+            ),
+          );
         },
       ),
       GoRoute(
         path: '/see-all/:rowKey',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final key = state.pathParameters['rowKey'] ?? 'danh-sach';
-          return MovieGridScreen(title: 'Xem tất cả', rowKey: key);
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.cupertino,
+            child: MovieGridScreen(title: 'Xem tất cả', rowKey: key),
+          );
         },
       ),
       GoRoute(
         path: '/top10',
-        builder: (context, state) => const Top10Screen(), // S17
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.parallaxSlideRight,
+          child: const Top10Screen(), // S17
+        ),
       ),
 
-      // ==================== NHÓM C. XEM PHIM ====================
+      // ==================== NHÓM C. XEM PHIM & RẠP CHIẾU (S18 - S24) ====================
       GoRoute(
         path: '/movie/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return DetailScreen(movieId: id); // S18
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.heroScale,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: DetailScreen(movieId: id), // S18
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/trailer',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TrailerScreen(movieId: id); // S19
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.cinematicBars,
+            duration: const Duration(milliseconds: 260),
+            child: TrailerScreen(movieId: id), // S19
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/audio',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return AudioSubtitleScreen(movieId: id);
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.modalBottom,
+            fullscreenDialog: true,
+            child: AudioSubtitleScreen(movieId: id),
+          );
         },
       ),
       GoRoute(
         path: '/watch/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return PlayerScreen(movieId: id); // S20
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.flashBlack,
+            duration: const Duration(milliseconds: 260),
+            child: PlayerScreen(movieId: id), // S20 Cinema Player
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/episodes',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return EpisodesScreen(movieId: id); // S21
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.modalBottom,
+            fullscreenDialog: true,
+            child: EpisodesScreen(movieId: id), // S21
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/similar',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return SimilarMoviesScreen(movieId: id); // S22
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRight,
+            child: SimilarMoviesScreen(movieId: id), // S22
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/reviews',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return ReviewsScreen(movieId: id); // S23
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRight,
+            child: ReviewsScreen(movieId: id), // S23
+          );
         },
       ),
       GoRoute(
         path: '/movie/:id/reviews/new',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return WriteReviewScreen(movieId: id); // S24
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.modalBottom,
+            fullscreenDialog: true,
+            child: WriteReviewScreen(movieId: id), // S24
+          );
         },
       ),
 
-      // ==================== NHÓM D. CÁ NHÂN ====================
+      // ==================== NHÓM D. CÁ NHÂN & THƯ VIỆN (S25 - S30) ====================
       GoRoute(
         path: '/me/list',
-        builder: (context, state) => const MyListScreen(), // S25
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const MyListScreen(), // S25
+        ),
       ),
       GoRoute(
         path: '/me/continue',
-        builder: (context, state) => const ContinueWatchingScreen(), // S26
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const ContinueWatchingScreen(), // S26
+        ),
       ),
       GoRoute(
         path: '/me/history',
-        builder: (context, state) => const WatchHistoryScreen(), // S27
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const WatchHistoryScreen(), // S27
+        ),
       ),
       GoRoute(
         path: '/me/liked',
-        builder: (context, state) => const LikedMoviesScreen(), // S28
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const LikedMoviesScreen(), // S28
+        ),
       ),
       GoRoute(
         path: '/me/notifications',
-        builder: (context, state) => const NotificationsScreen(), // S29
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideDown,
+          child: const NotificationsScreen(), // S29
+        ),
       ),
       GoRoute(
         path: '/me/downloads',
-        builder: (context, state) => const DownloadsScreen(),
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const DownloadsScreen(),
+        ),
       ),
 
-      // ==================== NHÓM E. TÀI KHOẢN & CÀI ĐẶT ====================
+      // ==================== NHÓM E. TÀI KHOẢN & CÀI ĐẶT (S31 - S38, S42) ====================
       GoRoute(
         path: '/me/account',
-        builder: (context, state) => const AccountScreen(), // S31
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.cupertino,
+          child: const AccountScreen(), // S31
+        ),
       ),
       GoRoute(
         path: '/me/password',
-        builder: (context, state) => const PasswordScreen(), // S32
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const PasswordScreen(), // S32
+        ),
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsScreen(), // S33
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.cupertino,
+          child: const SettingsScreen(), // S33
+        ),
       ),
       GoRoute(
         path: '/settings/playback',
-        builder: (context, state) => const PlaybackSettingsScreen(), // S34
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const PlaybackSettingsScreen(), // S34
+        ),
       ),
       GoRoute(
         path: '/settings/language',
-        builder: (context, state) => const LanguageScreen(), // S35
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const LanguageScreen(), // S35
+        ),
       ),
       GoRoute(
         path: '/help',
-        builder: (context, state) => const HelpScreen(), // S36
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRight,
+          child: const HelpScreen(), // S36
+        ),
       ),
       GoRoute(
         path: '/contact',
-        builder: (context, state) => const ContactScreen(), // S37
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.modalBottom,
+          fullscreenDialog: true,
+          child: const ContactScreen(), // S37
+        ),
       ),
       GoRoute(
         path: '/feedback',
-        builder: (context, state) => const ContactScreen(), // S37 alias
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.modalBottom,
+          fullscreenDialog: true,
+          child: const ContactScreen(), // S37 alias
+        ),
       ),
       GoRoute(
         path: '/about',
-        builder: (context, state) => const AboutScreen(), // S38
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: const AboutScreen(), // S38
+        ),
       ),
       GoRoute(
         path: '/plans',
-        builder: (context, state) => const PlansScreen(), // S42
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.smoothPopIn,
+          child: const PlansScreen(), // S42 Premium
+        ),
       ),
 
-      // ==================== NHÓM F. TRẠNG THÁI TOÀN TRANG ====================
+      // ==================== NHÓM F. TRẠNG THÁI TOÀN TRANG (S39 - S41) ====================
       GoRoute(
         path: '/offline',
-        builder: (context, state) => SystemStatusScreen.offline(), // S39
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: SystemStatusScreen.offline(), // S39
+        ),
       ),
       GoRoute(
         path: '/error',
-        builder: (context, state) => SystemStatusScreen.error(), // S40
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fade,
+          child: SystemStatusScreen.error(), // S40
+        ),
       ),
       GoRoute(
         path: '/404',
-        builder: (context, state) => SystemStatusScreen.notFound(), // S41
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: SystemStatusScreen.notFound(), // S41
+        ),
       ),
       GoRoute(
         path: '/not-found',
-        builder: (context, state) => SystemStatusScreen.notFound(), // S41
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeScale,
+          child: SystemStatusScreen.notFound(), // S41
+        ),
       ),
     ],
 

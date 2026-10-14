@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class FilterScreen extends StatefulWidget {
@@ -84,25 +84,10 @@ class _FilterScreenState extends State<FilterScreen> {
               runSpacing: 8,
               children: _categories.map((cat) {
                 final isSelected = _selectedCategory == cat;
-                return ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  selectedColor: AppColors.red,
-                  backgroundColor: AppColors.surface,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    fontSize: 13,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  side: BorderSide.none,
-                  onSelected: (val) {
-                    if (val) setState(() => _selectedCategory = cat);
-                  },
+                return GlassChipButton(
+                  label: cat,
+                  isSelected: isSelected,
+                  onSelected: (_) => setState(() => _selectedCategory = cat),
                 );
               }).toList(),
             ),
@@ -123,25 +108,10 @@ class _FilterScreenState extends State<FilterScreen> {
               runSpacing: 8,
               children: _years.map((year) {
                 final isSelected = _selectedYear == year;
-                return ChoiceChip(
-                  label: Text(year),
-                  selected: isSelected,
-                  selectedColor: AppColors.red,
-                  backgroundColor: AppColors.surface,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    fontSize: 13,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  side: BorderSide.none,
-                  onSelected: (val) {
-                    if (val) setState(() => _selectedYear = year);
-                  },
+                return GlassChipButton(
+                  label: year,
+                  isSelected: isSelected,
+                  onSelected: (_) => setState(() => _selectedYear = year),
                 );
               }).toList(),
             ),
@@ -187,6 +157,8 @@ class _FilterScreenState extends State<FilterScreen> {
                           Expanded(
                             child: Text(
                               opt,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 13.5,
@@ -201,8 +173,13 @@ class _FilterScreenState extends State<FilterScreen> {
               ),
             ),
 
-            const SizedBox(height: 36),
-            PrimaryButton.white(text: 'Áp dụng bộ lọc', onPressed: _applyFilter),
+            GlassButton.primary(
+              text: 'Áp dụng bộ lọc',
+              borderRadius: 14,
+              height: 48,
+              width: double.infinity,
+              onPressed: _applyFilter,
+            ),
             const SizedBox(height: 20),
           ],
         ),

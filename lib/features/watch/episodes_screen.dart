@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/state_view.dart';
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -99,6 +100,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       appBar: AppBar(
         title: Text(
           _movie != null ? 'Tập phim: ${_movie!.title}' : 'Danh sách tập',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -114,64 +117,42 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 // Season Selector Bar
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                    horizontal: 12,
+                    vertical: 8,
                   ),
                   decoration: const BoxDecoration(
                     color: AppColors.surface,
                     border: Border(bottom: BorderSide(color: Colors.white10)),
                   ),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  child: Row(
                     children: [
                       const Text(
                         'Chọn mùa: ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            value: _selectedSeason,
-                            dropdownColor: AppColors.surface,
-                            icon: const Icon(
-                              Icons.arrow_drop_down,
-                              color: Colors.white,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: GlassSegmentedControl<int>(
+                          height: 38,
+                          items: const [
+                            GlassSegmentItem<int>(
+                              value: 1,
+                              label: 'Mùa 1',
+                              badgeCount: 4,
                             ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                            GlassSegmentItem<int>(
+                              value: 2,
+                              label: 'Mùa 2',
                             ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 1,
-                                child: Text('Mùa 1 (4 tập)'),
-                              ),
-                              DropdownMenuItem(
-                                value: 2,
-                                child: Text('Mùa 2 (Sắp chiếu)'),
-                              ),
-                            ],
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedSeason = val);
-                              }
-                            },
-                          ),
+                          ],
+                          selectedValue: _selectedSeason,
+                          onValueChanged: (val) {
+                            setState(() => _selectedSeason = val);
+                          },
                         ),
                       ),
                     ],
@@ -182,10 +163,13 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 Expanded(
                   child: ListView.separated(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
                     itemCount: _episodes.length,
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final ep = _episodes[index];
 
@@ -197,7 +181,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(8),
@@ -207,7 +191,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // Thumbnail with Play overlay
                                   Stack(
@@ -217,27 +201,29 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                         borderRadius: BorderRadius.circular(6),
                                         child: CachedNetworkImage(
                                           imageUrl: ep.thumbnailUrl,
-                                          width: 110,
-                                          height: 65,
+                                          width: 96,
+                                          height: 56,
                                           fit: BoxFit.cover,
+                                          memCacheWidth: 220,
+                                          memCacheHeight: 130,
+                                          maxHeightDiskCache: 250,
                                         ),
                                       ),
-                                      Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withAlpha(160),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.play_arrow,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
+                                      GlassIconButton.circle(
+                                        size: 30,
+                                        iconSize: 16,
+                                        icon: Icons.play_arrow_rounded,
+                                        onPressed: () {
+                                          if (_movie != null) {
+                                            context.push(
+                                              '/watch/${_movie!.id}',
+                                            );
+                                          }
+                                        },
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 14),
+                                  const SizedBox(width: 10),
 
                                   // Episode Title & Duration
                                   Expanded(
@@ -252,10 +238,10 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 15,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 2),
                                         Text(
                                           ep.duration,
                                           style: const TextStyle(
@@ -266,11 +252,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                       ],
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.download_for_offline_outlined,
-                                      color: Colors.white60,
-                                    ),
+                                  const SizedBox(width: 6),
+                                  GlassIconButton.circle(
+                                    size: 34,
+                                    iconSize: 18,
+                                    icon: Icons.download_for_offline_outlined,
                                     onPressed: () {
                                       ScaffoldMessenger.of(
                                         context,

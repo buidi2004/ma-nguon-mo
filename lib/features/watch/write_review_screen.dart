@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import 'reviews_screen.dart';
@@ -83,31 +83,39 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
             const SizedBox(height: 8),
             const Text(
               'Chạm vào ngôi sao để chấm điểm mức độ yêu thích',
+              textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 24),
 
-            // Dãy 5 sao tương tác
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                final starValue = index + 1;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => _selectedStars = starValue);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Icon(
-                      starValue <= _selectedStars
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: Colors.amber,
-                      size: 38,
+            // Dãy 5 sao tương tác bọc trong GlassSurface
+            GlassSurface(
+              borderRadius: 20,
+              tintColor: const Color(0x352A2A2A),
+              blur: 8.5,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  final starValue = index + 1;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedStars = starValue);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Icon(
+                        starValue <= _selectedStars
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: Colors.amber,
+                        size: 38,
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -145,9 +153,12 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
             const SizedBox(height: 28),
 
-            PrimaryButton.white(
+            GlassButton.primary(
               text: 'Gửi đánh giá',
               isLoading: _isLoading,
+              height: 48,
+              width: double.infinity,
+              borderRadius: 12,
               onPressed: _submitReview,
             ),
           ],

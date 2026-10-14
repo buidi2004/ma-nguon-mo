@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -136,11 +137,34 @@ class LibraryService extends ChangeNotifier {
 
   WatchProgressItem? getProgress(String movieId) => _progressMap[movieId];
 
+  Timer? _persistTimer;
+
+  Future<void> flushProgress() async {
+    _persistTimer?.cancel();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(
+        _progressMap.map((key, value) => MapEntry(key, value.toJson())),
+      );
+      await prefs.setString('lib_progress', encoded);
+    } catch (e) {
+      debugPrint('Lỗi lưu tiến độ xem: $e');
+    }
+  }
+
+  void _persistProgressDebounced() {
+    _persistTimer?.cancel();
+    _persistTimer = Timer(const Duration(seconds: 3), () async {
+      await flushProgress();
+    });
+  }
+
   Future<void> saveProgress(
     String movieId,
     int positionSeconds,
-    int durationSeconds,
-  ) async {
+    int durationSeconds, {
+    bool immediate = false,
+  }) async {
     _progressMap[movieId] = WatchProgressItem(
       movieId: movieId,
       positionSeconds: positionSeconds,
@@ -149,24 +173,21 @@ class LibraryService extends ChangeNotifier {
     );
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    final encoded = jsonEncode(
-      _progressMap.map((key, value) => MapEntry(key, value.toJson())),
-    );
-    await prefs.setString('lib_progress', encoded);
+    if (immediate) {
+      await flushProgress();
+    } else {
+      _persistProgressDebounced();
+    }
   }
 
   Future<void> removeProgress(String movieId) async {
     _progressMap.remove(movieId);
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    final encoded = jsonEncode(
-      _progressMap.map((key, value) => MapEntry(key, value.toJson())),
-    );
-    await prefs.setString('lib_progress', encoded);
+    await flushProgress();
   }
 
   Future<void> clearAll() async {
+    _persistTimer?.cancel();
     _myList.clear();
     _likedMovies.clear();
     _progressMap.clear();

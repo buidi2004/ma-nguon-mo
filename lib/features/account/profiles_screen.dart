@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -69,17 +70,18 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              setState(() => _isEditing = !_isEditing);
-            },
-            child: Text(
-              _isEditing ? 'Xong' : 'Quản lý',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GlassButton.capsule(
+              text: _isEditing ? 'Xong' : 'Quản lý',
+              style: _isEditing
+                  ? GlassButtonStyle.brandRed
+                  : GlassButtonStyle.neutralDark,
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              onPressed: () {
+                setState(() => _isEditing = !_isEditing);
+              },
             ),
           ),
         ],
@@ -94,6 +96,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                 _isEditing
                     ? 'Chạm vào hồ sơ để chỉnh sửa'
                     : 'Chọn hồ sơ của bạn để cá nhân hóa nội dung',
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -120,28 +123,26 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
+                          GlassSurface(
                             width: 88,
                             height: 88,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.white24,
-                                width: 1.5,
-                              ),
-                            ),
+                            borderRadius: 18,
+                            tintColor: const Color(0x332A2A2A),
+                            blur: 10,
                             child: const Center(
                               child: Icon(
-                                Icons.add,
-                                color: Colors.white70,
-                                size: 40,
+                                Icons.add_rounded,
+                                color: Colors.white,
+                                size: 36,
                               ),
                             ),
                           ),
                           const SizedBox(height: 10),
                           const Text(
                             'Thêm hồ sơ',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 14,

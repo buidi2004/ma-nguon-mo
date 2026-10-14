@@ -52,6 +52,9 @@ class MovieCard extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: movie.posterUrl,
                 fit: BoxFit.cover,
+                memCacheWidth: 350,
+                memCacheHeight: 525,
+                maxHeightDiskCache: 600,
                 placeholder: (context, url) => Container(
                   color: const Color(0xFF222222),
                   child: const Center(
@@ -165,7 +168,7 @@ class MovieCard extends StatelessWidget {
 
               // Title and Category Info
               Positioned(
-                bottom: progressRatio != null ? 8 : 6,
+                bottom: 8,
                 left: rank != null ? 36 : 8,
                 right: 8,
                 child: Column(
@@ -191,6 +194,7 @@ class MovieCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           '${movie.releaseYear}',

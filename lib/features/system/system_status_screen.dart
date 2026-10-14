@@ -108,6 +108,7 @@ class SystemStatusScreen extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 message,
+                softWrap: true,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,

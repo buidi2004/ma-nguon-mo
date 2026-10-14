@@ -27,10 +27,10 @@ class _Top10ScreenState extends State<Top10Screen> {
 
   Future<void> _loadTop10() async {
     setState(() => _isLoading = true);
-    final all = await _pbService.getMovies();
+    final top10 = await _pbService.getTop10Movies();
     if (!mounted) return;
     setState(() {
-      _topMovies = all.take(10).toList();
+      _topMovies = top10;
       _isLoading = false;
     });
   }
@@ -69,6 +69,7 @@ class _Top10ScreenState extends State<Top10Screen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Big Rank Number
                         SizedBox(
@@ -100,6 +101,9 @@ class _Top10ScreenState extends State<Top10Screen> {
                             width: 75,
                             height: 110,
                             fit: BoxFit.cover,
+                            memCacheWidth: 250,
+                            memCacheHeight: 366,
+                            maxHeightDiskCache: 450,
                             placeholder: (context, url) => Container(
                               width: 75,
                               height: 110,

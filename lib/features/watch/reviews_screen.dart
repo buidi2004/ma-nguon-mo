@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -79,6 +80,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       appBar: AppBar(
         title: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -86,7 +89,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: GlassFAB.extended(
+        label: 'Viết đánh giá',
+        icon: Icons.rate_review_rounded,
+        backgroundColor: AppColors.red.withValues(alpha: 0.9),
+        glowColor: AppColors.red.withValues(alpha: 0.5),
         onPressed: () async {
           final res = await context.push<ReviewItem>(
             '/movie/${widget.movieId}/reviews/new',
@@ -97,12 +104,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             });
           }
         },
-        backgroundColor: AppColors.red,
-        icon: const Icon(Icons.rate_review, color: Colors.white),
-        label: const Text(
-          'Viết đánh giá',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
       ),
       body: _isLoading
           ? const Center(
@@ -121,6 +122,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Column(
                         children: [
@@ -209,6 +211,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                             Expanded(
                               child: Text(
                                 rev.author,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

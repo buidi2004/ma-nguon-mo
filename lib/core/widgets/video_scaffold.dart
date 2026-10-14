@@ -89,6 +89,7 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                   const SizedBox(height: 12),
                   const Text(
                     'Không thể tải nguồn video',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

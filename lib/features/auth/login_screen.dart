@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -112,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: Border.all(color: AppColors.red),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           Icons.error_outline,
@@ -122,6 +123,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -187,33 +190,88 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                PrimaryButton(
+                GlassButton.brand(
                   text: 'Đăng nhập',
                   isLoading: _isLoading,
+                  height: 48,
+                  borderRadius: 10,
                   onPressed: _handleLogin,
+                ),
+
+                const SizedBox(height: 14),
+
+                // Nút đăng nhập nhanh Demo kính mờ
+                Center(
+                  child: GlassButton.capsule(
+                    text: '1-Click Đăng nhập Demo',
+                    icon: Icons.bolt_rounded,
+                    style: GlassButtonStyle.neutralDark,
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    onPressed: _isLoading ? null : _fillDemoAccount,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Phân cách hoặc tiếp tục với
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: Colors.white12)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'Hoặc đăng nhập với',
+                        style: TextStyle(
+                          color: AppColors.textMuted.withValues(alpha: 0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider(color: Colors.white12)),
+                  ],
                 ),
 
                 const SizedBox(height: 16),
 
-                // Nút đăng nhập nhanh Demo
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : _fillDemoAccount,
-                    icon: const Icon(Icons.bolt, color: Colors.amber, size: 20),
-                    label: const Text(
-                      '1-Click: Đăng nhập tài khoản Demo',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                // Cặp nút kính mờ đăng nhập Google / Apple
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      GlassButton.capsule(
+                        text: 'Google',
+                        icon: Icons.g_mobiledata_rounded,
+                        style: GlassButtonStyle.neutralDark,
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đang kết nối tài khoản Google...'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
                       ),
-                    ),
+                      GlassButton.capsule(
+                        text: 'Apple',
+                        icon: Icons.apple_rounded,
+                        style: GlassButtonStyle.neutralDark,
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đang kết nối Apple ID...'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
 

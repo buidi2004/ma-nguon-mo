@@ -38,7 +38,9 @@ import 'package:openflix/features/watch/reviews_screen.dart';
 import 'package:openflix/features/watch/similar_movies_screen.dart';
 import 'package:openflix/features/watch/trailer_screen.dart';
 import 'package:openflix/features/watch/write_review_screen.dart';
+import 'package:openflix/models/movie_model.dart';
 import 'package:openflix/screens/home_screen.dart';
+import 'package:openflix/screens/player_screen.dart';
 import 'package:openflix/theme/app_theme.dart';
 
 Widget buildTestableWidget(Widget child, {Size size = const Size(393, 852)}) {
@@ -83,8 +85,7 @@ void main() {
     testWidgets('S04: Login renders fields and validation', (tester) async {
       await tester.pumpWidget(buildTestableWidget(const LoginScreen()));
       expect(find.text('Chào mừng trở lại'), findsOneWidget);
-      expect(find.text('Đăng nhập'), findsWidgets);
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Đăng nhập'));
+      await tester.tap(find.text('Đăng nhập').first);
       await tester.pump();
       expect(find.text('Vui lòng nhập email'), findsOneWidget);
     });
@@ -159,11 +160,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     });
 
-    testWidgets('S16: Hot screen renders tabs', (tester) async {
+    testWidgets('S16: Hot screen renders coming soon feed (Sắp ra mắt)', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestableWidget(const HotScreen()));
-      expect(find.text('Mới & Hot'), findsOneWidget);
-      expect(find.text('🍿 Phim mới ra mắt'), findsOneWidget);
-      expect(find.text('🔥 Nổi bật nhất'), findsOneWidget);
+      expect(find.text('Sắp ra mắt'), findsOneWidget);
+      expect(find.text('QUỐC BẢO'), findsOneWidget);
+      expect(find.text('Thêm vào DS'), findsAtLeastNWidgets(1));
+      expect(find.text('Chia sẻ'), findsAtLeastNWidgets(1));
       await tester.pump(const Duration(milliseconds: 300));
     });
 
@@ -191,6 +195,30 @@ void main() {
         buildTestableWidget(const TrailerScreen(movieId: 'sample1')),
       );
       await tester.pump(const Duration(milliseconds: 300));
+    });
+
+    testWidgets('S20: Player screen renders movie title and glass components', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestableWidget(
+          PlayerScreen(
+            movie: MovieModel(
+              id: 'sample-p1',
+              title: 'Cực Quang Tử Địa',
+              description: 'Bộ phim bom tấn khoa học viễn tưởng điện ảnh.',
+              category: 'Hành động',
+              posterUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800',
+              videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+              releaseYear: 2024,
+              isFeatured: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(PlayerScreen), findsOneWidget);
+      expect(find.text('Cực Quang Tử Địa'), findsWidgets);
     });
 
     testWidgets('S21: Episodes screen renders season/episode options', (

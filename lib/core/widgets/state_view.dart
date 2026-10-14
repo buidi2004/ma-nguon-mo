@@ -90,6 +90,7 @@ class StateView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               message,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,

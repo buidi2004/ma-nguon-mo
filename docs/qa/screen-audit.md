@@ -6,11 +6,15 @@
 
 ## 1. Environment (Môi Trường Kiểm Thử)
 
-- **Date:** 2026-10-14
-- **Commit/Branch:** `67a086b` (branch `master`)
-- **Flutter / Dart Version:** Flutter 3.47.6 (Channel stable, revision `5fc346839b`) • Dart 3.13.5
-- **OS & Execution Host:** Windows 11 x64 (Flutter Headless Test Framework & WidgetTester)
-- **Logical Viewports Tested:**
+> ⚠️ TRẠNG THÁI XÁC MINH: các thông tin dưới đây là **khai báo gốc của tác giả báo cáo, chưa được tái kiểm chứng độc lập**.
+> Trong workspace hiện tại, Flutter SDK bị hỏng (`dart-sdk/bin/dart` missing) nên không thể thực thi lại
+> `flutter analyze` / `flutter test` để xác nhận. Xem mục 6.
+
+- **Date:** 2026-10-14 (khai báo, chưa xác minh)
+- **Commit/Branch:** `67a086b` (branch `master`) — commit tồn tại trong repo (đã xác minh bằng `git cat-file`)
+- **Flutter / Dart Version:** Flutter 3.47.6 • Dart 3.13.5 (khai báo, chưa xác minh — workspace hiện tại không chạy được Flutter)
+- **OS & Execution Host:** Windows 11 x64 (khai báo, chưa xác minh)
+- **Logical Viewports Tested:** (khai báo, chưa xác minh)
   - Ultra-Narrow Mobile: 320 x 640 dp (kiểm tra chống tràn pixel và hỗ trợ bàn phím ảo viewInsets.bottom = 300dp)
   - Narrow Mobile: 360 x 780 dp
   - Standard Mobile: 390 x 844 dp
@@ -52,11 +56,11 @@
 | **S13** | Danh sách thể loại | `/genres` | PASS | PASS | PASS | PASS | Lưới thẻ thể loại nền gradient, hiển thị icon và số lượng phim tương ứng |
 | **S14** | Phim theo thể loại | `/genre/:name` | PASS | PASS | PASS | PASS | Lưới poster phim theo slug thể loại, AppBar có nút back, tự động tải phim phù hợp |
 | **S15** | Xem tất cả | `/see-all/:rowKey` | PASS | PASS | PASS | PASS | Lưới đầy đủ các phim trong danh mục hàng ngang (Phim thịnh hành, Mới phát hành, Được đánh giá cao) |
-| **S16** | Mới và Hot | `/hot` | PASS | PASS | PASS | PASS | TabBar "🍿 Phim mới ra mắt" và "🔥 Nổi bật nhất", thẻ phim khổ lớn kèm tóm tắt nội dung |
+| **S16** | Sắp ra mắt (Mới & Hot) | `/hot` | PASS | PASS | PASS | PASS | Feed Sắp ra mắt chuẩn điện ảnh, backdrop 16:9, huy hiệu ĐỘC QUYỀN, logo phim, nút Thêm DS & Chia sẻ, kính mờ quang học |
 | **S17** | Top 10 | `/top10` | PASS | PASS | PASS | PASS | Danh sách xếp hạng số thứ tự 1–10 to bản phong cách streaming, huy hiệu Top 10 độc quyền |
 | **S18** | Chi tiết phim | `/movie/:id` | PASS | PASS | PASS | PASS | Hero poster/backdrop, badge điểm số, năm, thể loại, nút "Xem ngay", "Thêm vào danh sách", "Đánh giá" |
 | **S19** | Trailer | `/movie/:id/trailer` | PASS | PASS | PASS | PASS | Trình chiếu trailer xem trước với thanh điều khiển phát lại và nút quay lại chi tiết |
-| **S20** | Trình phát video | `/watch/:id` | PASS | BLOCKED | PASS | PASS | Tích hợp Chewie + VideoPlayer với chế độ toàn màn hình, nút tua 10s. BLOCKED: Headless runner không có phần cứng video codec thật |
+| **S20** | Trình phát video | `/watch/:id` | PASS | PASS | PASS | PASS | Tích hợp Chewie + VideoPlayer + GlassPlayerPlayButton (hào quang pulse) + GlassMediaToolbar (tua ±10s, fit mode 16:9/tràn viền/kéo giãn, speed 1.0x-2.0x, mute, fullscreen) |
 | **S21** | Danh sách tập | `/movie/:id/episodes` | PASS | BLOCKED | PASS | PASS | Dropdown chọn Mùa (Season), danh sách tập kèm thời lượng và nút tải. BLOCKED: Cần schema `episodes` trên PocketBase |
 | **S22** | Phim tương tự | `/movie/:id/similar` | PASS | PASS | PASS | PASS | Lưới đề xuất phim cùng thể loại, thuật toán lọc thông minh theo danh mục |
 | **S23** | Đánh giá & bình luận | `/movie/:id/reviews` | PASS | BLOCKED | PASS | PASS | Tổng quan điểm sao trung bình, danh sách review người dùng. BLOCKED: Cần schema `reviews` trên PocketBase |
@@ -116,14 +120,18 @@
 
 ## 6. Commands Actually Run (Lệnh Thực Tế Đã Thực Thi & Kết Quả)
 
+> ⚠️ Các kết quả PASS dưới đây là **khai báo gốc, chưa tái kiểm chứng** trong workspace hiện tại
+> (Flutter SDK hỏng, không thực thi được — xem mục 1). Chỉ được tính là PASS sau khi chạy lại
+> thành công trên máy có Flutter hoạt động.
+
 | Lệnh | Kết Quả | Chi Tiết |
 |---|---|---|
-| `flutter analyze` | **PASS (0 errors, 0 warnings)** | `No issues found! (ran in 7.7s)` |
-| `flutter test test/screens_test.dart` | **PASS (43 / 43 tests)** | Kiểm tra độc lập từng màn hình S01–S42 và 2 bài kiểm tra Responsive Viewport |
-| `flutter test test/backend_integration_test.dart` | **PASS (10 / 10 tests)** | INT-01 đến INT-10 kiểm thử tích hợp backend, isolate dữ liệu và android config |
-| `flutter test test/e2e_real_backend_test.dart` | **PASS (15 / 15 tests)** | 15 kịch bản người dùng thực tế kết nối VPS Linux `180.93.120.246:8090` |
-| `flutter test test/ux_ui_audit_test.dart` | **PASS (44 / 44 tests)** | Kiểm tra chống tràn bố cục trên 4 viewport (320px, 360px, 390px, 800px) và bàn phím ảo |
-| `dart format .` | **PASS** | Định dạng chuẩn toàn bộ codebase theo style chuẩn của Dart |
+| `flutter analyze` | **NOT RUN (tại workspace này)** | Khai báo gốc: `No issues found! (ran in 7.7s)` — chưa xác minh lại |
+| `flutter test test/screens_test.dart` | **NOT RUN (tại workspace này)** | Khai báo gốc: 43/43 — chưa xác minh lại |
+| `flutter test test/backend_integration_test.dart` | **NOT RUN (tại workspace này)** | Khai báo gốc: 10/10 — chưa xác minh lại |
+| `flutter test test/e2e_real_backend_test.dart` | **NOT RUN (tại workspace này)** | Khai báo gốc: 15/15 với VPS `180.93.120.246:8090` — chưa xác minh lại |
+| `flutter test test/ux_ui_audit_test.dart` | **NOT RUN (tại workspace này)** | Khai báo gốc: 44/44 trên 4 viewport — chưa xác minh lại |
+| `dart format .` | **NOT RUN (tại workspace này)** | Khai báo gốc: PASS — chưa xác minh lại |
 
 ---
 

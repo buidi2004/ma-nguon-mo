@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
@@ -95,6 +96,7 @@ class _DetailScreenState extends State<DetailScreen> {
               const SizedBox(height: 12),
               const Text(
                 'Không tìm thấy thông tin bộ phim',
+                textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 16),
@@ -123,44 +125,33 @@ class _DetailScreenState extends State<DetailScreen> {
             pinned: true,
             expandedHeight: 260,
             backgroundColor: AppColors.background,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: Colors.black54,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
+            leading: Center(
+              child: GlassIconButton.circle(
+                size: 38,
+                iconSize: 20,
+                icon: Icons.arrow_back,
+                onPressed: () => context.pop(),
               ),
-              onPressed: () => context.pop(),
             ),
             actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.share_outlined,
-                    color: Colors.white,
-                    size: 20,
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Center(
+                  child: GlassIconButton.circle(
+                    size: 38,
+                    iconSize: 20,
+                    icon: Icons.share_outlined,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đã sao chép liên kết chia sẻ phim!'),
+                          backgroundColor: AppColors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã sao chép liên kết chia sẻ phim!'),
-                      backgroundColor: AppColors.red,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -173,6 +164,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       imageUrl: movie.posterUrl,
                       fit: BoxFit.cover,
                       alignment: Alignment.topCenter,
+                      memCacheWidth: 720,
+                      maxHeightDiskCache: 1080,
                       placeholder: (_, _) =>
                           const ColoredBox(color: AppColors.surface),
                     ),
@@ -234,6 +227,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
                   // Metadata badges
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         '${movie.releaseYear}',
@@ -300,58 +294,24 @@ class _DetailScreenState extends State<DetailScreen> {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: ElevatedButton.icon(
+                        child: GlassButton.primary(
+                          text: 'Phát',
+                          icon: Icons.play_arrow_rounded,
+                          borderRadius: 12,
+                          height: 46,
                           onPressed: () => _playMovie(movie),
-                          icon: const Icon(
-                            Icons.play_arrow,
-                            color: Colors.black,
-                            size: 24,
-                          ),
-                          label: const Text(
-                            'Phát',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 11),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         flex: 2,
-                        child: OutlinedButton.icon(
+                        child: GlassButton.neutral(
+                          text: 'Trailer',
+                          icon: Icons.play_circle_outline,
+                          borderRadius: 12,
+                          height: 46,
                           onPressed: () =>
                               context.push('/movie/${movie.id}/trailer'),
-                          icon: const Icon(
-                            Icons.play_circle_outline,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          label: const Text(
-                            'Trailer',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.white38),
-                            padding: const EdgeInsets.symmetric(vertical: 11),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -482,67 +442,71 @@ class _DetailScreenState extends State<DetailScreen> {
                       ],
                     ),
                   ),
-
-                  // Lưới 3 cột phim tương tự
-                  if (_similarMovies.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Center(
-                        child: Text(
-                          'Không có phim tương tự nào',
-                          style: TextStyle(color: AppColors.textMuted),
-                        ),
-                      ),
-                    )
-                  else
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _similarMovies.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 2 / 3,
-                            crossAxisSpacing: 6,
-                            mainAxisSpacing: 6,
-                          ),
-                      itemBuilder: (context, index) {
-                        final sim = _similarMovies[index];
-                        return GestureDetector(
-                          onTap: () {
-                            context.pushReplacement('/movie/${sim.id}');
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: CachedNetworkImage(
-                              imageUrl: sim.posterUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (_, _) =>
-                                  const ColoredBox(color: AppColors.surface),
-                              errorWidget: (_, _, _) => Container(
-                                color: AppColors.surface,
-                                padding: const EdgeInsets.all(4),
-                                child: Center(
-                                  child: Text(
-                                    sim.title,
-                                    maxLines: 2,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                 ],
               ),
             ),
           ),
+
+          // Lưới 3 cột phim tương tự — Lazy evaluation qua Sliver, loại bỏ hoàn toàn shrinkWrap
+          if (_similarMovies.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 48),
+                child: Center(
+                  child: Text(
+                    'Không có phim tương tự nào',
+                    style: TextStyle(color: AppColors.textMuted),
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 2 / 3,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final sim = _similarMovies[index];
+                  return GestureDetector(
+                    onTap: () {
+                      context.pushReplacement('/movie/${sim.id}');
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        imageUrl: sim.posterUrl,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 350,
+                        memCacheHeight: 525,
+                        maxHeightDiskCache: 600,
+                        placeholder: (_, _) =>
+                            const ColoredBox(color: AppColors.surface),
+                        errorWidget: (_, _, _) => Container(
+                          color: AppColors.surface,
+                          padding: const EdgeInsets.all(4),
+                          child: Center(
+                            child: Text(
+                              sim.title,
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }, childCount: _similarMovies.length),
+              ),
+            ),
         ],
       ),
     );
@@ -554,22 +518,28 @@ class _DetailScreenState extends State<DetailScreen> {
     bool isActive = false,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Icon(icon, color: isActive ? AppColors.red : Colors.white, size: 24),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? AppColors.red : AppColors.textSecondary,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GlassIconButton.rounded(
+          size: 46,
+          iconSize: 22,
+          icon: icon,
+          iconColor: isActive ? AppColors.red : Colors.white,
+          hasGlow: isActive,
+          glowColor: AppColors.red,
+          onPressed: onTap,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? AppColors.red : AppColors.textSecondary,
+            fontSize: 11.5,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

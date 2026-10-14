@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie_model.dart';
+import '../presentation/widgets/glass/glass_components.dart';
 import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/movie_row.dart';
+import '../widgets/top10_row.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,10 +23,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final PocketBaseService _pbService = PocketBaseService.instance;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _homeScrollController = ScrollController();
+  final ValueNotifier<double> _appBarOpacityNotifier = ValueNotifier<double>(
+    0.0,
+  );
+  Timer? _searchDebounceTimer;
 
   List<MovieModel> _allMovies = [];
   List<MovieModel> _filteredMovies = [];
-  MovieModel? _featuredMovie;
+  List<MovieModel> _featuredMovies = [];
+  List<MovieModel> _top10Movies = [];
+  List<MovieModel> _newReleases = [];
+  List<MovieModel> _animatedMovies = [];
+  List<MovieModel> _sciFiMovies = [];
+  List<MovieModel> _actionMovies = [];
+  List<String> _categories = const ['Tất cả'];
   bool _isLoading = true;
   bool _isSearching = false;
   String _selectedCategory = 'Tất cả';
@@ -30,12 +45,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _homeScrollController.addListener(_onHomeScroll);
     _loadData();
+  }
+
+  void _onHomeScroll() {
+    if (!_homeScrollController.hasClients) return;
+    final offset = _homeScrollController.offset;
+    final newOpacity = (offset / 140.0).clamp(0.0, 1.0);
+    if ((newOpacity - _appBarOpacityNotifier.value).abs() > 0.01) {
+      _appBarOpacityNotifier.value = newOpacity;
+    }
   }
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
+    _homeScrollController.removeListener(_onHomeScroll);
+    _homeScrollController.dispose();
     _searchController.dispose();
+    _appBarOpacityNotifier.dispose();
     super.dispose();
   }
 
@@ -46,20 +75,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final movies = await _pbService.getMovies();
-      final featured = await _pbService.getFeaturedMovies();
+      final featured = movies.where((m) => m.isFeatured).toList();
 
       if (!mounted) return;
+
+      final catSet = {'Tất cả'};
+      for (var m in movies) {
+        if (m.category.isNotEmpty) catSet.add(m.category);
+      }
+
+      final top10 = await _pbService.getTop10Movies();
+      final top10Ids = top10.map((m) => m.id).toSet();
+      final newReleases = movies
+          .where((m) => m.isNew && !top10Ids.take(5).contains(m.id))
+          .toList();
+      for (final m in movies) {
+        if (newReleases.length >= 10) break;
+        if (!top10Ids.contains(m.id) && !newReleases.any((e) => e.id == m.id)) {
+          newReleases.add(m);
+        }
+      }
 
       setState(() {
         _allMovies = movies;
         _filteredMovies = movies;
-        if (featured.isNotEmpty) {
-          _featuredMovie = featured.first;
-        } else if (movies.isNotEmpty) {
-          _featuredMovie = movies.first;
-        } else {
-          _featuredMovie = null;
+        _categories = catSet.toList();
+        // Hero carousel: Ưu tiên phim nổi bật (featured) VÀ các trailer hot (< 5 phút / sắp chiếu)
+        final heroList = <MovieModel>[];
+        for (final m in featured) {
+          if (!heroList.any((e) => e.id == m.id)) {
+            heroList.add(m);
+          }
         }
+        final trailers = movies
+            .where((m) => m.comingSoon || m.durationMinutes <= 5)
+            .toList();
+        for (final m in trailers) {
+          if (heroList.length >= 8) break;
+          if (!heroList.any((e) => e.id == m.id)) {
+            heroList.add(m);
+          }
+        }
+        for (final m in movies) {
+          if (heroList.length >= 8) break;
+          if (!heroList.any((e) => e.id == m.id)) {
+            heroList.add(m);
+          }
+        }
+        _featuredMovies = heroList;
+        _top10Movies = top10;
+        _newReleases = newReleases.isNotEmpty ? newReleases : movies;
+        _animatedMovies = movies
+            .where((m) => m.category.toLowerCase().contains('hoạt'))
+            .toList();
+        _sciFiMovies = movies
+            .where((m) => m.category.toLowerCase().contains('viễn'))
+            .toList();
+        _actionMovies = movies
+            .where(
+              (m) =>
+                  m.category.toLowerCase().contains('hành') ||
+                  m.category.toLowerCase().contains('phiêu'),
+            )
+            .toList();
         _isLoading = false;
       });
     } catch (_) {
@@ -70,38 +148,45 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _onSearchChanged(String query) {
+  void _onSearchChanged(String query, {bool immediate = false}) {
+    _searchDebounceTimer?.cancel();
     final trimmed = query.trim().toLowerCase();
-    setState(() {
-      if (trimmed.isEmpty && _selectedCategory == 'Tất cả') {
-        _filteredMovies = _allMovies;
-      } else {
-        _filteredMovies = _allMovies.where((m) {
-          final matchesQuery =
-              trimmed.isEmpty ||
-              m.title.toLowerCase().contains(trimmed) ||
-              m.description.toLowerCase().contains(trimmed);
-          final matchesCategory =
-              _selectedCategory == 'Tất cả' || m.category == _selectedCategory;
-          return matchesQuery && matchesCategory;
-        }).toList();
-      }
-    });
+
+    void executeFilter() {
+      if (!mounted) return;
+      setState(() {
+        if (trimmed.isEmpty && _selectedCategory == 'Tất cả') {
+          _filteredMovies = _allMovies;
+        } else {
+          _filteredMovies = _allMovies.where((m) {
+            final matchesQuery =
+                trimmed.isEmpty ||
+                m.title.toLowerCase().contains(trimmed) ||
+                m.description.toLowerCase().contains(trimmed);
+            final matchesCategory =
+                _selectedCategory == 'Tất cả' ||
+                m.category == _selectedCategory;
+            return matchesQuery && matchesCategory;
+          }).toList();
+        }
+      });
+    }
+
+    if (immediate) {
+      executeFilter();
+    } else {
+      _searchDebounceTimer = Timer(
+        const Duration(milliseconds: 280),
+        executeFilter,
+      );
+    }
   }
 
   void _onCategorySelected(String category) {
     setState(() {
       _selectedCategory = category;
-      _onSearchChanged(_searchController.text);
+      _onSearchChanged(_searchController.text, immediate: true);
     });
-  }
-
-  List<String> get _categories {
-    final set = {'Tất cả'};
-    for (var m in _allMovies) {
-      if (m.category.isNotEmpty) set.add(m.category);
-    }
-    return set.toList();
   }
 
   void _playMovie(MovieModel movie) {
@@ -114,17 +199,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Netflix-style Quick Details Bottom Sheet
   void _showMovieDetailModal(MovieModel movie) {
+    final bool isTrailer = movie.comingSoon || movie.durationMinutes <= 5;
+
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppColors.surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
+      builder: (modalContext) {
+        final double bottomInset =
+            MediaQuery.of(modalContext).padding.bottom + 16.0;
+
         return SafeArea(
+          top: false,
+          bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,11 +242,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: CachedNetworkImage(
                         imageUrl: movie.posterUrl,
-                        width: 76,
-                        height: 114,
+                        width: 80,
+                        height: 120,
                         fit: BoxFit.cover,
+                        memCacheWidth: 240,
+                        memCacheHeight: 360,
+                        maxHeightDiskCache: 450,
                         placeholder: (_, _) =>
                             const ColoredBox(color: AppColors.surfaceLight),
+                        errorWidget: (_, _, _) => Container(
+                          width: 80,
+                          height: 120,
+                          color: AppColors.surfaceLight,
+                          child: const Icon(
+                            Icons.movie_outlined,
+                            color: Colors.white30,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -163,6 +268,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             movie.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 18,
@@ -171,7 +278,30 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 6),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              if (isTrailer) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 1.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.red,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: const Text(
+                                    'TRAILER',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
                               Text(
                                 '${movie.releaseYear}',
                                 style: const TextStyle(
@@ -202,11 +332,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                movie.category,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 13,
+                              Flexible(
+                                child: Text(
+                                  movie.category,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -227,23 +361,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                // Nút Phát toàn chiều ngang
+                const SizedBox(height: 18),
+                // Nút Phát / Xem Trailer toàn chiều ngang
                 SizedBox(
                   width: double.infinity,
+                  height: 46,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(modalContext);
                       _playMovie(movie);
                     },
-                    icon: const Icon(
-                      Icons.play_arrow,
+                    icon: Icon(
+                      isTrailer
+                          ? Icons.play_circle_fill_rounded
+                          : Icons.play_arrow_rounded,
                       color: Colors.black,
                       size: 24,
                     ),
-                    label: const Text(
-                      'Phát',
-                      style: TextStyle(
+                    label: Text(
+                      isTrailer ? 'Xem Trailer' : 'Phát',
+                      style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -253,9 +390,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 11),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                   ),
@@ -410,7 +546,9 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
-    );
+    ).then((_) {
+      urlController.dispose();
+    });
   }
 
   @override
@@ -418,12 +556,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final isFilteringCategory = _selectedCategory != 'Tất cả';
     return Scaffold(
       backgroundColor: AppColors.background,
-      // AppBar trong suốt CHỈ đè lên HeroBanner khi ở trang chủ đầy đủ
-      extendBodyBehindAppBar: !_isSearching && !isFilteringCategory,
+      // Luôn trải dài toàn màn hình để dải hòa trộn 150px hoạt động liên tục
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: (_isSearching || isFilteringCategory)
-            ? AppColors.background
-            : Colors.black.withValues(alpha: 0.3),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         titleSpacing: (isFilteringCategory && !_isSearching) ? 0 : 12,
         leading: (isFilteringCategory && !_isSearching)
@@ -471,55 +607,59 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             : isFilteringCategory
-                ? Row(
-                    children: [
-                      Text(
-                        _selectedCategory,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+            ? Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedCategory,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.red.withValues(alpha: 0.20),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.red.withValues(alpha: 0.50),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          '${_filteredMovies.length} phim',
-                          style: const TextStyle(
-                            color: AppColors.red,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : const Row(
-                    children: [
-                      // OpenFlix Red Wordmark chuẩn Netflix
-                      Text(
-                        'OPENFLIX',
-                        style: TextStyle(
-                          color: AppColors.red,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 21,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.red.withValues(alpha: 0.20),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.red.withValues(alpha: 0.50),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      '${_filteredMovies.length} phim',
+                      style: const TextStyle(
+                        color: AppColors.red,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const Row(
+                children: [
+                  // OpenFlix Red Wordmark chuẩn Netflix
+                  Text(
+                    'OPENFLIX',
+                    style: TextStyle(
+                      color: AppColors.red,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 21,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ],
+              ),
         actions: [
           if (isFilteringCategory && !_isSearching)
             IconButton(
@@ -571,11 +711,53 @@ class _HomeScreenState extends State<HomeScreen> {
                 strokeWidth: 3,
               ),
             )
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              color: AppColors.red,
-              backgroundColor: AppColors.surface,
-              child: _buildBody(),
+          : Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: _loadData,
+                  color: AppColors.red,
+                  backgroundColor: AppColors.surface,
+                  child: _buildBody(),
+                ),
+                // Dãy hòa trộn quang học đỉnh (150px): Triệt tiêu hoàn toàn đường cắt ngang
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 150,
+                  child: IgnorePointer(
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: _appBarOpacityNotifier,
+                      builder: (context, opacity, child) {
+                        return AnimatedOpacity(
+                          opacity: (_isSearching || isFilteringCategory)
+                              ? 1.0
+                              : opacity,
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          child: child,
+                        );
+                      },
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.background,
+                              AppColors.background.withValues(alpha: 0.94),
+                              AppColors.background.withValues(alpha: 0.65),
+                              AppColors.background.withValues(alpha: 0.25),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.40, 0.65, 0.85, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -620,6 +802,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Giao diện chính Netflix: HeroBanner + các hàng phim cuộn ngang
     return SingleChildScrollView(
+      controller: _homeScrollController,
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
@@ -627,12 +810,13 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Hero Banner nổi bật trên cùng
-          if (_featuredMovie != null)
-            HeroBanner(
-              movie: _featuredMovie!,
-              onPlay: () => _playMovie(_featuredMovie!),
-              onInfo: () => _showMovieDetailModal(_featuredMovie!),
+          // 1. Hero Banner carousel (nhiều phim nổi bật, autoplay lazy)
+          if (_featuredMovies.isNotEmpty)
+            HeroBannerCarousel(
+              movies: _featuredMovies,
+              onPlay: _playMovie,
+              onInfo: _showMovieDetailModal,
+              onImageTap: (movie) => context.push('/trailer/${movie.id}'),
             ),
 
           // 2. Chip lọc thể loại nhỏ gọn đè nhẹ dưới Hero
@@ -659,49 +843,39 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          // 4. Hàng Top 10 Phim Thịnh Hành (S17)
-          MovieRow(
+          // 4. Hàng Top 10 Phim Thịnh Hành (S17) — số xám to sau poster
+          Top10Row(
             title: 'Top 10 Phim Thịnh Hành',
-            movies: _allMovies.take(10).toList(),
+            movies: _top10Movies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/top10'),
           ),
 
           // 5. Các hàng phim cuộn ngang chuẩn Netflix 3.4 peek ratio
           MovieRow(
-            title: 'Phim thịnh hành',
-            movies: _allMovies,
+            title: 'Mới phát hành trên OpenFlix',
+            movies: _newReleases.isNotEmpty ? _newReleases : _allMovies,
             onTap: _openMovieDetail,
-            onSeeAll: () => context.push('/see-all/trending'),
+            onSeeAll: () => context.push('/see-all/new'),
           ),
 
           MovieRow(
             title: 'Hoạt hình đặc sắc',
-            movies: _allMovies
-                .where((m) => m.category.toLowerCase().contains('hoạt'))
-                .toList(),
+            movies: _animatedMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Hoạt hình'),
           ),
 
           MovieRow(
             title: 'Khoa học viễn tưởng',
-            movies: _allMovies
-                .where((m) => m.category.toLowerCase().contains('viễn'))
-                .toList(),
+            movies: _sciFiMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Viễn tưởng'),
           ),
 
           MovieRow(
             title: 'Hành động & Phiêu lưu',
-            movies: _allMovies
-                .where(
-                  (m) =>
-                      m.category.toLowerCase().contains('hành') ||
-                      m.category.toLowerCase().contains('phiêu'),
-                )
-                .toList(),
+            movies: _actionMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Hành động'),
           ),
@@ -712,7 +886,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Chip lọc danh mục phong cách tối giản
+  /// Chip lọc danh mục phong cách kính mờ quang học (Glass Capsule)
   Widget _buildCategoryFilterRow() {
     return Container(
       height: 38,
@@ -726,38 +900,30 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           final cat = _categories[index];
           final isSelected = cat == _selectedCategory;
-          return GestureDetector(
+          return GlassSurface.capsule(
             onTap: () => _onCategorySelected(cat),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.red : AppColors.surface,
-                borderRadius: BorderRadius.circular(19),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.red
-                      : Colors.white.withValues(alpha: 0.15),
-                  width: 0.8,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: AppColors.red.withValues(alpha: 0.40),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Text(
-                cat,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                  fontSize: 12.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                ),
+            tintColor: isSelected
+                ? AppColors.red.withValues(alpha: 0.55)
+                : const Color(0x302A2A2A),
+            blur: isSelected ? 9.0 : 8.0,
+            refractiveIndex: 1.68,
+            thickness: 34.0,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            shadows: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.red.withValues(alpha: 0.45),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : const [],
+            child: Text(
+              cat,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.textPrimary,
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           );
@@ -768,21 +934,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Lưới 3 cột poster khi tìm kiếm hoặc lọc danh mục chuẩn điện ảnh Netflix
   Widget _buildSearchOrFilterGrid() {
+    final topOffset = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SizedBox(height: topOffset),
         _buildCategoryFilterRow(),
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Danh sách ${_selectedCategory != 'Tất cả' ? _selectedCategory : 'kết quả'} (${_filteredMovies.length} phim)',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  'Danh sách ${_selectedCategory != 'Tất cả' ? _selectedCategory : 'kết quả'} (${_filteredMovies.length} phim)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               if (_selectedCategory != 'Tất cả')
@@ -856,6 +1028,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               CachedNetworkImage(
                                 imageUrl: movie.posterUrl,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 350,
+                                memCacheHeight: 525,
+                                maxHeightDiskCache: 600,
                                 placeholder: (_, _) => Container(
                                   color: AppColors.surface,
                                   child: const Center(
@@ -866,8 +1041,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          AppColors.red,
-                                        ),
+                                              AppColors.red,
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -925,8 +1100,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.14),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.14,
+                                        ),
                                         width: 0.8,
                                       ),
                                     ),
@@ -949,8 +1125,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         : Colors.black.withValues(alpha: 0.65),
                                     borderRadius: BorderRadius.circular(4),
                                     border: Border.all(
-                                      color: Colors.white
-                                          .withValues(alpha: 0.25),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.25,
+                                      ),
                                       width: 0.6,
                                     ),
                                   ),
@@ -970,7 +1147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Positioned(
                                 left: 6,
                                 right: 6,
-                                bottom: 6,
+                                bottom: 8,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
@@ -996,8 +1173,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       '${movie.releaseYear}',
                                       style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.70),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.70,
+                                        ),
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w500,
                                       ),

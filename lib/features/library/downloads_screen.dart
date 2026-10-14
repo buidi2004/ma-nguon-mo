@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -48,47 +49,34 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   }
 
   void _clearAll() {
-    showDialog(
+    showGlassDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text(
-          'Xóa tất cả tải xuống?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'Tất cả video ngoại tuyến và bộ nhớ đệm cache sẽ được giải phóng hoàn toàn.',
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Hủy',
-              style: TextStyle(color: AppColors.textMuted),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              setState(() {
-                _downloadedMovies.clear();
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đã giải phóng 1.4 GB bộ nhớ đệm'),
-                  backgroundColor: AppColors.surface,
-                ),
-              );
-            },
-            child: const Text(
-              'Xóa tất cả',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
+      title: 'Xóa tất cả tải xuống?',
+      content: const Text(
+        'Tất cả video ngoại tuyến và bộ nhớ đệm cache sẽ được giải phóng hoàn toàn.',
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
       ),
+      actions: [
+        GlassButton.neutral(
+          text: 'Hủy',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        GlassButton.brand(
+          text: 'Xóa tất cả',
+          onPressed: () {
+            Navigator.of(context).pop();
+            setState(() {
+              _downloadedMovies.clear();
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Đã giải phóng 1.4 GB bộ nhớ đệm'),
+                backgroundColor: AppColors.surface,
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -328,6 +316,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                           ),
                           textAlign: TextAlign.center,
                         ),
+                        const SizedBox(height: 24),
+                        GlassButton.primary(
+                          text: 'Tìm thêm phim để tải',
+                          icon: Icons.download_rounded,
+                          height: 44,
+                          onPressed: () => context.go('/'),
+                        ),
                       ],
                     ),
                   )
@@ -360,6 +355,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                       ? CachedNetworkImage(
                                           imageUrl: movie.thumbnailUrl,
                                           fit: BoxFit.cover,
+                                          memCacheWidth: 220,
+                                          memCacheHeight: 130,
+                                          maxHeightDiskCache: 250,
                                           errorWidget: (_, _, _) =>
                                               Container(color: Colors.white10),
                                         )
@@ -404,11 +402,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.white60,
-                                ),
+                              GlassIconButton.circle(
+                                size: 34,
+                                iconSize: 18,
+                                icon: Icons.delete_outline_rounded,
                                 tooltip: 'Xóa',
                                 onPressed: () => _removeDownload(movie.id),
                               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/state_view.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class NotificationItem {
@@ -143,14 +144,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         actions: [
           if (unreadCount > 0)
-            TextButton(
-              onPressed: _markAllAsRead,
-              child: const Text(
-                'Đọc tất cả',
-                style: TextStyle(
-                  color: AppColors.red,
-                  fontWeight: FontWeight.bold,
-                ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GlassButton.capsule(
+                text: 'Đọc tất cả',
+                icon: Icons.done_all_rounded,
+                style: GlassButtonStyle.neutralDark,
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                onPressed: _markAllAsRead,
               ),
             ),
         ],
@@ -164,29 +166,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                ChoiceChip(
-                  label: const Text('Tất cả'),
-                  selected: !_filterOnlyUnread,
-                  onSelected: (val) =>
-                      setState(() => _filterOnlyUnread = false),
-                  selectedColor: AppColors.red,
-                  labelStyle: TextStyle(
-                    color: !_filterOnlyUnread
-                        ? Colors.white
-                        : AppColors.textSecondary,
-                    fontWeight: FontWeight.bold,
+                GestureDetector(
+                  onTap: () => setState(() => _filterOnlyUnread = false),
+                  child: GlassSurface.capsule(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    tintColor: !_filterOnlyUnread
+                        ? const Color(0x38E50914)
+                        : const Color(0x222A2A2A),
+                    customBorder: Border.all(
+                      color: !_filterOnlyUnread
+                          ? const Color(0x88E50914)
+                          : Colors.white12,
+                    ),
+                    blur: 8.5,
+                    child: Text(
+                      'Tất cả',
+                      style: TextStyle(
+                        color: !_filterOnlyUnread
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-                ChoiceChip(
-                  label: Text('Chưa đọc ($unreadCount)'),
-                  selected: _filterOnlyUnread,
-                  onSelected: (val) => setState(() => _filterOnlyUnread = true),
-                  selectedColor: AppColors.red,
-                  labelStyle: TextStyle(
-                    color: _filterOnlyUnread
-                        ? Colors.white
-                        : AppColors.textSecondary,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() => _filterOnlyUnread = true),
+                  child: GlassSurface.capsule(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    tintColor: _filterOnlyUnread
+                        ? const Color(0x38E50914)
+                        : const Color(0x222A2A2A),
+                    customBorder: Border.all(
+                      color: _filterOnlyUnread
+                          ? const Color(0x88E50914)
+                          : Colors.white12,
+                    ),
+                    blur: 8.5,
+                    child: Text(
+                      'Chưa đọc ($unreadCount)',
+                      style: TextStyle(
+                        color: _filterOnlyUnread
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -253,10 +287,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             item.title,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 14,
@@ -281,6 +319,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     const SizedBox(height: 4),
                                     Text(
                                       item.body,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,

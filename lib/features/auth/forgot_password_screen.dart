@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -108,6 +108,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 _isSent
                     ? 'Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến ${_emailController.text}. Vui lòng kiểm tra hộp thư đến (hoặc thư rác).'
                     : 'Nhập địa chỉ email liên kết với tài khoản OpenFlix của bạn để nhận hướng dẫn khôi phục quyền truy cập.',
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
@@ -127,6 +129,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.check_circle_outline,
@@ -136,6 +139,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Expanded(
                         child: Text(
                           'Yêu cầu khôi phục đã được xử lý thành công!',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: AppColors.success,
                             fontSize: 13,
@@ -147,8 +152,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 28),
-                PrimaryButton(
+                GlassButton.neutral(
                   text: 'Quay lại đăng nhập',
+                  height: 48,
+                  borderRadius: 10,
                   onPressed: () => context.go('/login'),
                 ),
                 const SizedBox(height: 16),
@@ -190,9 +197,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 28),
-                PrimaryButton(
+                GlassButton.primary(
                   text: 'Gửi liên kết khôi phục',
                   isLoading: _isLoading,
+                  height: 48,
+                  borderRadius: 10,
                   onPressed: _handleReset,
                 ),
                 const SizedBox(height: 24),

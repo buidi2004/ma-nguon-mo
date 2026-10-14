@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class PlaybackSettingsScreen extends StatefulWidget {
@@ -37,7 +38,8 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
           _autoPlayNext = prefs.getBool('playback_autoplay_next') ?? true;
           _autoPlayTrailer = prefs.getBool('playback_autoplay_trailer') ?? true;
           _wifiOnly = prefs.getBool('playback_wifi_only') ?? false;
-          _videoQuality = prefs.getString('playback_video_quality') ??
+          _videoQuality =
+              prefs.getString('playback_video_quality') ??
               'Tự động (Khuyên dùng)';
         });
       }
@@ -141,57 +143,72 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 10),
-                ..._qualityOptions.map((opt) {
-                  final isSelected = _videoQuality == opt;
-                  return InkWell(
-                    onTap: () {
-                      setState(() => _videoQuality = opt);
-                      _saveSetting('playback_video_quality', opt);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Đã chọn: $opt'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 4,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSelected
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_off,
-                            color: isSelected
-                                ? AppColors.red
-                                : AppColors.textMuted,
-                            size: 20,
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _qualityOptions.map((opt) {
+                    final isSelected = _videoQuality == opt;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _videoQuality = opt);
+                        _saveSetting('playback_video_quality', opt);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Đã chọn: $opt'),
+                            duration: const Duration(seconds: 1),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              opt,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : AppColors.textSecondary,
-                                fontSize: 13.5,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
+                        );
+                      },
+                      child: GlassSurface.capsule(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        tintColor: isSelected
+                            ? const Color(0x38E50914)
+                            : const Color(0x222A2A2A),
+                        customBorder: Border.all(
+                          color: isSelected
+                              ? const Color(0x88E50914)
+                              : Colors.white12,
+                        ),
+                        blur: 8.5,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isSelected
+                                  ? Icons.check_circle_rounded
+                                  : Icons.circle_outlined,
+                              color: isSelected
+                                  ? const Color(0xFF00E5FF)
+                                  : AppColors.textMuted,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                opt,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.textSecondary,
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),
@@ -214,6 +231,8 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
         child: SwitchListTile(
           title: Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -222,6 +241,8 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
           ),
           subtitle: Text(
             subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,

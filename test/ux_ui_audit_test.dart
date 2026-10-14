@@ -51,10 +51,8 @@ Widget _wrap(
     theme: buildAppTheme(),
     builder: (context, widgetChild) {
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          size: size,
-          viewInsets: viewInsets,
-        ),
+        data: MediaQuery.of(context)
+            .copyWith(size: size, viewInsets: viewInsets),
         child: widgetChild ?? const SizedBox.shrink(),
       );
     },
@@ -101,7 +99,11 @@ void main() {
       if (testKeyboard) {
         // Giả lập bàn phím ảo đẩy lên 300px
         await tester.pumpWidget(
-          _wrap(screen, size: vp, viewInsets: const EdgeInsets.only(bottom: 300)),
+          _wrap(
+            screen,
+            size: vp,
+            viewInsets: const EdgeInsets.only(bottom: 300),
+          ),
         );
         await tester.pump(const Duration(milliseconds: 100));
         err = tester.takeException();

@@ -71,6 +71,8 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
       appBar: AppBar(
         title: Text(
           widget.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

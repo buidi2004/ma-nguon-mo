@@ -26,7 +26,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final prefs = await SharedPreferences.getInstance();
       if (mounted) {
         setState(() {
-          _notificationsEnabled = prefs.getBool('setting_notifications') ?? true;
+          _notificationsEnabled =
+              prefs.getBool('setting_notifications') ?? true;
         });
       }
     } catch (_) {}
@@ -224,6 +225,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           leading: Icon(icon, color: Colors.white, size: 22),
           title: Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -233,6 +236,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           subtitle: subtitle != null
               ? Text(
                   subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,

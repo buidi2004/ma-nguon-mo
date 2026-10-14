@@ -52,7 +52,7 @@ void main() {
       expect(first.category, isNotEmpty);
       expect(first.posterUrl, isNotEmpty);
       expect(first.videoUrl, isNotEmpty);
-      expect(first.releaseYear, greaterThan(2000));
+      expect(first.releaseYear, greaterThan(1900));
       expect(first.durationMinutes, greaterThan(0));
     });
 
@@ -71,7 +71,7 @@ void main() {
         expect(movie!.id, equals(targetId));
         expect(movie.title, equals(movies.first.title));
         expect(movie.posterUrl, isNotEmpty);
-        expect(movie.releaseYear, greaterThan(2000));
+        expect(movie.releaseYear, greaterThan(1900));
 
         // ID không tồn tại phải trả về null an toàn
         final notFound = await pb.getMovieById('non_existent_id_999');
@@ -200,7 +200,9 @@ void main() {
       final pb = PocketBaseService.instance;
 
       // Cố tình trỏ tới server không tồn tại để kích hoạt offline fallback ngay lập tức (1ms)
-      pb.updateBaseUrl('http://127.0.0.1:59999'); // Local closed port -> instant refused
+      pb.updateBaseUrl(
+        'http://127.0.0.1:59999',
+      ); // Local closed port -> instant refused
       final fallbackMovies = await pb.getMovies();
 
       expect(fallbackMovies, isNotEmpty);

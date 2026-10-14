@@ -125,6 +125,8 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                                 children: [
                                   Text(
                                     opt['title']!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: isSelected
