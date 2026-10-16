@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -28,7 +30,8 @@ class _TrailerScreenState extends State<TrailerScreen> {
   String? _videoError;
 
   // Zoom & Smooth Seek
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   double _currentScale = 1.0;
   String? _hudMessage;
   Timer? _hudTimer;
@@ -44,7 +47,24 @@ class _TrailerScreenState extends State<TrailerScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMovie();
+    // Đợi hiệu ứng chuyển màn (cinematicBars 320ms) hoàn tất 100% rồi mới load video trailer,
+    // giúp hiệu ứng chuyển cảnh đạt 60/120fps mượt mà không khựng giật.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final routeAnimation = ModalRoute.of(context)?.animation;
+      if (routeAnimation != null && !routeAnimation.isCompleted) {
+        void statusListener(AnimationStatus status) {
+          if (status == AnimationStatus.completed) {
+            routeAnimation.removeStatusListener(statusListener);
+            if (mounted) _loadMovie();
+          }
+        }
+
+        routeAnimation.addStatusListener(statusListener);
+      } else {
+        _loadMovie();
+      }
+    });
   }
 
   Future<void> _loadMovie() async {
@@ -55,7 +75,11 @@ class _TrailerScreenState extends State<TrailerScreen> {
         _isLoading = false;
       });
       if (movie != null) {
-        _initializePlayer(movie.videoUrl);
+        // Ưu tiên phát trailer chính thức (trailerUrl), nếu rỗng mới dùng videoUrl
+        final trailerLink = movie.trailerUrl.trim().isNotEmpty
+            ? movie.trailerUrl
+            : movie.videoUrl;
+        _initializePlayer(trailerLink);
       }
     }
   }
@@ -101,7 +125,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
             : 16 / 9,
         allowFullScreen: true,
         allowMuting: true,
-        showControls: true,
+        showControls: false,
         deviceOrientationsOnEnterFullScreen: [
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight,
@@ -113,6 +137,21 @@ class _TrailerScreenState extends State<TrailerScreen> {
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
+        routePageBuilder:
+            (context, animation, secondaryAnimation, controllerProvider) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return ChewieControllerProvider(
+                    controller: controllerProvider.controller,
+                    child: OpenFlixFullscreenPlayer(
+                      controller: controllerProvider.controller,
+                      movieTitle: _movie?.title ?? 'Trailer',
+                    ),
+                  );
+                },
+              );
+            },
       );
 
       if (mounted) {
@@ -147,7 +186,11 @@ class _TrailerScreenState extends State<TrailerScreen> {
         _currentScale = 1.0;
         _showHud('Thu nhỏ: 1.0x (Mặc định)');
       } else {
-        _transformationController.value = Matrix4.diagonal3Values(1.8, 1.8, 1.0);
+        _transformationController.value = Matrix4.diagonal3Values(
+          1.8,
+          1.8,
+          1.0,
+        );
         _currentScale = 1.8;
         _showHud('Phóng to: 1.8x');
       }
@@ -155,7 +198,10 @@ class _TrailerScreenState extends State<TrailerScreen> {
   }
 
   void _quickSeek(int seconds) {
-    if (_videoPlayerController == null || !_videoPlayerController!.value.isInitialized) return;
+    if (_videoPlayerController == null ||
+        !_videoPlayerController!.value.isInitialized) {
+      return;
+    }
     _accumulatedSeekSeconds += seconds;
     final totalDuration = _videoPlayerController!.value.duration;
     final currentPos = _videoPlayerController!.value.position;
@@ -326,10 +372,14 @@ class _TrailerScreenState extends State<TrailerScreen> {
                             children: [
                               GestureDetector(
                                 onDoubleTapDown: (details) {
-                                  final screenWidth = MediaQuery.of(context).size.width;
-                                  if (details.localPosition.dx < screenWidth * 0.35) {
+                                  final screenWidth = MediaQuery.of(context)
+                                      .size
+                                      .width;
+                                  if (details.localPosition.dx <
+                                      screenWidth * 0.35) {
                                     _quickSeek(-10);
-                                  } else if (details.localPosition.dx > screenWidth * 0.65) {
+                                  } else if (details.localPosition.dx >
+                                      screenWidth * 0.65) {
                                     _quickSeek(10);
                                   } else {
                                     _toggleDoubleTapZoom();
@@ -337,34 +387,55 @@ class _TrailerScreenState extends State<TrailerScreen> {
                                 },
                                 child: ClipRect(
                                   child: InteractiveViewer(
-                                    transformationController: _transformationController,
+                                    transformationController:
+                                        _transformationController,
                                     minScale: 1.0,
                                     maxScale: 3.5,
                                     panAxis: PanAxis.free,
                                     onInteractionUpdate: (details) {
-                                      _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                                      _currentScale = _transformationController
+                                          .value
+                                          .getMaxScaleOnAxis();
                                     },
                                     onInteractionEnd: (details) {
-                                      _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                                      _currentScale = _transformationController
+                                          .value
+                                          .getMaxScaleOnAxis();
                                       if (_currentScale > 1.05) {
-                                        _showHud('Thu phóng: ${_currentScale.toStringAsFixed(1)}x');
+                                        _showHud(
+                                          'Thu phóng: ${_currentScale.toStringAsFixed(1)}x',
+                                        );
                                       }
                                     },
-                                    child: Chewie(controller: _chewieController!),
+                                    child: RepaintBoundary(
+                                      child: Chewie(
+                                        controller: _chewieController!,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                               if (_hudMessage != null)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.85),
                                     borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: Colors.white24, width: 1),
+                                    border: Border.all(
+                                      color: Colors.white24,
+                                      width: 1,
+                                    ),
                                   ),
                                   child: Text(
                                     _hudMessage!,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -404,7 +475,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
                         height: 38,
                         borderRadius: 19,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
-                        onPressed: () => context.go('/movie/${widget.movieId}'),
+                        onPressed: () => context.push('/movie/${widget.movieId}'),
                       ),
                     ],
                   ),

@@ -6,6 +6,26 @@ import 'package:pocketbase/pocketbase.dart';
 
 import '../models/movie_model.dart';
 
+class MoviePageResult {
+  final int page;
+  final int perPage;
+  final int totalItems;
+  final int totalPages;
+  final List<MovieModel> items;
+
+  const MoviePageResult({
+    required this.page,
+    required this.perPage,
+    required this.totalItems,
+    required this.totalPages,
+    required this.items,
+  });
+
+  bool get hasMore => page < totalPages;
+  bool get isEmpty => items.isEmpty;
+  bool get isNotEmpty => items.isNotEmpty;
+}
+
 class PocketBaseService {
   static final PocketBaseService instance = PocketBaseService._internal();
 
@@ -22,6 +42,8 @@ class PocketBaseService {
   bool _isUsingOfflineMock = false;
   List<MovieModel>? _cachedMovies;
   Future<List<MovieModel>>? _inFlightMoviesRequest;
+  final Map<String, MoviePageResult> _pagedCache = {};
+  final Map<String, Future<MoviePageResult>> _inFlightPagedRequests = {};
 
   String get baseUrl => _currentBaseUrl;
   bool get isUsingOfflineMock => _isUsingOfflineMock;
@@ -32,6 +54,8 @@ class PocketBaseService {
     _pb = PocketBase(_currentBaseUrl);
     _cachedMovies = null;
     _inFlightMoviesRequest = null;
+    _pagedCache.clear();
+    _inFlightPagedRequests.clear();
   }
 
   void updateBaseUrl(String newUrl) {
@@ -42,6 +66,8 @@ class PocketBaseService {
   void clearCache() {
     _cachedMovies = null;
     _inFlightMoviesRequest = null;
+    _pagedCache.clear();
+    _inFlightPagedRequests.clear();
   }
 
   /// Lấy toàn bộ danh sách phim từ PocketBase (có bộ nhớ đệm trong RAM & chống trùng request)
@@ -64,9 +90,10 @@ class PocketBaseService {
 
   Future<List<MovieModel>> _fetchMoviesInternal() async {
     try {
+      // Dùng batch 50 an toàn với giới hạn PocketBase server (triệt tiêu lỗi 400 Bad Request)
       final records = await _pb
           .collection('movies')
-          .getFullList(sort: '-created')
+          .getFullList(batch: 50, sort: '-created')
           .timeout(const Duration(milliseconds: 3500));
 
       _isUsingOfflineMock = false;
@@ -85,6 +112,136 @@ class PocketBaseService {
     } finally {
       _inFlightMoviesRequest = null;
     }
+  }
+
+  /// Nạp danh sách phim phân trang thông minh (Smart Pagination)
+  Future<MoviePageResult> getMoviesPaged({
+    int page = 1,
+    int perPage = 20,
+    String? category,
+    String? filter,
+    String? sort = '-created',
+    bool forceRefresh = false,
+  }) async {
+    final cacheKey = '${page}_${perPage}_${category ?? ''}_${filter ?? ''}_${sort ?? ''}';
+
+    if (!forceRefresh && _pagedCache.containsKey(cacheKey)) {
+      return _pagedCache[cacheKey]!;
+    }
+
+    if (!forceRefresh && _inFlightPagedRequests.containsKey(cacheKey)) {
+      return _inFlightPagedRequests[cacheKey]!;
+    }
+
+    final future = _fetchMoviesPagedInternal(
+      page: page,
+      perPage: perPage,
+      category: category,
+      filter: filter,
+      sort: sort,
+      cacheKey: cacheKey,
+    );
+
+    if (!forceRefresh) {
+      _inFlightPagedRequests[cacheKey] = future;
+    }
+
+    return future;
+  }
+
+  Future<MoviePageResult> _fetchMoviesPagedInternal({
+    required int page,
+    required int perPage,
+    String? category,
+    String? filter,
+    String? sort,
+    required String cacheKey,
+  }) async {
+    try {
+      String? combinedFilter = filter;
+      if (category != null && category.isNotEmpty && category != 'Tất cả') {
+        final catFilter = 'category = "$category"';
+        combinedFilter = combinedFilter == null || combinedFilter.isEmpty
+            ? catFilter
+            : '($combinedFilter) && ($catFilter)';
+      }
+
+      final result = await _pb
+          .collection('movies')
+          .getList(
+            page: page,
+            perPage: perPage,
+            sort: sort ?? '-created',
+            filter: combinedFilter,
+          )
+          .timeout(const Duration(milliseconds: 3500));
+
+      _isUsingOfflineMock = false;
+      final items = result.items.map((r) => MovieModel.fromRecord(r)).toList();
+      final pageResult = MoviePageResult(
+        page: result.page,
+        perPage: result.perPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+        items: items,
+      );
+
+      _pagedCache[cacheKey] = pageResult;
+      return pageResult;
+    } catch (e) {
+      debugPrint('⚠️ Lỗi tải phân trang PocketBase ($e). Phục vụ qua mock cache.');
+      _isUsingOfflineMock = true;
+      return _paginateMockMovies(
+        page: page,
+        perPage: perPage,
+        category: category,
+        filter: filter,
+        sort: sort,
+      );
+    } finally {
+      _inFlightPagedRequests.remove(cacheKey);
+    }
+  }
+
+  MoviePageResult _paginateMockMovies({
+    required int page,
+    required int perPage,
+    String? category,
+    String? filter,
+    String? sort,
+  }) {
+    List<MovieModel> list = List.of(_mockMovies);
+
+    if (category != null && category.isNotEmpty && category != 'Tất cả') {
+      list = list
+          .where((m) => m.category.toLowerCase().contains(category.toLowerCase()))
+          .toList();
+    }
+
+    if (filter != null && filter.isNotEmpty) {
+      final queryLower = filter.toLowerCase();
+      list = list
+          .where((m) =>
+              m.title.toLowerCase().contains(queryLower) ||
+              m.description.toLowerCase().contains(queryLower) ||
+              m.category.toLowerCase().contains(queryLower))
+          .toList();
+    }
+
+    final totalItems = list.length;
+    final totalPages = (totalItems / perPage).ceil().clamp(1, 999999);
+    final startIndex = (page - 1) * perPage;
+    final items = (startIndex < totalItems)
+        ? list.skip(startIndex).take(perPage).toList()
+        : <MovieModel>[];
+
+    return MoviePageResult(
+      page: page,
+      perPage: perPage,
+      totalItems: totalItems,
+      totalPages: totalPages,
+      items: items,
+    );
   }
 
   /// Lấy danh sách phim nổi bật (Banner)

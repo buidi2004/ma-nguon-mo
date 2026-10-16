@@ -141,14 +141,14 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // Ảnh thu nhỏ kính mờ tích hợp nút Play & tiến trình
-                                GlassPlayThumbnailOverlay(
-                                  imageUrl: movie.posterUrl,
-                                  width: 120,
-                                  height: 80,
-                                  progressRatio: ratio,
-                                  borderRadius: 6,
-                                  onTap: () => context.push(
-                                    '/watch/${movie.id}',
+                                IgnorePointer(
+                                  child: GlassPlayThumbnailOverlay(
+                                    imageUrl: movie.posterUrl,
+                                    width: 120,
+                                    height: 80,
+                                    progressRatio: ratio,
+                                    borderRadius: 6,
+                                    onTap: () {},
                                   ),
                                 ),
                                 const SizedBox(width: 14),

@@ -53,12 +53,14 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
-      // S01: Splash Screen — Fade êm ái
+      // S01: Splash Screen — Mở đầu mượt mà, nhẹ nhàng
       GoRoute(
         path: '/splash',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
           type: TransitType.fade,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeIn,
           child: const SplashScreen(),
         ),
       ),
@@ -77,6 +79,8 @@ class AppRouter {
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
                   child: const HomeScreen(),
                 ),
               ),
@@ -90,6 +94,8 @@ class AppRouter {
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
                   child: const SearchScreen(),
                 ),
               ),
@@ -103,6 +109,8 @@ class AppRouter {
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
                   child: const HotScreen(),
                 ),
               ),
@@ -116,6 +124,8 @@ class AppRouter {
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
                   child: const MeScreen(),
                 ),
               ),
@@ -129,7 +139,9 @@ class AppRouter {
         path: '/onboarding',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.sharedAxisX,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const OnboardingScreen(), // S02
         ),
       ),
@@ -137,7 +149,9 @@ class AppRouter {
         path: '/welcome',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const WelcomeScreen(), // S03
         ),
       ),
@@ -146,6 +160,8 @@ class AppRouter {
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
           type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const LoginScreen(), // S04
         ),
       ),
@@ -154,6 +170,8 @@ class AppRouter {
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
           type: TransitType.sharedAxisX,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const RegisterScreen(), // S05
         ),
       ),
@@ -161,7 +179,9 @@ class AppRouter {
         path: '/forgot-password',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const ForgotPasswordScreen(), // S06
         ),
       ),
@@ -169,7 +189,9 @@ class AppRouter {
         path: '/profiles',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const ProfilesScreen(), // S07
         ),
       ),
@@ -179,7 +201,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? 'new';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.modalBottom,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             fullscreenDialog: true,
             child: ProfileEditScreen(profileId: id), // S08
           );
@@ -193,7 +217,9 @@ class AppRouter {
           final query = state.uri.queryParameters['q'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.fade,
+            type: TransitType.fadeThrough,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
             child: SearchScreen(initialQuery: query),
           );
         },
@@ -202,7 +228,9 @@ class AppRouter {
         path: '/search/filter',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.modalBottom,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           fullscreenDialog: true,
           child: const FilterScreen(), // S12
         ),
@@ -211,7 +239,9 @@ class AppRouter {
         path: '/genres',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const GenresScreen(), // S13
         ),
       ),
@@ -221,7 +251,9 @@ class AppRouter {
           final name = state.pathParameters['name'] ?? 'Tất cả';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.cupertino,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: MovieGridScreen(
               title: 'Phim thể loại $name',
               category: name,
@@ -235,7 +267,9 @@ class AppRouter {
           final key = state.pathParameters['rowKey'] ?? 'danh-sach';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.cupertino,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: MovieGridScreen(title: 'Xem tất cả', rowKey: key),
           );
         },
@@ -244,7 +278,9 @@ class AppRouter {
         path: '/top10',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.parallaxSlideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const Top10Screen(), // S17
         ),
       ),
@@ -256,7 +292,7 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.heroScale,
+            type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
             child: DetailScreen(movieId: id), // S18
@@ -269,9 +305,23 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.cinematicBars,
-            duration: const Duration(milliseconds: 260),
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: TrailerScreen(movieId: id), // S19
+          );
+        },
+      ),
+      GoRoute(
+        path: '/trailer/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: TrailerScreen(movieId: id), // S19 Alias
           );
         },
       ),
@@ -281,7 +331,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.modalBottom,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             fullscreenDialog: true,
             child: AudioSubtitleScreen(movieId: id),
           );
@@ -293,8 +345,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.flashBlack,
-            duration: const Duration(milliseconds: 260),
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: PlayerScreen(movieId: id), // S20 Cinema Player
           );
         },
@@ -305,7 +358,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.modalBottom,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             fullscreenDialog: true,
             child: EpisodesScreen(movieId: id), // S21
           );
@@ -317,7 +372,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.slideRight,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: SimilarMoviesScreen(movieId: id), // S22
           );
         },
@@ -328,7 +385,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.slideRight,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             child: ReviewsScreen(movieId: id), // S23
           );
         },
@@ -339,7 +398,9 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return TransitPage(
             key: state.pageKey,
-            type: TransitType.modalBottom,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             fullscreenDialog: true,
             child: WriteReviewScreen(movieId: id), // S24
           );
@@ -351,7 +412,9 @@ class AppRouter {
         path: '/me/list',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const MyListScreen(), // S25
         ),
       ),
@@ -359,7 +422,9 @@ class AppRouter {
         path: '/me/continue',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const ContinueWatchingScreen(), // S26
         ),
       ),
@@ -367,7 +432,9 @@ class AppRouter {
         path: '/me/history',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const WatchHistoryScreen(), // S27
         ),
       ),
@@ -375,7 +442,9 @@ class AppRouter {
         path: '/me/liked',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const LikedMoviesScreen(), // S28
         ),
       ),
@@ -383,7 +452,9 @@ class AppRouter {
         path: '/me/notifications',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideDown,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const NotificationsScreen(), // S29
         ),
       ),
@@ -391,7 +462,9 @@ class AppRouter {
         path: '/me/downloads',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const DownloadsScreen(),
         ),
       ),
@@ -401,7 +474,9 @@ class AppRouter {
         path: '/me/account',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.cupertino,
+          type: TransitType.cupertinoFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const AccountScreen(), // S31
         ),
       ),
@@ -409,7 +484,9 @@ class AppRouter {
         path: '/me/password',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const PasswordScreen(), // S32
         ),
       ),
@@ -417,7 +494,9 @@ class AppRouter {
         path: '/settings',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.cupertino,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const SettingsScreen(), // S33
         ),
       ),
@@ -425,7 +504,9 @@ class AppRouter {
         path: '/settings/playback',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const PlaybackSettingsScreen(), // S34
         ),
       ),
@@ -433,7 +514,9 @@ class AppRouter {
         path: '/settings/language',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const LanguageScreen(), // S35
         ),
       ),
@@ -441,7 +524,9 @@ class AppRouter {
         path: '/help',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.slideRight,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const HelpScreen(), // S36
         ),
       ),
@@ -449,7 +534,9 @@ class AppRouter {
         path: '/contact',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.modalBottom,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           fullscreenDialog: true,
           child: const ContactScreen(), // S37
         ),
@@ -458,7 +545,9 @@ class AppRouter {
         path: '/feedback',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.modalBottom,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           fullscreenDialog: true,
           child: const ContactScreen(), // S37 alias
         ),
@@ -467,7 +556,9 @@ class AppRouter {
         path: '/about',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const AboutScreen(), // S38
         ),
       ),
@@ -475,7 +566,9 @@ class AppRouter {
         path: '/plans',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.smoothPopIn,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: const PlansScreen(), // S42 Premium
         ),
       ),
@@ -485,7 +578,9 @@ class AppRouter {
         path: '/offline',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: SystemStatusScreen.offline(), // S39
         ),
       ),
@@ -493,7 +588,9 @@ class AppRouter {
         path: '/error',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fade,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: SystemStatusScreen.error(), // S40
         ),
       ),
@@ -501,7 +598,9 @@ class AppRouter {
         path: '/404',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: SystemStatusScreen.notFound(), // S41
         ),
       ),
@@ -509,7 +608,9 @@ class AppRouter {
         path: '/not-found',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
-          type: TransitType.fadeScale,
+          type: TransitType.fadeThrough,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
           child: SystemStatusScreen.notFound(), // S41
         ),
       ),

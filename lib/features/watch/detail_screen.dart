@@ -10,8 +10,13 @@ import '../../theme/app_theme.dart';
 
 class DetailScreen extends StatefulWidget {
   final String movieId;
+  final MovieModel? initialMovie;
 
-  const DetailScreen({super.key, required this.movieId});
+  const DetailScreen({
+    super.key,
+    required this.movieId,
+    this.initialMovie,
+  });
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -28,7 +33,14 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMovie();
+    if (widget.initialMovie != null) {
+      _movie = widget.initialMovie;
+      _isLoading = false;
+      _isBookmarked = LibraryService.instance.isInMyList(widget.initialMovie!.id);
+      _isLiked = LibraryService.instance.isLiked(widget.initialMovie!.id);
+    } else {
+      _loadMovie();
+    }
   }
 
   @override
@@ -43,19 +55,23 @@ class _DetailScreenState extends State<DetailScreen> {
     setState(() => _isLoading = true);
     final movie = await _pbService.getMovieById(widget.movieId);
     if (movie != null) {
+      if (!mounted) return;
+      setState(() {
+        _movie = movie;
+        _isBookmarked = LibraryService.instance.isInMyList(movie.id);
+        _isLiked = LibraryService.instance.isLiked(movie.id);
+        _isLoading = false;
+      });
+      // Tải phim tương tự không đồng bộ sau khi UI chính đã hiện, tối ưu FPS chuyển màn
       final all = await _pbService.getMovies();
       final similar = all
           .where((m) => m.id != movie.id && m.category == movie.category)
           .toList();
       if (!mounted) return;
       setState(() {
-        _movie = movie;
         _similarMovies = similar.isNotEmpty
             ? similar
             : all.where((m) => m.id != movie.id).toList();
-        _isBookmarked = LibraryService.instance.isInMyList(movie.id);
-        _isLiked = LibraryService.instance.isLiked(movie.id);
-        _isLoading = false;
       });
     } else {
       if (!mounted) return;
@@ -158,46 +174,33 @@ class _DetailScreenState extends State<DetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // Ảnh poster phim điện ảnh sắc nét, không bị che khuất
                   Hero(
                     tag: 'movie_poster_${movie.id}',
-                    child: CachedNetworkImage(
-                      imageUrl: movie.posterUrl,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      memCacheWidth: 720,
-                      maxHeightDiskCache: 1080,
-                      placeholder: (_, _) =>
-                          const ColoredBox(color: AppColors.surface),
-                    ),
-                  ),
-                  // Nút Play tròn lớn ở giữa khung xem trước
-                  Center(
                     child: GestureDetector(
                       onTap: () => _playMovie(movie),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 40,
-                        ),
+                      child: CachedNetworkImage(
+                        imageUrl: movie.posterUrl,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        memCacheWidth: 720,
+                        maxHeightDiskCache: 1080,
+                        placeholder: (_, _) =>
+                            const ColoredBox(color: AppColors.surface),
                       ),
                     ),
                   ),
                   // Gradient chân ảnh
                   Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          stops: const [0.6, 1.0],
-                          colors: [Colors.transparent, AppColors.background],
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            stops: const [0.6, 1.0],
+                            colors: [Colors.transparent, AppColors.background],
+                          ),
                         ),
                       ),
                     ),
@@ -226,8 +229,10 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 8),
 
                   // Metadata badges
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         '${movie.releaseYear}',
@@ -236,9 +241,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       GlassSpecBadge.age(rating: movie.ageRating),
-                      const SizedBox(width: 8),
                       Text(
                         '${movie.durationMinutes} phút',
                         style: const TextStyle(
@@ -246,7 +249,6 @@ class _DetailScreenState extends State<DetailScreen> {
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       GlassSpecBadge.uhd4k(),
                     ],
                   ),
@@ -358,10 +360,26 @@ class _DetailScreenState extends State<DetailScreen> {
                         },
                       ),
                       _buildActionButton(
-                        icon: Icons.video_library_outlined,
-                        label: 'Tập phim',
-                        onTap: () =>
-                            context.push('/movie/${movie.id}/episodes'),
+                        icon: (movie.category.toLowerCase().contains('bộ') ||
+                                movie.category.toLowerCase().contains('series') ||
+                                movie.category.toLowerCase().contains('truyền hình'))
+                            ? Icons.video_library_outlined
+                            : Icons.subtitles_outlined,
+                        label: (movie.category.toLowerCase().contains('bộ') ||
+                                movie.category.toLowerCase().contains('series') ||
+                                movie.category.toLowerCase().contains('truyền hình'))
+                            ? 'Tập phim'
+                            : 'Phụ đề',
+                        onTap: () {
+                          final isSeries = movie.category.toLowerCase().contains('bộ') ||
+                              movie.category.toLowerCase().contains('series') ||
+                              movie.category.toLowerCase().contains('truyền hình');
+                          if (isSeries) {
+                            context.push('/movie/${movie.id}/episodes');
+                          } else {
+                            context.push('/movie/${movie.id}/audio');
+                          }
+                        },
                       ),
                       _buildActionButton(
                         icon: Icons.rate_review_outlined,

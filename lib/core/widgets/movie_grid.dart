@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/movie_model.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/movie_card.dart';
 import 'state_view.dart';
 
@@ -16,6 +17,9 @@ class MovieGrid extends StatelessWidget {
   final bool showRanks;
   final double? Function(MovieModel movie)? progressGetter;
   final EdgeInsetsGeometry padding;
+  final ScrollController? scrollController;
+  final bool isLoadingMore;
+  final VoidCallback? onLoadMore;
 
   const MovieGrid({
     super.key,
@@ -31,6 +35,9 @@ class MovieGrid extends StatelessWidget {
     this.showRanks = false,
     this.progressGetter,
     this.padding = const EdgeInsets.all(12),
+    this.scrollController,
+    this.isLoadingMore = false,
+    this.onLoadMore,
   });
 
   int _calculateCrossAxisCount(BuildContext context) {
@@ -57,29 +64,64 @@ class MovieGrid extends StatelessWidget {
 
     final crossAxisCount = _calculateCrossAxisCount(context);
 
-    return GridView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: padding,
-      itemCount: movies.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.68,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 12,
-      ),
-      itemBuilder: (context, index) {
-        final movie = movies[index];
-        final rank = showRanks ? index + 1 : null;
-        final progress = progressGetter != null ? progressGetter!(movie) : null;
-
-        return MovieCard(
-          movie: movie,
-          showCategory: showCategory,
-          rank: rank,
-          progressRatio: progress,
-          onTap: onMovieTap != null ? () => onMovieTap!(movie) : null,
-        );
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollInfo) {
+        if (!isLoadingMore &&
+            onLoadMore != null &&
+            scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 250) {
+          onLoadMore!();
+        }
+        return false;
       },
+      child: CustomScrollView(
+        controller: scrollController,
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
+          SliverPadding(
+            padding: padding,
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 0.68,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 12,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final movie = movies[index];
+                  final rank = showRanks ? index + 1 : null;
+                  final progress = progressGetter != null ? progressGetter!(movie) : null;
+
+                  return MovieCard(
+                    movie: movie,
+                    showCategory: showCategory,
+                    rank: rank,
+                    progressRatio: progress,
+                    onTap: onMovieTap != null ? () => onMovieTap!(movie) : null,
+                  );
+                },
+                childCount: movies.length,
+              ),
+            ),
+          ),
+          if (isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

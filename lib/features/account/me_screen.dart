@@ -5,11 +5,21 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
-class MeScreen extends StatelessWidget {
+class MeScreen extends StatefulWidget {
   const MeScreen({super.key});
 
   @override
+  State<MeScreen> createState() => _MeScreenState();
+}
+
+class _MeScreenState extends State<MeScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -71,11 +81,13 @@ class MeScreen extends StatelessWidget {
                           Positioned(
                             bottom: -4,
                             right: -4,
-                            child: GlassIconButton.circle(
-                              size: 24,
-                              iconSize: 13,
-                              icon: Icons.edit_rounded,
-                              onPressed: () => context.push('/profiles'),
+                            child: IgnorePointer(
+                              child: GlassIconButton.circle(
+                                size: 24,
+                                iconSize: 13,
+                                icon: Icons.edit_rounded,
+                                onPressed: () {},
+                              ),
                             ),
                           ),
                         ],

@@ -1,21 +1,21 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
 import '../models/movie_model.dart';
 import '../presentation/widgets/glass/glass_components.dart';
+import '../presentation/widgets/player/fullscreen_player_overlay.dart';
+import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/movie_card.dart';
 
-/// Chế độ tỉ lệ khung hình của Video Player
-enum VideoFitMode {
-  fit,      // 16:9 Vừa khung hình (Contain - không mất chi tiết)
-  fill,     // Phóng to tràn viền (Cover - loại bỏ 2 vệt đen)
-  stretch,  // Kéo giãn (Fill màn hình)
-}
+export '../presentation/widgets/player/fullscreen_player_overlay.dart'
+    show VideoFitMode;
 
 class PlayerScreen extends StatefulWidget {
   final MovieModel? movie;
@@ -41,7 +41,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   // Chế độ khung hình & Phóng to / Thu nhỏ (Zoom & Fit)
   VideoFitMode _fitMode = VideoFitMode.fit;
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   double _currentScale = 1.0;
 
   // Trạng thái âm lượng & Tốc độ phát (Glass Media Toolbar)
@@ -59,6 +60,51 @@ class _PlayerScreenState extends State<PlayerScreen> {
   double _scrubSeconds = 0.0;
   Timer? _seekDebounceTimer;
   int _accumulatedSeekSeconds = 0;
+
+  // Trạng thái Yêu thích & Danh sách cá nhân
+  bool _isBookmarked = false;
+  bool _isLiked = false;
+
+  void _checkLibraryState() {
+    final mId = _activeMovie?.id ?? widget.movieId;
+    if (mId != null && mounted) {
+      setState(() {
+        _isBookmarked = LibraryService.instance.isInMyList(mId);
+        _isLiked = LibraryService.instance.isLiked(mId);
+      });
+    }
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    bool isActive = false,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GlassIconButton.rounded(
+          size: 46,
+          iconSize: 22,
+          icon: icon,
+          iconColor: isActive ? AppColors.red : Colors.white,
+          hasGlow: isActive,
+          glowColor: AppColors.red,
+          onPressed: onTap,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : AppColors.textSecondary,
+            fontSize: 11.5,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
 
   void _cyclePlaybackSpeed() {
     final currentIndex = _playbackSpeeds.indexOf(_currentSpeed);
@@ -84,7 +130,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void _togglePlayPause() {
-    if (_videoPlayerController == null || !_videoPlayerController!.value.isInitialized) return;
+    if (_videoPlayerController == null ||
+        !_videoPlayerController!.value.isInitialized) {
+      return;
+    }
     if (_videoPlayerController!.value.isPlaying) {
       _videoPlayerController!.pause();
       _showHud('Tạm dừng', Icons.pause_rounded);
@@ -109,8 +158,28 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void initState() {
     super.initState();
     _activeMovie = widget.movie;
-    _initializePlayer();
-    _loadSimilarMovies();
+    _checkLibraryState();
+    // Đợi hiệu ứng chuyển màn hoàn tất rồi mới khởi tạo Video Player
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final routeAnimation = ModalRoute.of(context)?.animation;
+      if (routeAnimation != null && !routeAnimation.isCompleted) {
+        void statusListener(AnimationStatus status) {
+          if (status == AnimationStatus.completed) {
+            routeAnimation.removeStatusListener(statusListener);
+            if (mounted) {
+              _initializePlayer();
+              _loadSimilarMovies();
+            }
+          }
+        }
+
+        routeAnimation.addStatusListener(statusListener);
+      } else {
+        _initializePlayer();
+        _loadSimilarMovies();
+      }
+    });
   }
 
   static const List<String> _fallbackVideoMirrors = [
@@ -130,6 +199,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _activeMovie = await PocketBaseService.instance.getMovieById(
           widget.movieId!,
         );
+        _checkLibraryState();
       }
 
       if (_activeMovie == null) {
@@ -156,7 +226,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         await _videoPlayerController!.initialize();
       } catch (err) {
         // Fallback sang mirror dự phòng nếu link ban đầu không thể phát
-        debugPrint('⚠️ Link phim gốc lỗi: $err. Đang chuyển sang stream dự phòng...');
+        debugPrint(
+          '⚠️ Link phim gốc lỗi: $err. Đang chuyển sang stream dự phòng...',
+        );
         _videoPlayerController?.dispose();
         _videoPlayerController = VideoPlayerController.networkUrl(
           Uri.parse(_fallbackVideoMirrors.first),
@@ -173,7 +245,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             : 16 / 9,
         allowFullScreen: true,
         allowMuting: true,
-        showControls: true,
+        showControls: false,
         deviceOrientationsOnEnterFullScreen: [
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight,
@@ -185,16 +257,39 @@ class _PlayerScreenState extends State<PlayerScreen> {
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
+        routePageBuilder:
+            (context, animation, secondaryAnimation, controllerProvider) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return ChewieControllerProvider(
+                    controller: controllerProvider.controller,
+                    child: OpenFlixFullscreenPlayer(
+                      controller: controllerProvider.controller,
+                      movieTitle: _activeMovie?.title ?? '',
+                      initialFitMode: _fitMode,
+                      onFitModeChanged: (mode) {
+                        if (mounted) setState(() => _fitMode = mode);
+                      },
+                      playbackSpeed: _currentSpeed,
+                      onSpeedChanged: (speed) {
+                        if (mounted) setState(() => _currentSpeed = speed);
+                      },
+                      isMuted: _isMuted,
+                      onMuteToggled: (muted) {
+                        if (mounted) setState(() => _isMuted = muted);
+                      },
+                    ),
+                  );
+                },
+              );
+            },
         errorBuilder: (context, errorMessage) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: AppColors.red,
-                  size: 48,
-                ),
+                const Icon(Icons.error_outline, color: AppColors.red, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể phát video: $errorMessage',
@@ -251,8 +346,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
   }
 
+  bool _lastIsPlaying = false;
+  bool _lastIsBuffering = false;
+
   void _onVideoTick() {
-    if (mounted && !_isScrubbing) {
+    if (!mounted || _videoPlayerController == null) return;
+    final val = _videoPlayerController!.value;
+    if (val.isPlaying != _lastIsPlaying ||
+        val.isBuffering != _lastIsBuffering) {
+      _lastIsPlaying = val.isPlaying;
+      _lastIsBuffering = val.isBuffering;
       setState(() {});
     }
   }
@@ -309,7 +412,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _currentScale = 1.0;
         _showHud('Thu nhỏ: 1.0x (Mặc định)', Icons.zoom_out);
       } else {
-        _transformationController.value = Matrix4.diagonal3Values(1.8, 1.8, 1.0);
+        _transformationController.value = Matrix4.diagonal3Values(
+          1.8,
+          1.8,
+          1.0,
+        );
         _currentScale = 1.8;
         _showHud('Phóng to: 1.8x', Icons.zoom_in);
       }
@@ -319,7 +426,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Duration? _baseSeekPosition;
 
   void _quickSeek(int seconds) {
-    if (_videoPlayerController == null || !_videoPlayerController!.value.isInitialized) return;
+    if (_videoPlayerController == null ||
+        !_videoPlayerController!.value.isInitialized) {
+      return;
+    }
     if (_seekDebounceTimer == null || !_seekDebounceTimer!.isActive) {
       _baseSeekPosition = _videoPlayerController!.value.position;
     }
@@ -327,7 +437,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final totalDuration = _videoPlayerController!.value.duration;
 
     final sign = _accumulatedSeekSeconds >= 0 ? '+' : '';
-    final icon = _accumulatedSeekSeconds >= 0 ? Icons.forward_10_rounded : Icons.replay_10_rounded;
+    final icon = _accumulatedSeekSeconds >= 0
+        ? Icons.forward_10_rounded
+        : Icons.replay_10_rounded;
     _showHud('Tua $sign${_accumulatedSeekSeconds}s', icon);
 
     _seekDebounceTimer?.cancel();
@@ -425,7 +537,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               const SizedBox(height: 12),
                               ElevatedButton.icon(
                                 onPressed: _initializePlayer,
-                                icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+                                icon: const Icon(
+                                  Icons.refresh,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                                 label: const Text(
                                   'Thử lại',
                                   style: TextStyle(
@@ -436,7 +552,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.red,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(6),
                                   ),
@@ -449,13 +568,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     : Stack(
                         alignment: Alignment.center,
                         children: [
-                          // 1. Tầng tương tác phóng to/thu nhỏ 2 ngón tay và chạm đúp
+                          // 1. Tầng tương tác chạm để Phát/Dừng, chạm đúp và thu phóng 2 ngón tay
                           GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _togglePlayPause,
                             onDoubleTapDown: (details) {
-                              final screenWidth = MediaQuery.of(context).size.width;
-                              if (details.localPosition.dx < screenWidth * 0.35) {
+                              final screenWidth = MediaQuery.of(context)
+                                  .size
+                                  .width;
+                              if (details.localPosition.dx <
+                                  screenWidth * 0.35) {
                                 _quickSeek(-10);
-                              } else if (details.localPosition.dx > screenWidth * 0.65) {
+                              } else if (details.localPosition.dx >
+                                  screenWidth * 0.65) {
                                 _quickSeek(10);
                               } else {
                                 _toggleDoubleTapZoom();
@@ -463,32 +588,93 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             },
                             child: ClipRect(
                               child: InteractiveViewer(
-                                transformationController: _transformationController,
+                                transformationController:
+                                    _transformationController,
                                 minScale: 1.0,
                                 maxScale: 3.5,
                                 panAxis: PanAxis.free,
                                 onInteractionUpdate: (details) {
-                                  _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                                  _currentScale = _transformationController
+                                      .value
+                                      .getMaxScaleOnAxis();
+                                  if (details.pointerCount >= 2) {
+                                    if (_fitMode == VideoFitMode.fit &&
+                                        details.scale > 1.12) {
+                                      HapticFeedback.selectionClick();
+                                      setState(() {
+                                        _fitMode = VideoFitMode.fill;
+                                        _transformationController.value =
+                                            Matrix4.identity();
+                                        _currentScale = 1.0;
+                                      });
+                                      _showHud(
+                                        'Phóng to để vừa màn hình',
+                                        Icons.fullscreen,
+                                      );
+                                    } else if (_fitMode == VideoFitMode.fill &&
+                                        details.scale < 0.88) {
+                                      HapticFeedback.selectionClick();
+                                      setState(() {
+                                        _fitMode = VideoFitMode.fit;
+                                        _transformationController.value =
+                                            Matrix4.identity();
+                                        _currentScale = 1.0;
+                                      });
+                                      _showHud(
+                                        'Vừa màn hình 16:9 (Gốc)',
+                                        Icons.fullscreen_exit,
+                                      );
+                                    }
+                                  }
                                 },
                                 onInteractionEnd: (details) {
-                                  _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                                  _currentScale = _transformationController
+                                      .value
+                                      .getMaxScaleOnAxis();
                                   if (_currentScale > 1.05) {
-                                    _showHud('Thu phóng: ${_currentScale.toStringAsFixed(1)}x', Icons.zoom_in);
+                                    _showHud(
+                                      'Thu phóng: ${_currentScale.toStringAsFixed(1)}x',
+                                      Icons.zoom_in,
+                                    );
                                   }
                                 },
                                 child: FittedBox(
                                   fit: _fitMode == VideoFitMode.fill
                                       ? BoxFit.cover
-                                      : (_fitMode == VideoFitMode.stretch ? BoxFit.fill : BoxFit.contain),
+                                      : (_fitMode == VideoFitMode.stretch
+                                            ? BoxFit.fill
+                                            : BoxFit.contain),
                                   child: SizedBox(
-                                    width: (_videoPlayerController?.value.size.width ?? 0) > 0
-                                        ? _videoPlayerController!.value.size.width
+                                    width:
+                                        (_videoPlayerController
+                                                    ?.value
+                                                    .size
+                                                    .width ??
+                                                0) >
+                                            0
+                                        ? _videoPlayerController!
+                                              .value
+                                              .size
+                                              .width
                                         : 1600,
-                                    height: (_videoPlayerController?.value.size.height ?? 0) > 0
-                                        ? _videoPlayerController!.value.size.height
+                                    height:
+                                        (_videoPlayerController
+                                                    ?.value
+                                                    .size
+                                                    .height ??
+                                                0) >
+                                            0
+                                        ? _videoPlayerController!
+                                              .value
+                                              .size
+                                              .height
                                         : 900,
                                     child: _chewieController != null
-                                        ? Chewie(controller: _chewieController!)
+                                        ? RepaintBoundary(
+                                            child: Chewie(
+                                              controller: _chewieController!,
+                                            ),
+                                          )
                                         : const SizedBox.shrink(),
                                   ),
                                 ),
@@ -496,116 +682,113 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             ),
                           ),
 
-                          // 2. Chip nổi điều chỉnh chế độ hiển thị & Đặt lại Zoom góc trên
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_currentScale > 1.05)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 6),
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _transformationController.value = Matrix4.identity();
-                                          _currentScale = 1.0;
-                                          _showHud('Đã đặt lại: 1.0x', Icons.zoom_out);
-                                        });
-                                      },
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black87,
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: Border.all(color: AppColors.red, width: 1),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(Icons.zoom_out, color: Colors.white, size: 14),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '${_currentScale.toStringAsFixed(1)}x (Đặt lại)',
-                                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
+                          // 2. Chip đặt lại thu phóng (chỉ hiện khi người dùng zoom > 1.05x)
+                          if (_currentScale > 1.05)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _transformationController.value =
+                                        Matrix4.identity();
+                                    _currentScale = 1.0;
+                                    _showHud(
+                                      'Đã đặt lại: 1.0x',
+                                      Icons.zoom_out,
+                                    );
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black87,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: AppColors.red,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.zoom_out,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${_currentScale.toStringAsFixed(1)}x (Đặt lại)',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                InkWell(
-                                  onTap: _cycleFitMode,
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black87,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.white24, width: 1),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          _fitMode == VideoFitMode.fill
-                                              ? Icons.fullscreen
-                                              : (_fitMode == VideoFitMode.stretch ? Icons.fit_screen : Icons.fullscreen_exit),
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _fitMode == VideoFitMode.fill
-                                              ? 'Tràn viền'
-                                              : (_fitMode == VideoFitMode.stretch ? 'Kéo giãn' : '16:9'),
-                                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // 3. Nút tròn phát video kính mờ quang học (GlassPlayerPlayButton - 68x68 px, Snell 1.48)
-                          if (_videoPlayerController != null && _videoPlayerController!.value.isInitialized)
-                            AnimatedOpacity(
-                              opacity: (!_videoPlayerController!.value.isPlaying || _videoPlayerController!.value.isBuffering) ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 250),
-                              child: IgnorePointer(
-                                ignoring: _videoPlayerController!.value.isPlaying && !_videoPlayerController!.value.isBuffering,
-                                child: GlassPlayerPlayButton(
-                                  isPlaying: _videoPlayerController!.value.isPlaying,
-                                  isLoading: _videoPlayerController!.value.isBuffering,
-                                  onPressed: _togglePlayPause,
                                 ),
                               ),
+                            ),
+
+                          // 3. Nút tròn phát video kính mờ quang học (GlassPlayerPlayButton - 68x68 px, Snell 1.48)
+                          if (_videoPlayerController != null &&
+                              _videoPlayerController!.value.isInitialized &&
+                              (!_videoPlayerController!.value.isPlaying ||
+                                  _videoPlayerController!.value.isBuffering))
+                            GlassPlayerPlayButton(
+                              isPlaying:
+                                  _videoPlayerController!.value.isPlaying,
+                              isLoading:
+                                  _videoPlayerController!.value.isBuffering,
+                              onPressed: _togglePlayPause,
                             ),
 
                           // 4. Thông báo nổi HUD giữa màn hình khi Tua hoặc Zoom
                           if (_hudMessage != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.85),
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: Colors.white24, width: 1),
+                                border: Border.all(
+                                  color: Colors.white24,
+                                  width: 1,
+                                ),
                                 boxShadow: const [
-                                  BoxShadow(color: Colors.black54, blurRadius: 10, spreadRadius: 2),
+                                  BoxShadow(
+                                    color: Colors.black54,
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  ),
                                 ],
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (_hudIcon != null) ...[
-                                    Icon(_hudIcon, color: AppColors.red, size: 22),
+                                    Icon(
+                                      _hudIcon,
+                                      color: AppColors.red,
+                                      size: 22,
+                                    ),
                                     const SizedBox(width: 8),
                                   ],
                                   Text(
                                     _hudMessage!,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -616,102 +799,135 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ),
 
             // Thanh tua mượt mà (Seek-on-Release & Không giật lag)
-            if (_videoPlayerController != null && _videoPlayerController!.value.isInitialized) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                child: Column(
-                  children: [
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 3.5,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                        activeTrackColor: AppColors.red,
-                        inactiveTrackColor: Colors.white24,
-                        thumbColor: AppColors.red,
-                        overlayColor: AppColors.red.withValues(alpha: 0.25),
-                      ),
-                      child: Builder(
-                        builder: (context) {
-                          final maxSec = (_videoPlayerController!.value.duration.inSeconds > 0
-                                  ? _videoPlayerController!.value.duration.inSeconds
-                                  : 1)
-                              .toDouble();
-                          final currentSec = _isScrubbing
-                              ? _scrubSeconds.clamp(0.0, maxSec)
-                              : _videoPlayerController!.value.position.inSeconds
-                                  .toDouble()
-                                  .clamp(0.0, maxSec);
-                          return Slider(
-                            min: 0.0,
-                            max: maxSec,
-                            value: currentSec,
-                            onChangeStart: (val) {
-                              setState(() {
-                                _isScrubbing = true;
-                                _scrubSeconds = val;
-                              });
-                            },
-                            onChanged: (val) {
-                              setState(() {
-                                _scrubSeconds = val;
-                              });
-                            },
-                            onChangeEnd: (val) async {
-                              final target = Duration(seconds: val.toInt());
-                              await _videoPlayerController!.seekTo(target);
-                              if (mounted) {
+            if (_videoPlayerController != null &&
+                _videoPlayerController!.value.isInitialized) ...[
+              AnimatedBuilder(
+                animation: _videoPlayerController!,
+                builder: (context, _) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                  child: Column(
+                    children: [
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3.5,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 12,
+                          ),
+                          activeTrackColor: AppColors.red,
+                          inactiveTrackColor: Colors.white24,
+                          thumbColor: AppColors.red,
+                          overlayColor: AppColors.red.withValues(alpha: 0.25),
+                        ),
+                        child: Builder(
+                          builder: (context) {
+                            final maxSec =
+                                (_videoPlayerController!
+                                                .value
+                                                .duration
+                                                .inSeconds >
+                                            0
+                                        ? _videoPlayerController!
+                                              .value
+                                              .duration
+                                              .inSeconds
+                                        : 1)
+                                    .toDouble();
+                            final currentSec = _isScrubbing
+                                ? _scrubSeconds.clamp(0.0, maxSec)
+                                : _videoPlayerController!
+                                      .value
+                                      .position
+                                      .inSeconds
+                                      .toDouble()
+                                      .clamp(0.0, maxSec);
+                            return Slider(
+                              min: 0.0,
+                              max: maxSec,
+                              value: currentSec,
+                              onChangeStart: (val) {
                                 setState(() {
-                                  _isScrubbing = false;
+                                  _isScrubbing = true;
+                                  _scrubSeconds = val;
                                 });
-                              }
-                            },
-                          );
-                        },
+                              },
+                              onChanged: (val) {
+                                setState(() {
+                                  _scrubSeconds = val;
+                                });
+                              },
+                              onChangeEnd: (val) async {
+                                final target = Duration(seconds: val.toInt());
+                                await _videoPlayerController!.seekTo(target);
+                                if (mounted) {
+                                  setState(() {
+                                    _isScrubbing = false;
+                                  });
+                                }
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _formatDuration(
-                              _isScrubbing
-                                  ? Duration(seconds: _scrubSeconds.toInt())
-                                  : _videoPlayerController!.value.position,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _formatDuration(
+                                _isScrubbing
+                                    ? Duration(seconds: _scrubSeconds.toInt())
+                                    : _videoPlayerController!.value.position,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            _formatDuration(_videoPlayerController!.value.duration),
-                            style: const TextStyle(color: Colors.white38, fontSize: 11),
-                          ),
-                        ],
+                            Text(
+                              _formatDuration(
+                                _videoPlayerController!.value.duration,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white38,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Thanh công cụ kính mờ quang học (Glass Media Toolbar - Giai đoạn 3)
-                    Center(
-                      child: GlassMediaToolbar(
-                        onReplay10: () => _quickSeek(-10),
-                        onForward10: () => _quickSeek(10),
-                        onFitModeToggle: _cycleFitMode,
-                        fitModeLabel: _fitMode == VideoFitMode.fill
-                            ? 'Tràn viền'
-                            : (_fitMode == VideoFitMode.stretch ? 'Kéo giãn' : '16:9'),
-                        fitModeIcon: _fitMode == VideoFitMode.fill
-                            ? Icons.fullscreen
-                            : (_fitMode == VideoFitMode.stretch ? Icons.fit_screen : Icons.fullscreen_exit),
-                        onSpeedToggle: _cyclePlaybackSpeed,
-                        currentSpeed: _currentSpeed,
-                        onMuteToggle: _toggleMute,
-                        isMuted: _isMuted,
-                        onFullscreenToggle: _toggleFullscreen,
-                        isFullscreen: _chewieController?.isFullScreen ?? false,
+                      const SizedBox(height: 10),
+                      // Thanh công cụ kính mờ quang học (Glass Media Toolbar - Giai đoạn 3)
+                      Center(
+                        child: GlassMediaToolbar(
+                          onReplay10: () => _quickSeek(-10),
+                          onForward10: () => _quickSeek(10),
+                          onFitModeToggle: _cycleFitMode,
+                          fitModeLabel: _fitMode == VideoFitMode.fill
+                              ? 'Tràn viền'
+                              : (_fitMode == VideoFitMode.stretch
+                                    ? 'Kéo giãn'
+                                    : '16:9'),
+                          fitModeIcon: _fitMode == VideoFitMode.fill
+                              ? Icons.fullscreen
+                              : (_fitMode == VideoFitMode.stretch
+                                    ? Icons.fit_screen
+                                    : Icons.fullscreen_exit),
+                          onSpeedToggle: _cyclePlaybackSpeed,
+                          currentSpeed: _currentSpeed,
+                          onMuteToggle: _toggleMute,
+                          isMuted: _isMuted,
+                          onFullscreenToggle: _toggleFullscreen,
+                          isFullscreen:
+                              _chewieController?.isFullScreen ?? false,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -788,59 +1004,70 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Hàng nút hành động chuẩn điện ảnh Netflix (GlassButton & GlassIconButton)
+                  // Hàng nút hành động chuẩn điện ảnh Netflix tinh gọn (Danh sách, Thích, Phụ đề, Chia sẻ)
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Nút phát chính (Primary Play/Pause)
-                      Expanded(
-                        child: GlassButton.primary(
-                          text: _videoPlayerController?.value.isPlaying == true
-                              ? 'Tạm dừng'
-                              : 'Tiếp tục phát',
-                          icon: _videoPlayerController?.value.isPlaying == true
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          borderRadius: 10,
-                          height: 44,
-                          onPressed: _togglePlayPause,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      // Nút thêm vào danh sách
-                      GlassButton.neutral(
-                        text: 'Danh sách',
-                        icon: Icons.add,
-                        borderRadius: 10,
-                        height: 44,
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Đã thêm phim vào danh sách Yêu thích của bạn!',
+                      // 1. Nút Danh sách của tôi
+                      _buildActionButton(
+                        icon: _isBookmarked ? Icons.check : Icons.add,
+                        label: 'Danh sách',
+                        isActive: _isBookmarked,
+                        onTap: () async {
+                          final mId = _activeMovie?.id ?? widget.movieId;
+                          if (mId == null) return;
+                          await LibraryService.instance.toggleMyList(mId);
+                          setState(() {
+                            _isBookmarked =
+                                LibraryService.instance.isInMyList(mId);
+                          });
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  _isBookmarked
+                                      ? 'Đã thêm "${_activeMovie?.title ?? 'phim'}" vào Danh sách'
+                                      : 'Đã xóa khỏi Danh sách của tôi',
+                                ),
+                                backgroundColor: AppColors.red,
+                                duration: const Duration(seconds: 1),
                               ),
-                              backgroundColor: AppColors.red,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                            );
+                          }
                         },
                       ),
-                      const SizedBox(width: 8),
-                      // Nút phóng to / thu nhỏ nhanh 1.8x
-                      GlassIconButton.circle(
-                        size: 44,
-                        iconSize: 22,
-                        icon: _currentScale > 1.05 ? Icons.zoom_out : Icons.zoom_in,
-                        tooltip: 'Phóng to / Thu nhỏ',
-                        onPressed: _toggleDoubleTapZoom,
+                      // 2. Nút Thích
+                      _buildActionButton(
+                        icon: _isLiked
+                            ? Icons.thumb_up
+                            : Icons.thumb_up_alt_outlined,
+                        label: 'Thích',
+                        isActive: _isLiked,
+                        onTap: () async {
+                          final mId = _activeMovie?.id ?? widget.movieId;
+                          if (mId == null) return;
+                          await LibraryService.instance.toggleLike(mId);
+                          setState(() {
+                            _isLiked = LibraryService.instance.isLiked(mId);
+                          });
+                        },
                       ),
-                      const SizedBox(width: 8),
-                      // Nút chia sẻ
-                      GlassIconButton.circle(
-                        size: 44,
-                        iconSize: 22,
+                      // 3. Nút Âm thanh & Phụ đề
+                      _buildActionButton(
+                        icon: Icons.subtitles_outlined,
+                        label: 'Phụ đề',
+                        onTap: () {
+                          final mId = _activeMovie?.id ?? widget.movieId;
+                          if (mId != null) {
+                            context.push('/movie/$mId/audio');
+                          }
+                        },
+                      ),
+                      // 4. Nút Chia sẻ
+                      _buildActionButton(
                         icon: Icons.share_outlined,
-                        tooltip: 'Chia sẻ',
-                        onPressed: () {
+                        label: 'Chia sẻ',
+                        onTap: () {
                           final vUrl = _activeMovie?.videoUrl ?? '';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

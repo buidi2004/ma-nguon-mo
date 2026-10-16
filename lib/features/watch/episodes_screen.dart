@@ -209,17 +209,13 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                           maxHeightDiskCache: 250,
                                         ),
                                       ),
-                                      GlassIconButton.circle(
-                                        size: 30,
-                                        iconSize: 16,
-                                        icon: Icons.play_arrow_rounded,
-                                        onPressed: () {
-                                          if (_movie != null) {
-                                            context.push(
-                                              '/watch/${_movie!.id}',
-                                            );
-                                          }
-                                        },
+                                      IgnorePointer(
+                                        child: GlassIconButton.circle(
+                                          size: 30,
+                                          iconSize: 16,
+                                          icon: Icons.play_arrow_rounded,
+                                          onPressed: () {},
+                                        ),
                                       ),
                                     ],
                                   ),

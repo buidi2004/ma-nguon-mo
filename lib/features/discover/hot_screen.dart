@@ -50,11 +50,15 @@ class HotScreen extends StatefulWidget {
   State<HotScreen> createState() => _HotScreenState();
 }
 
-class _HotScreenState extends State<HotScreen> {
+class _HotScreenState extends State<HotScreen>
+    with AutomaticKeepAliveClientMixin {
   final PocketBaseService _pbService = PocketBaseService.instance;
   final LibraryService _libService = LibraryService.instance;
 
   List<_ComingSoonItem> _items = [];
+
+  @override
+  bool get wantKeepAlive => true;
 
   /// Danh sách phim sắp ra mắt nguyên mẫu chuẩn theo thiết kế tham chiếu
   static const List<_ComingSoonItem> _curatedComingSoon = [
@@ -121,7 +125,9 @@ class _HotScreenState extends State<HotScreen> {
     super.initState();
     _items = List.of(_curatedComingSoon);
     _libService.addListener(_onLibraryChanged);
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadData();
+    });
   }
 
   @override
@@ -208,6 +214,7 @@ class _HotScreenState extends State<HotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
@@ -293,36 +300,37 @@ class _HotScreenState extends State<HotScreen> {
   Widget _buildComingSoonCard(_ComingSoonItem item) {
     final isInList = _libService.isInMyList(item.id);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Ảnh Backdrop 16:9 với badge ĐỘC QUYỀN
-          GestureDetector(
-            onTap: () => _playTrailerOrDetail(item),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1,
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Ảnh Backdrop 16:9 với badge ĐỘC QUYỀN
+            GestureDetector(
+              onTap: () => _playTrailerOrDetail(item),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(13),
-                        child: CachedNetworkImage(
-                          imageUrl: item.backdropUrl,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          memCacheWidth: 720,
-                          memCacheHeight: 405,
-                          maxHeightDiskCache: 600,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(13),
+                          child: CachedNetworkImage(
+                            imageUrl: item.backdropUrl,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            memCacheWidth: 480,
+                            memCacheHeight: 270,
+                            maxHeightDiskCache: 600,
                           placeholder: (_, _) =>
                               const ColoredBox(color: AppColors.surfaceLight),
                           errorWidget: (_, _, _) => Container(
@@ -550,6 +558,7 @@ class _HotScreenState extends State<HotScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

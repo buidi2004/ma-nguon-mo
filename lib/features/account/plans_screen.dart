@@ -145,6 +145,11 @@ class _PlansScreenState extends State<PlansScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPlan = _plans.firstWhere(
+      (p) => p.id == _selectedPlanId,
+      orElse: () => _plans[1],
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -366,11 +371,11 @@ class _PlansScreenState extends State<PlansScreen> {
                             children: [
                               const Padding(
                                 padding: EdgeInsets.only(top: 1.5),
-                                child: Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: AppColors.success,
-                                ),
+                              ),
+                              const Icon(
+                                Icons.check,
+                                size: 14,
+                                color: AppColors.success,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -388,28 +393,40 @@ class _PlansScreenState extends State<PlansScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 12),
-                      _selectedPlanId == plan.id
-                          ? GlassButton.brand(
-                              text: 'Chọn ${plan.name}',
-                              height: 42,
-                              borderRadius: 10,
-                              width: double.infinity,
-                              onPressed: () => _choosePlan(plan),
-                            )
-                          : GlassButton.neutral(
-                              text: 'Xem chi tiết gói',
-                              height: 42,
-                              borderRadius: 10,
-                              width: double.infinity,
-                              onPressed: () => _choosePlan(plan),
-                            ),
                     ],
                   ),
                 ),
               ),
             ],
           ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: const Border(
+            top: BorderSide(color: Colors.white12, width: 0.8),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          10,
+          16,
+          MediaQuery.paddingOf(context).bottom + 10,
+        ),
+        child: GlassButton.brand(
+          text: 'Tiếp tục với ${selectedPlan.name}',
+          height: 48,
+          borderRadius: 12,
+          width: double.infinity,
+          onPressed: () => _choosePlan(selectedPlan),
         ),
       ),
     );

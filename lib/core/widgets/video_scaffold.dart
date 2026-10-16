@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../../theme/app_theme.dart';
 
 class VideoScaffold extends StatefulWidget {
@@ -65,6 +66,20 @@ class _VideoScaffoldState extends State<VideoScaffold> {
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white54,
         ),
+        routePageBuilder: (context, animation, secondaryAnimation, controllerProvider) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, child) {
+              return ChewieControllerProvider(
+                controller: controllerProvider.controller,
+                child: OpenFlixFullscreenPlayer(
+                  controller: controllerProvider.controller,
+                  movieTitle: widget.title,
+                ),
+              );
+            },
+          );
+        },
         placeholder: Container(
           color: Colors.black,
           child: const Center(
@@ -197,7 +212,9 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                       ),
                     )
                   : _chewieController != null
-                  ? Chewie(controller: _chewieController!)
+                  ? RepaintBoundary(
+                      child: Chewie(controller: _chewieController!),
+                    )
                   : const SizedBox.shrink(),
             ),
 

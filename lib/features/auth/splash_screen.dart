@@ -3,15 +3,14 @@ import 'package:smart_splash_kit/smart_splash_kit.dart';
 
 import '../../presentation/widgets/glass/glass_smart_splash.dart';
 import '../../services/auth_service.dart';
-import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
 /// Màn hình khởi động S01 của OpenFlix tích hợp Smart Splash Kit chuẩn điện ảnh.
 ///
 /// Hỗ trợ:
 /// - Smart Routing: Định tuyến thông minh sau khi kiểm tra phiên đăng nhập và prefetch dữ liệu.
+/// - Không chặn splash chờ mạng: Home tự tải + skeleton (giảm treo đầu giờ).
 /// - Hoạt cảnh mượt mà: `fadeScale` phối hợp phóng to nhẹ và độ mờ kính vi mô.
-/// - ApiLoader: Tải trước danh mục phim từ PocketBase với timeout tự động.
 /// - Giao diện Dark Cinema: Nền #141414, hào quang đỏ điện ảnh #E50914.
 class SplashScreen extends StatelessWidget {
   /// Cấu hình Splash tùy biến (nếu truyền vào).
@@ -20,20 +19,12 @@ class SplashScreen extends StatelessWidget {
   /// Async callback khởi tạo ứng dụng tùy biến.
   final Future<SplashRoute> Function()? onInit;
 
-  const SplashScreen({
-    super.key,
-    this.config,
-    this.onInit,
-  });
+  const SplashScreen({super.key, this.config, this.onInit});
 
   Future<SplashRoute> _defaultStartupFlow() async {
-    // 1. Tải trước dữ liệu phim với ApiLoader của Smart Splash Kit
-    await ApiLoader.run(
-      () => PocketBaseService.instance.getMovies(),
-      timeout: const Duration(seconds: 3),
-      maxRetries: 1,
-    );
-
+    // Không chặn splash chờ mạng/timer: Home đã có skeleton + RAM-cache,
+    // nên vào home ngay sau animation (~800ms) thay vì treo nhiều giây
+    // khi server chậm. Không timer, không request ở đây (không đổi giao diện).
     // 2. Kiểm tra phiên đăng nhập người dùng
     final isLoggedIn = AuthService.instance.isLoggedIn;
     if (isLoggedIn) {
@@ -46,7 +37,8 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassSmartSplash(
-      config: config ??
+      config:
+          config ??
           SplashConfig(
             durationMs: 800,
             animation: SplashAnimation.fadeScale(

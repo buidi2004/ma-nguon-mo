@@ -18,13 +18,43 @@ void main() {
     ),
   );
 
-  // Cấu hình chuyển cảnh toàn cục chuẩn điện ảnh Netflix (Bản V2)
+  // Cấu hình chuyển cảnh toàn cục chuẩn Điện ảnh Thượng hạng (Cinematic Cinema Luxe)
   GlobalTransitionConfig.instance.setDefaults(
     const TransitionOverride(
-      duration: Duration(milliseconds: 220),
-      reverseDuration: Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
+      duration: Duration(milliseconds: 300),
+      reverseDuration: Duration(milliseconds: 240),
+      curve: Curves.easeInOutCubic,
       reverseCurve: Curves.easeInCubic,
+    ),
+  );
+
+  // Cấu hình tối ưu riêng cho các hiệu ứng rạp chiếu phim đặc biệt
+  GlobalTransitionConfig.instance.setOverrideFor(
+    TransitType.cinematicReveal,
+    const TransitionOverride(
+      duration: Duration(milliseconds: 340),
+      curve: Curves.easeInOutCubic,
+    ),
+  );
+  GlobalTransitionConfig.instance.setOverrideFor(
+    TransitType.cinematicBars,
+    const TransitionOverride(
+      duration: Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+    ),
+  );
+  GlobalTransitionConfig.instance.setOverrideFor(
+    TransitType.dollyZoomIn,
+    const TransitionOverride(
+      duration: Duration(milliseconds: 340),
+      curve: Curves.easeOutQuart,
+    ),
+  );
+  GlobalTransitionConfig.instance.setOverrideFor(
+    TransitType.neonGlow,
+    const TransitionOverride(
+      duration: Duration(milliseconds: 340),
+      curve: Curves.easeOutCubic,
     ),
   );
 

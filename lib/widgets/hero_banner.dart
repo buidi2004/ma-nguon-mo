@@ -85,7 +85,9 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
     final cacheWidth =
         (screenSize.width * MediaQuery.devicePixelRatioOf(context))
             .toInt()
-            .clamp(720, 1440)
+            // Trần 1080px: đủ nét trên điện thoại, nhẹ ~40% RAM decode/GPU
+            // so với 1440px mà mắt thường không phân biệt được.
+            .clamp(720, 1080)
             .toInt();
     final isSingle = items.length == 1;
 
@@ -116,7 +118,7 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
                       if (widget.onImageTap != null) {
                         widget.onImageTap!(movie);
                       } else {
-                        context.push('/trailer/${movie.id}');
+                        context.push('/movie/${movie.id}/trailer');
                       }
                     },
                   ),
@@ -227,7 +229,7 @@ class _HeroSlide extends StatelessWidget {
           )
         else
           GestureDetector(
-            onTap: onImageTap ?? () => context.push('/trailer/${movie.id}'),
+            onTap: onImageTap ?? () => context.push('/movie/${movie.id}/trailer'),
             behavior: HitTestBehavior.opaque,
             child: CachedNetworkImage(
               imageUrl: movie.posterUrl,
@@ -602,7 +604,7 @@ class HeroBanner extends StatelessWidget {
         (MediaQuery.sizeOf(context).width *
                 MediaQuery.devicePixelRatioOf(context))
             .toInt()
-            .clamp(720, 1440)
+            .clamp(720, 1080)
             .toInt();
 
     return SizedBox(
@@ -615,7 +617,7 @@ class HeroBanner extends StatelessWidget {
           reserveIndicatorSpace: false,
           onPlay: onPlay,
           onInfo: onInfo,
-          onImageTap: onImageTap ?? () => context.push('/trailer/${movie.id}'),
+          onImageTap: onImageTap ?? () => context.push('/movie/${movie.id}/trailer'),
         ),
       ),
     );

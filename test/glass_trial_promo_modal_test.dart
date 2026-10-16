@@ -37,33 +37,41 @@ void main() {
     });
   });
 
-  group('GlassTrialPromoModal Widget Tests', () {
-    testWidgets('Renders all VIP trial elements correctly', (tester) async {
+  group('GlassTrialPromoModal Widget Tests (CGV Style)', () {
+    testWidgets('Renders all CGV campaign banner elements correctly', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(
           const GlassTrialPromoModal(),
         ),
       );
 
-      // 1. Kiểm tra tiêu đề và badge
-      expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsOneWidget);
-      expect(find.text('ƯU ĐÃI ĐẶC QUYỀN'), findsOneWidget);
+      // 1. Kiểm tra logo và tiêu đề nghệ thuật
+      expect(find.text('OPENFLIX'), findsAtLeastNWidgets(1));
+      expect(find.text('Tháng của Nàng'), findsOneWidget);
 
-      // 2. Kiểm tra các dòng quyền lợi
-      expect(find.textContaining('1.000+ bom tấn'), findsOneWidget);
-      expect(find.textContaining('Chất lượng 4K HDR'), findsOneWidget);
-      expect(find.textContaining('Không quảng cáo'), findsOneWidget);
+      expect(find.text('DEAL GIẢM ĐẾN'), findsOneWidget);
+      expect(find.text('100.000Đ'), findsAtLeastNWidgets(1));
 
-      // 3. Kiểm tra nút hành động và chú thích
-      expect(find.text('DÙNG THỬ NGAY (0Đ)'), findsOneWidget);
-      expect(find.text('0đ trong 7 ngày đầu. Tự do hủy bất cứ lúc nào.'), findsOneWidget);
-      expect(find.text('Để sau'), findsOneWidget);
+      // 2. Kiểm tra viên thuốc thời gian
+      expect(find.text('Thời gian: 12/10 - 20/10'), findsOneWidget);
 
-      // 4. Kiểm tra nút X đóng
+      // 3. Kiểm tra thẻ voucher quà tặng bên trong phong bì
+      expect(find.text('VIP PASS'), findsOneWidget);
+      expect(find.text('HAPPY'), findsOneWidget);
+      expect(find.text('YES!'), findsOneWidget);
+
+      // 4. Kiểm tra nút bấm Oval Vàng Hoàng Kim "MUA NGAY" & chú thích chân thiệp
+      expect(find.text('MUA NGAY'), findsOneWidget);
+      expect(
+        find.text('*Áp dụng khi mua Gói thành viên hoặc Thẻ Quà Tặng OpenFlix'),
+        findsOneWidget,
+      );
+
+      // 5. Kiểm tra nút tròn đóng X
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     });
 
-    testWidgets('Tapping Subscribe button calls onSubscribe callback', (tester) async {
+    testWidgets('Tapping "MUA NGAY" button calls onSubscribe callback', (tester) async {
       bool subscribed = false;
 
       await tester.pumpWidget(
@@ -87,14 +95,14 @@ void main() {
       await tester.tap(find.text('Open Modal'));
       await tester.pumpAndSettle();
 
-      expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsOneWidget);
+      expect(find.text('MUA NGAY'), findsOneWidget);
 
-      // Bấm DÙNG THỬ NGAY
-      await tester.tap(find.text('DÙNG THỬ NGAY (0Đ)'));
+      // Bấm nút MUA NGAY
+      await tester.tap(find.text('MUA NGAY'));
       await tester.pumpAndSettle();
 
       expect(subscribed, isTrue);
-      expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsNothing);
+      expect(find.text('MUA NGAY'), findsNothing);
     });
 
     testWidgets('Tapping Close X button calls onDismiss callback', (tester) async {
@@ -128,38 +136,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(dismissed, isTrue);
-      expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsNothing);
-    });
-
-    testWidgets('Tapping "Để sau" button dismisses modal', (tester) async {
-      bool dismissed = false;
-
-      await tester.pumpWidget(
-        _buildTestApp(
-          Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () {
-                GlassTrialPromoModal.show(
-                  context,
-                  onDismiss: () {
-                    dismissed = true;
-                  },
-                );
-              },
-              child: const Text('Open Modal'),
-            ),
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Open Modal'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Để sau'));
-      await tester.pumpAndSettle();
-
-      expect(dismissed, isTrue);
-      expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsNothing);
+      expect(find.text('MUA NGAY'), findsNothing);
     });
 
     testWidgets('Responsive audit across 4 viewports without overflow', (tester) async {
@@ -185,7 +162,7 @@ void main() {
         await tester.pump();
 
         expect(tester.takeException(), isNull, reason: 'Lỗi layout tại viewport: $vp');
-        expect(find.text('7 NGÀY DÙNG THỬ VIP'), findsOneWidget);
+        expect(find.text('MUA NGAY'), findsOneWidget);
       }
     });
   });

@@ -18,16 +18,14 @@ import '../widgets/top10_row.dart';
 class HomeScreen extends StatefulWidget {
   final bool enableTrialPromo;
 
-  const HomeScreen({
-    super.key,
-    this.enableTrialPromo = true,
-  });
+  const HomeScreen({super.key, this.enableTrialPromo = true});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
   final PocketBaseService _pbService = PocketBaseService.instance;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _homeScrollController = ScrollController();
@@ -36,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
   );
   Timer? _searchDebounceTimer;
   Timer? _trialPromoTimer;
+
+  @override
+  bool get wantKeepAlive => true;
 
   List<MovieModel> _allMovies = [];
   List<MovieModel> _filteredMovies = [];
@@ -59,11 +60,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _scheduleTrialPromo();
   }
 
+  int _promoRetries = 0;
+
   void _scheduleTrialPromo() {
     if (!widget.enableTrialPromo) return;
     _trialPromoTimer?.cancel();
     _trialPromoTimer = Timer(const Duration(milliseconds: 650), () async {
       if (!mounted) return;
+      // Đợi ảnh/nội dung load xong mới bật modal kính: tránh đè thêm lớp
+      // shader nặng đúng lúc máy đang bão tải ảnh đầu giờ (không đổi giao diện,
+      // chỉ dời thời điểm hiện; tối đa 5 lần hẹn lại rồi thôi).
+      if (_isLoading && _promoRetries < 5) {
+        _promoRetries++;
+        _trialPromoTimer = Timer(const Duration(seconds: 4), () {
+          if (mounted) _scheduleTrialPromo();
+        });
+        return;
+      }
       final shouldShow = await TrialPromoService.instance.shouldShowPromo();
       if (!mounted || !shouldShow) return;
 
@@ -105,7 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _appBarOpacityNotifier.dispose();
     super.dispose();
   }
-
 
   Future<void> _loadData() async {
     // Chỉ kích hoạt cờ loading khi chưa có dữ liệu trong RAM cache
@@ -233,6 +245,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _playMovie(MovieModel movie) {
     context.push('/watch/${movie.id}');
+  }
+
+  void _playTrailer(MovieModel movie) {
+    context.push('/movie/${movie.id}/trailer');
   }
 
   void _openMovieDetail(MovieModel movie) {
@@ -411,7 +427,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pop(modalContext);
-                      _playMovie(movie);
+                      if (isTrailer) {
+                        _playTrailer(movie);
+                      } else {
+                        _playMovie(movie);
+                      }
                     },
                     icon: Icon(
                       isTrailer
@@ -595,6 +615,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isFilteringCategory = _selectedCategory != 'Tất cả';
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -766,12 +787,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ValueListenableBuilder<double>(
                       valueListenable: _appBarOpacityNotifier,
                       builder: (context, opacity, child) {
-                        return AnimatedOpacity(
-                          opacity: (_isSearching || isFilteringCategory)
-                              ? 1.0
-                              : opacity,
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeOutCubic,
+                        final effectiveOpacity = (_isSearching || isFilteringCategory)
+                            ? 1.0
+                            : opacity;
+                        return Opacity(
+                          opacity: effectiveOpacity,
                           child: child,
                         );
                       },
@@ -853,7 +873,7 @@ class _HomeScreenState extends State<HomeScreen> {
               movies: _featuredMovies,
               onPlay: _playMovie,
               onInfo: _showMovieDetailModal,
-              onImageTap: (movie) => context.push('/trailer/${movie.id}'),
+              onImageTap: (movie) => _playTrailer(movie),
             ),
 
           // 2. Chip lọc thể loại nhỏ gọn đè nhẹ dưới Hero
@@ -999,7 +1019,10 @@ class _HomeScreenState extends State<HomeScreen> {
             // 3. Khung 2 hàng poster phim
             for (int r = 0; r < 2; r++) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 child: Container(
                   width: r == 0 ? 170 : 130,
                   height: 18,

@@ -31,7 +31,8 @@ class _GenreItem {
   });
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen>
+    with AutomaticKeepAliveClientMixin {
   final PocketBaseService _pbService = PocketBaseService.instance;
   late final TextEditingController _searchController;
   List<MovieModel> _allMovies = [];
@@ -40,6 +41,9 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isCategoriesExpanded = false;
 
   Timer? _debounceTimer;
+
+  @override
+  bool get wantKeepAlive => true;
 
   static const List<_GenreItem> _allGenres = [
     _GenreItem(
@@ -109,7 +113,9 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.initialQuery);
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadData();
+    });
   }
 
   @override
@@ -169,6 +175,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isSearching = _searchController.text.trim().isNotEmpty;
     final topPadding = MediaQuery.paddingOf(context).top;
 
@@ -358,112 +365,114 @@ class _SearchScreenState extends State<SearchScreen> {
 
   /// Thẻ thể loại có nền chuyển sắc rực rỡ và hình nhân vật cắt cúp nghệ thuật
   Widget _buildGenreCard(_GenreItem genre) {
-    return GestureDetector(
-      onTap: () => _onGenreTapped(genre.title),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: LinearGradient(
-              colors: genre.gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-              width: 0.8,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: genre.gradientColors.first.withValues(alpha: 0.35),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => _onGenreTapped(genre.title),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: genre.gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // 1. Hình ảnh nền nhân vật/poster nghệ thuật cắt cúp bên phải
-              Positioned(
-                right: -8,
-                top: 0,
-                bottom: 0,
-                width: 105,
-                child: Opacity(
-                  opacity: 0.85,
-                  child: CachedNetworkImage(
-                    imageUrl: genre.imageUrl,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.centerRight,
-                    memCacheWidth: 260,
-                    memCacheHeight: 180,
-                    placeholder: (_, _) => const SizedBox.shrink(),
-                    errorWidget: (_, _, _) => const SizedBox.shrink(),
-                  ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 0.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: genre.gradientColors.first.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-              ),
-
-              // 2. Lớp gradient che phủ bên trái để chữ luôn nổi bật
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        genre.gradientColors.first.withValues(alpha: 0.95),
-                        genre.gradientColors.first.withValues(alpha: 0.65),
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.55, 1.0],
+              ],
+            ),
+            child: Stack(
+              children: [
+                // 1. Hình ảnh nền nhân vật/poster nghệ thuật cắt cúp bên phải
+                Positioned(
+                  right: -8,
+                  top: 0,
+                  bottom: 0,
+                  width: 105,
+                  child: Opacity(
+                    opacity: 0.85,
+                    child: CachedNetworkImage(
+                      imageUrl: genre.imageUrl,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.centerRight,
+                      memCacheWidth: 260,
+                      memCacheHeight: 180,
+                      placeholder: (_, _) => const SizedBox.shrink(),
+                      errorWidget: (_, _, _) => const SizedBox.shrink(),
                     ),
                   ),
                 ),
-              ),
 
-              // 3. Lớp Vignette tối ở chân chữ
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.40),
-                      ],
-                      stops: const [0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // 4. Tiêu đề thể loại đặt ở góc dưới bên trái
-              Positioned(
-                left: 12,
-                bottom: 10,
-                right: 36,
-                child: Text(
-                  genre.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black87,
-                        blurRadius: 6,
-                        offset: Offset(0, 1),
+                // 2. Lớp gradient che phủ bên trái để chữ luôn nổi bật
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          genre.gradientColors.first.withValues(alpha: 0.95),
+                          genre.gradientColors.first.withValues(alpha: 0.65),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.55, 1.0],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+
+                // 3. Lớp Vignette tối ở chân chữ
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.40),
+                        ],
+                        stops: const [0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 4. Tiêu đề thể loại đặt ở góc dưới bên trái
+                Positioned(
+                  left: 12,
+                  bottom: 10,
+                  right: 36,
+                  child: Text(
+                    genre.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black87,
+                          blurRadius: 6,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -477,73 +486,75 @@ class _SearchScreenState extends State<SearchScreen> {
     final bool isRental = index % 3 == 0;
     final bool isFullSeries = index % 3 == 1;
 
-    return GestureDetector(
-      onTap: () => context.push('/movie/${movie.id}'),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.14),
-              width: 0.8,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => context.push('/movie/${movie.id}'),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.14),
+                width: 0.8,
+              ),
             ),
-          ),
-          child: Stack(
-            children: [
-              // 1. Ảnh thumbnail 16:9
-              Positioned.fill(
-                child: CachedNetworkImage(
-                  imageUrl: movie.posterUrl,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 380,
-                  memCacheHeight: 240,
-                  placeholder: (_, _) =>
-                      const ColoredBox(color: AppColors.surfaceLight),
-                  errorWidget: (_, _, _) => Container(
-                    color: AppColors.surface,
-                    child: const Icon(
-                      Icons.movie_outlined,
-                      color: Colors.white38,
-                      size: 28,
+            child: Stack(
+              children: [
+                // 1. Ảnh thumbnail 16:9
+                Positioned.fill(
+                  child: CachedNetworkImage(
+                    imageUrl: movie.posterUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 380,
+                    memCacheHeight: 240,
+                    placeholder: (_, _) =>
+                        const ColoredBox(color: AppColors.surfaceLight),
+                    errorWidget: (_, _, _) => Container(
+                      color: AppColors.surface,
+                      child: const Icon(
+                        Icons.movie_outlined,
+                        color: Colors.white38,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // 2. Lớp gradient chuyển tiếp ở đáy card
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.30),
-                        Colors.black.withValues(alpha: 0.85),
-                      ],
-                      stops: const [0.35, 0.65, 1.0],
+                // 2. Lớp gradient chuyển tiếp ở đáy card
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.30),
+                          Colors.black.withValues(alpha: 0.85),
+                        ],
+                        stops: const [0.35, 0.65, 1.0],
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // 3. Badge tròn vàng góc trên bên trái "ĐỘC QUYỀN"
-              if (isExclusive)
-                Positioned(top: 6, left: 6, child: _buildExclusiveBadge()),
+                // 3. Badge tròn vàng góc trên bên trái "ĐỘC QUYỀN"
+                if (isExclusive)
+                  Positioned(top: 6, left: 6, child: _buildExclusiveBadge()),
 
-              // 4. Badge định dạng ở góc dưới bên trái (PHIM THUÊ / TRỌN BỘ / MỚI)
-              Positioned(
-                left: 6,
-                bottom: 6,
-                child: _buildFormatBadge(
-                  isRental: isRental,
-                  isFullSeries: isFullSeries,
+                // 4. Badge định dạng ở góc dưới bên trái (PHIM THUÊ / TRỌN BỘ / MỚI)
+                Positioned(
+                  left: 6,
+                  bottom: 6,
+                  child: _buildFormatBadge(
+                    isRental: isRental,
+                    isFullSeries: isFullSeries,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

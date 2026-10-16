@@ -26,6 +26,9 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
   final PocketBaseService _pbService = PocketBaseService.instance;
   List<MovieModel> _movies = [];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  int _currentPage = 1;
+  bool _hasMore = true;
 
   @override
   void initState() {
@@ -34,33 +37,57 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
   }
 
   Future<void> _loadMovies() async {
-    setState(() => _isLoading = true);
-    final all = await _pbService.getMovies();
-    List<MovieModel> filtered = all;
+    setState(() {
+      _isLoading = true;
+      _currentPage = 1;
+      _hasMore = true;
+    });
 
-    if (widget.category != null &&
-        widget.category!.isNotEmpty &&
-        widget.category != 'Tất cả') {
-      filtered = all
-          .where(
-            (m) => m.category.toLowerCase().contains(
-              widget.category!.toLowerCase(),
-            ),
-          )
-          .toList();
-    } else if (widget.rowKey != null) {
-      if (widget.rowKey == 'top10') {
-        filtered = all.take(10).toList();
-      } else if (widget.rowKey == 'new') {
-        filtered = all.where((m) => m.isNew).toList();
-        if (filtered.isEmpty) filtered = all.take(6).toList();
-      }
+    if (widget.rowKey == 'top10') {
+      final top10 = await _pbService.getTop10Movies();
+      if (!mounted) return;
+      setState(() {
+        _movies = top10;
+        _isLoading = false;
+        _hasMore = false;
+      });
+      return;
     }
+
+    final pagedResult = await _pbService.getMoviesPaged(
+      page: 1,
+      perPage: 20,
+      category: (widget.category != null && widget.category != 'Tất cả') ? widget.category : null,
+      filter: widget.rowKey == 'new' ? 'is_new = true' : null,
+    );
 
     if (!mounted) return;
     setState(() {
-      _movies = filtered;
+      _movies = pagedResult.items;
+      _hasMore = pagedResult.hasMore;
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoading || _isLoadingMore || !_hasMore) return;
+
+    setState(() => _isLoadingMore = true);
+    final nextPage = _currentPage + 1;
+
+    final pagedResult = await _pbService.getMoviesPaged(
+      page: nextPage,
+      perPage: 20,
+      category: (widget.category != null && widget.category != 'Tất cả') ? widget.category : null,
+      filter: widget.rowKey == 'new' ? 'is_new = true' : null,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _currentPage = nextPage;
+      _movies.addAll(pagedResult.items);
+      _hasMore = pagedResult.hasMore;
+      _isLoadingMore = false;
     });
   }
 
@@ -89,6 +116,8 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
       body: MovieGrid(
         movies: _movies,
         isLoading: _isLoading,
+        isLoadingMore: _isLoadingMore,
+        onLoadMore: _loadMore,
         showCategory: true,
         emptyTitle: 'Chưa có phim trong "${widget.title}"',
         emptyMessage: 'Nội dung đang được tuyển chọn và cập nhật thường xuyên.',
