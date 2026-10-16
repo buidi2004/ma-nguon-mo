@@ -245,9 +245,14 @@ class _MeScreenState extends State<MeScreen>
             onTap: () => context.push('/help'),
           ),
           _buildTile(
-            icon: Icons.feedback_outlined,
-            title: 'Liên hệ & Góp ý',
+            icon: Icons.support_agent_outlined,
+            title: 'Liên hệ & Hỗ trợ kỹ thuật',
             onTap: () => context.push('/contact'),
+          ),
+          _buildTile(
+            icon: Icons.feedback_outlined,
+            title: 'Báo lỗi phát phim & Góp ý',
+            onTap: () => context.push('/feedback'),
           ),
           _buildTile(
             icon: Icons.info_outline,

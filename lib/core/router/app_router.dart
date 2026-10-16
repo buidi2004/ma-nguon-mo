@@ -4,6 +4,7 @@ import 'package:transit_kit/transit_kit.dart';
 
 import '../../features/account/about_screen.dart';
 import '../../features/account/account_screen.dart';
+import '../../features/account/feedback_screen.dart';
 import '../../features/account/language_screen.dart';
 import '../../features/account/me_screen.dart';
 import '../../features/account/notifications_screen.dart';
@@ -549,7 +550,7 @@ class AppRouter {
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
           fullscreenDialog: true,
-          child: const ContactScreen(), // S37 alias
+          child: const FeedbackScreen(),
         ),
       ),
       GoRoute(
