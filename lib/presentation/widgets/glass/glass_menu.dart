@@ -98,9 +98,17 @@ class GlassMenuItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: Row(
+            crossAxisAlignment: subtitle != null
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 22, color: activeColor),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: subtitle != null ? 1.5 : 0.0,
+                  ),
+                  child: Icon(icon, size: 22, color: activeColor),
+                ),
                 const SizedBox(width: 14),
               ],
               Expanded(

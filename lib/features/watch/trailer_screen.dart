@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -212,11 +213,13 @@ class _TrailerScreenState extends State<TrailerScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  GlassIconButton.circle(
+                    size: 38,
+                    iconSize: 20,
+                    icon: Icons.arrow_back,
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -225,6 +228,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
                       }
                     },
                   ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Trailer chính thức: ${_movie!.title}',
@@ -237,8 +241,11 @@ class _TrailerScreenState extends State<TrailerScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.share_outlined, color: Colors.white),
+                  const SizedBox(width: 10),
+                  GlassIconButton.circle(
+                    size: 38,
+                    iconSize: 20,
+                    icon: Icons.share_outlined,
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -377,24 +384,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white54),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: const Text(
-                          'TRAILER',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      GlassSpecBadge.tag(label: 'TRAILER', isCapsule: true),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -408,24 +398,13 @@ class _TrailerScreenState extends State<TrailerScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                        ),
+                      GlassButton.primary(
+                        text: 'Xem chi tiết',
+                        icon: Icons.info_outline,
+                        height: 38,
+                        borderRadius: 19,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         onPressed: () => context.go('/movie/${widget.movieId}'),
-                        icon: const Icon(Icons.info_outline, size: 16),
-                        label: const Text(
-                          'Xem chi tiết',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
                       ),
                     ],
                   ),

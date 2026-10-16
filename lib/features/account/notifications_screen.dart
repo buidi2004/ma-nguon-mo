@@ -306,6 +306,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         ),
                                         if (!item.isRead) ...[
                                           Container(
+                                            margin: const EdgeInsets.only(top: 4, left: 6),
                                             width: 8,
                                             height: 8,
                                             decoration: const BoxDecoration(

@@ -174,10 +174,13 @@ class _PlansScreenState extends State<PlansScreen> {
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.verified_user_outlined,
-                    color: AppColors.red,
-                    size: 24,
+                  Padding(
+                    padding: EdgeInsets.only(top: 1.0),
+                    child: Icon(
+                      Icons.verified_user_outlined,
+                      color: AppColors.red,
+                      size: 20,
+                    ),
                   ),
                   SizedBox(width: 12),
                   Expanded(
@@ -361,10 +364,13 @@ class _PlansScreenState extends State<PlansScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.check,
-                                size: 15,
-                                color: AppColors.success,
+                              const Padding(
+                                padding: EdgeInsets.only(top: 1.5),
+                                child: Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: AppColors.success,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(

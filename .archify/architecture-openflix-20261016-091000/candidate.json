@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "OpenFlix Streaming Architecture",
+    "output": "openflix-architecture.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "User / Device",
+      "sublabel": "Flutter Client",
+      "pos": [40, 290],
+      "size": [140, 64],
+      "tag": "Android / iOS / Web"
+    },
+    {
+      "id": "ui_shell",
+      "type": "frontend",
+      "label": "UI Shell & Router",
+      "sublabel": "GoRouter + 44 Screens",
+      "pos": [240, 180],
+      "size": [160, 64],
+      "tag": "S01 - S42"
+    },
+    {
+      "id": "glass_engine",
+      "type": "frontend",
+      "label": "Glassmorphism UI",
+      "sublabel": "Optical Shaders & Tokens",
+      "pos": [240, 310],
+      "size": [160, 64],
+      "tag": "Netflix Style"
+    },
+    {
+      "id": "player",
+      "type": "frontend",
+      "label": "Cinematic Player",
+      "sublabel": "Chewie & VideoPlayer",
+      "pos": [240, 440],
+      "size": [160, 64],
+      "tag": "Seek & HUD"
+    },
+    {
+      "id": "offline_mock",
+      "type": "database",
+      "label": "Offline Mock Store",
+      "sublabel": "Local Fallback Assets",
+      "pos": [470, 50],
+      "size": [170, 56]
+    },
+    {
+      "id": "pb_service",
+      "type": "backend",
+      "label": "PocketBase Service",
+      "sublabel": "Deduplication & Cache",
+      "pos": [470, 180],
+      "size": [170, 64],
+      "tag": "3.5s Timeout"
+    },
+    {
+      "id": "auth_service",
+      "type": "security",
+      "label": "Auth & Profiles",
+      "sublabel": "Token & User State",
+      "pos": [470, 310],
+      "size": [170, 64],
+      "tag": "JWT Storage"
+    },
+    {
+      "id": "library_service",
+      "type": "backend",
+      "label": "Library & History",
+      "sublabel": "MyList, Likes, History",
+      "pos": [470, 440],
+      "size": [170, 64]
+    },
+    {
+      "id": "pb_backend",
+      "type": "cloud",
+      "label": "PocketBase Server",
+      "sublabel": "Go REST API :8090",
+      "pos": [710, 245],
+      "size": [160, 64],
+      "tag": "Production Host"
+    },
+    {
+      "id": "db_sqlite",
+      "type": "database",
+      "label": "Database Storage",
+      "sublabel": "SQLite + Collections",
+      "pos": [930, 245],
+      "size": [150, 64]
+    },
+    {
+      "id": "media_cdn",
+      "type": "cloud",
+      "label": "Media CDN & Stream",
+      "sublabel": "HLS / MP4 Video Streams",
+      "pos": [710, 440],
+      "size": [160, 64],
+      "tag": "Adaptive Bitrate"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "OpenFlix Flutter Application",
+      "wraps": ["ui_shell", "glass_engine", "player", "pb_service", "auth_service", "library_service", "offline_mock"]
+    },
+    {
+      "kind": "region",
+      "label": "Cloud & Media Infrastructure",
+      "wraps": ["pb_backend", "db_sqlite", "media_cdn"]
+    }
+  ],
+  "connections": [
+    { "id": "client-ui", "from": "client", "to": "ui_shell", "label": "user interaction", "variant": "emphasis" },
+    { "id": "ui-glass", "from": "ui_shell", "to": "glass_engine", "label": "styled with" },
+    { "id": "ui-player", "from": "ui_shell", "to": "player", "label": "launches" },
+    { "id": "ui-pb", "from": "ui_shell", "to": "pb_service", "label": "requests data" },
+    { "id": "ui-auth", "from": "ui_shell", "to": "auth_service", "label": "auth state" },
+    { "id": "ui-lib", "from": "ui_shell", "to": "library_service", "label": "bookmarks" },
+    { "id": "pb-mock", "from": "pb_service", "to": "offline_mock", "label": "failover", "variant": "dashed" },
+    { "id": "pb-api", "from": "pb_service", "to": "pb_backend", "label": "REST API" },
+    { "id": "auth-api", "from": "auth_service", "to": "pb_backend", "label": "auth token", "variant": "security" },
+    { "id": "pb-db", "from": "pb_backend", "to": "db_sqlite", "label": "SQL query" },
+    { "id": "player-cdn", "from": "player", "to": "media_cdn", "label": "stream chunks" }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Flutter Presentation Layer",
+      "items": [
+        "44 Netflix-inspired screens S01–S42",
+        "Custom optical GlassSurface shaders & controls",
+        "3D Cinema icon & parallel preloading splash"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "State & Service Architecture",
+      "items": [
+        "PocketBaseService deduplicates concurrent requests",
+        "Fast 3.5s timeout with offline mock fallback",
+        "In-flight and in-RAM caching prevents redundant loading"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Backend & Cloud Services",
+      "items": [
+        "PocketBase Go REST backend on port 8090",
+        "HLS/MP4 streams with fallback video source",
+        "Decoupled user profiles and watchlist syncing"
+      ]
+    }
+  ]
+}

@@ -108,11 +108,15 @@ class AboutScreen extends StatelessWidget {
                   (l) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.check_circle_outline,
-                          color: AppColors.red,
-                          size: 18,
+                        const Padding(
+                          padding: EdgeInsets.only(top: 1.5),
+                          child: Icon(
+                            Icons.check_circle_outline,
+                            color: AppColors.red,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -157,7 +161,10 @@ class AboutScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.code, color: Colors.white, size: 22),
+                const Padding(
+                  padding: EdgeInsets.only(top: 2.0),
+                  child: Icon(Icons.code, color: Colors.white, size: 20),
+                ),
                 const SizedBox(width: 10),
                 const Expanded(
                   child: Column(

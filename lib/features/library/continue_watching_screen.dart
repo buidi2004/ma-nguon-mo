@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -141,38 +140,15 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Ảnh thu nhỏ
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(6),
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      CachedNetworkImage(
-                                        imageUrl: movie.posterUrl,
-                                        width: 120,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                        memCacheWidth: 360,
-                                        memCacheHeight: 240,
-                                        maxHeightDiskCache: 400,
-                                        placeholder: (_, _) => const ColoredBox(
-                                          color: AppColors.surfaceLight,
-                                        ),
-                                      ),
-                                      Positioned.fill(
-                                        child: Center(
-                                          child: GlassIconButton.circle(
-                                            size: 38,
-                                            iconSize: 22,
-                                            icon: Icons.play_arrow_rounded,
-                                            onPressed: () => context.push(
-                                              '/watch/${movie.id}',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                // Ảnh thu nhỏ kính mờ tích hợp nút Play & tiến trình
+                                GlassPlayThumbnailOverlay(
+                                  imageUrl: movie.posterUrl,
+                                  width: 120,
+                                  height: 80,
+                                  progressRatio: ratio,
+                                  borderRadius: 6,
+                                  onTap: () => context.push(
+                                    '/watch/${movie.id}',
                                   ),
                                 ),
                                 const SizedBox(width: 14),

@@ -129,13 +129,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.check_circle_outline,
                         color: AppColors.success,
+                        size: 20,
                       ),
-                      SizedBox(width: 12),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Yêu cầu khôi phục đã được xử lý thành công!',

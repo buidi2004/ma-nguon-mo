@@ -54,3 +54,4 @@ app.*.map.json
 .kotlin/
 android/.kotlin/
 scratch/
+archify/

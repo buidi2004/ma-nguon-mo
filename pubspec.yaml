@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.0.0+3
+version: 4.0.0+4
 
 environment:
   sdk: ^3.13.5
@@ -48,6 +48,7 @@ dependencies:
   morphnext: ^0.6.1
   transit_kit: ^1.0.1
   carousel_slider: ^5.1.2
+  smart_splash_kit: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +60,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -100,3 +102,27 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#141414"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#141414"
+    theme_color: "#E50914"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  linux:
+    generate: true
+    image_path: "assets/icons/app_icon.png"

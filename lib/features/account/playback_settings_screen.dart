@@ -144,70 +144,19 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _qualityOptions.map((opt) {
-                    final isSelected = _videoQuality == opt;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _videoQuality = opt);
-                        _saveSetting('playback_video_quality', opt);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Đã chọn: $opt'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                      child: GlassSurface.capsule(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 9,
-                        ),
-                        tintColor: isSelected
-                            ? const Color(0x38E50914)
-                            : const Color(0x222A2A2A),
-                        customBorder: Border.all(
-                          color: isSelected
-                              ? const Color(0x88E50914)
-                              : Colors.white12,
-                        ),
-                        blur: 8.5,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isSelected
-                                  ? Icons.check_circle_rounded
-                                  : Icons.circle_outlined,
-                              color: isSelected
-                                  ? const Color(0xFF00E5FF)
-                                  : AppColors.textMuted,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                opt,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                  fontSize: 13,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                GlassRadioTileGroup.fromStrings(
+                  options: _qualityOptions,
+                  selectedOption: _videoQuality,
+                  onChanged: (opt) {
+                    setState(() => _videoQuality = opt);
+                    _saveSetting('playback_video_quality', opt);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Đã chọn: $opt'),
+                        duration: const Duration(seconds: 1),
                       ),
                     );
-                  }).toList(),
+                  },
                 ),
               ],
             ),

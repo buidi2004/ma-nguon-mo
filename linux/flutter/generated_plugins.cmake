@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  smart_splash_kit
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

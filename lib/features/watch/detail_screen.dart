@@ -237,24 +237,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: Text(
-                          movie.ageRating,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      GlassSpecBadge.age(rating: movie.ageRating),
                       const SizedBox(width: 8),
                       Text(
                         '${movie.durationMinutes} phút',
@@ -264,27 +247,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.textMuted,
-                            width: 0.8,
-                          ),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: const Text(
-                          'HD',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      GlassSpecBadge.uhd4k(),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -294,10 +257,9 @@ class _DetailScreenState extends State<DetailScreen> {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: GlassButton.primary(
-                          text: 'Phát',
+                        child: GlassShimmerCTA.play(
+                          label: 'Phát',
                           icon: Icons.play_arrow_rounded,
-                          borderRadius: 12,
                           height: 46,
                           onPressed: () => _playMovie(movie),
                         ),

@@ -21,14 +21,17 @@ class PocketBaseService {
   late PocketBase _pb;
   bool _isUsingOfflineMock = false;
   List<MovieModel>? _cachedMovies;
+  Future<List<MovieModel>>? _inFlightMoviesRequest;
 
   String get baseUrl => _currentBaseUrl;
   bool get isUsingOfflineMock => _isUsingOfflineMock;
+  bool get hasCachedMovies => _cachedMovies != null && _cachedMovies!.isNotEmpty;
 
   void _initPb(String url) {
     _currentBaseUrl = url.replaceAll(RegExp(r'/+$'), '');
     _pb = PocketBase(_currentBaseUrl);
     _cachedMovies = null;
+    _inFlightMoviesRequest = null;
   }
 
   void updateBaseUrl(String newUrl) {
@@ -38,18 +41,33 @@ class PocketBaseService {
   /// Xóa bộ nhớ đệm để ép nạp lại dữ liệu
   void clearCache() {
     _cachedMovies = null;
+    _inFlightMoviesRequest = null;
   }
 
-  /// Lấy toàn bộ danh sách phim từ PocketBase (có bộ nhớ đệm trong RAM)
+  /// Lấy toàn bộ danh sách phim từ PocketBase (có bộ nhớ đệm trong RAM & chống trùng request)
   Future<List<MovieModel>> getMovies({bool forceRefresh = false}) async {
     if (!forceRefresh && _cachedMovies != null && _cachedMovies!.isNotEmpty) {
       return _cachedMovies!;
     }
 
+    // Nếu đã có 1 request đang gửi đi, các màn hình khác sẽ dùng chung Future đó
+    if (!forceRefresh && _inFlightMoviesRequest != null) {
+      return _inFlightMoviesRequest!;
+    }
+
+    final future = _fetchMoviesInternal();
+    if (!forceRefresh) {
+      _inFlightMoviesRequest = future;
+    }
+    return future;
+  }
+
+  Future<List<MovieModel>> _fetchMoviesInternal() async {
     try {
       final records = await _pb
           .collection('movies')
-          .getFullList(sort: '-created');
+          .getFullList(sort: '-created')
+          .timeout(const Duration(milliseconds: 3500));
 
       _isUsingOfflineMock = false;
       final result = records
@@ -64,6 +82,8 @@ class PocketBaseService {
       _isUsingOfflineMock = true;
       _cachedMovies = _mockMovies;
       return _mockMovies;
+    } finally {
+      _inFlightMoviesRequest = null;
     }
   }
 

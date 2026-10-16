@@ -30,6 +30,9 @@ class SettingsTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
+          crossAxisAlignment: subtitle != null
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(8),

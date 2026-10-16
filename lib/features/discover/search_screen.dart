@@ -226,63 +226,11 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Thanh tìm kiếm kính mờ capsule
-          GlassSurface.capsule(
-            height: 48,
-            tintColor: const Color(0x322A2A2A),
-            blur: 10.0,
-            refractiveIndex: 1.45,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14.5,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Tên phim, diễn viên, thể loại',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.55),
-                  fontSize: 13.5,
-                ),
-                border: InputBorder.none,
-                prefixIconConstraints: const BoxConstraints(
-                  minWidth: 36,
-                  minHeight: 36,
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    Icons.search_rounded,
-                    color: Colors.white.withValues(alpha: 0.70),
-                    size: 22,
-                  ),
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
-                        ),
-                        icon: const Icon(
-                          Icons.clear_rounded,
-                          color: Colors.white70,
-                          size: 18,
-                        ),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
+          // Thanh tìm kiếm kính mờ thích ứng quang học
+          GlassDynamicSearchBar(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            hintText: 'Tên phim, diễn viên, thể loại',
           ),
         ],
       ),

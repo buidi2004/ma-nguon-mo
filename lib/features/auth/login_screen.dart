@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: Border.all(color: AppColors.red),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Icon(
                           Icons.error_outline,

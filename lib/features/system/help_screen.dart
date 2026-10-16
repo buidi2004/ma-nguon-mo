@@ -100,12 +100,12 @@ class _HelpScreenState extends State<HelpScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.help_center_outlined,
                       color: Colors.white,
-                      size: 28,
+                      size: 26,
                     ),
                     SizedBox(width: 10),
                     Expanded(

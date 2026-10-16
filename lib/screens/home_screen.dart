@@ -3,18 +3,25 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../models/movie_model.dart';
 import '../presentation/widgets/glass/glass_components.dart';
 import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
+import '../services/trial_promo_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/movie_row.dart';
 import '../widgets/top10_row.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool enableTrialPromo;
+
+  const HomeScreen({
+    super.key,
+    this.enableTrialPromo = true,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -28,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     0.0,
   );
   Timer? _searchDebounceTimer;
+  Timer? _trialPromoTimer;
 
   List<MovieModel> _allMovies = [];
   List<MovieModel> _filteredMovies = [];
@@ -38,15 +46,44 @@ class _HomeScreenState extends State<HomeScreen> {
   List<MovieModel> _sciFiMovies = [];
   List<MovieModel> _actionMovies = [];
   List<String> _categories = const ['Tất cả'];
-  bool _isLoading = true;
+  late bool _isLoading;
   bool _isSearching = false;
   String _selectedCategory = 'Tất cả';
 
   @override
   void initState() {
     super.initState();
+    _isLoading = !_pbService.hasCachedMovies;
     _homeScrollController.addListener(_onHomeScroll);
     _loadData();
+    _scheduleTrialPromo();
+  }
+
+  void _scheduleTrialPromo() {
+    if (!widget.enableTrialPromo) return;
+    _trialPromoTimer?.cancel();
+    _trialPromoTimer = Timer(const Duration(milliseconds: 650), () async {
+      if (!mounted) return;
+      final shouldShow = await TrialPromoService.instance.shouldShowPromo();
+      if (!mounted || !shouldShow) return;
+
+      GlassTrialPromoModal.show(
+        context,
+        onSubscribe: () {
+          TrialPromoService.instance.markDismissed();
+          try {
+            context.push('/plans');
+          } catch (_) {
+            try {
+              context.go('/plans');
+            } catch (_) {}
+          }
+        },
+        onDismiss: () {
+          TrialPromoService.instance.markDismissed();
+        },
+      );
+    });
   }
 
   void _onHomeScroll() {
@@ -60,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _trialPromoTimer?.cancel();
     _searchDebounceTimer?.cancel();
     _homeScrollController.removeListener(_onHomeScroll);
     _homeScrollController.dispose();
@@ -68,10 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+
   Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    // Chỉ kích hoạt cờ loading khi chưa có dữ liệu trong RAM cache
+    if (!_pbService.hasCachedMovies) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       final movies = await _pbService.getMovies();
@@ -705,12 +747,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
-                strokeWidth: 3,
-              ),
-            )
+          ? _buildSkeleton()
           : Stack(
               children: [
                 RefreshIndicator(
@@ -886,7 +923,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Chip lọc danh mục phong cách kính mờ quang học (Glass Capsule)
+  /// Chip lọc danh mục phong cách kính mờ quang học nhẹ nhàng (GlassChipButton)
   Widget _buildCategoryFilterRow() {
     return Container(
       height: 38,
@@ -900,34 +937,100 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           final cat = _categories[index];
           final isSelected = cat == _selectedCategory;
-          return GlassSurface.capsule(
-            onTap: () => _onCategorySelected(cat),
-            tintColor: isSelected
-                ? AppColors.red.withValues(alpha: 0.55)
-                : const Color(0x302A2A2A),
-            blur: isSelected ? 9.0 : 8.0,
-            refractiveIndex: 1.68,
-            thickness: 34.0,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            shadows: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.red.withValues(alpha: 0.45),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : const [],
-            child: Text(
-              cat,
-              style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-                fontSize: 12.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
+          return GlassChipButton(
+            label: cat,
+            isSelected: isSelected,
+            height: 34.0,
+            activeColor: AppColors.red,
+            showCheckmark: false,
+            onSelected: (_) => _onCategorySelected(cat),
           );
         },
+      ),
+    );
+  }
+
+  /// Màn hình chờ Skeleton Shimmer chuẩn rạp chiếu Netflix (AGENTS.md Mục 6)
+  Widget _buildSkeleton() {
+    final screenSize = MediaQuery.sizeOf(context);
+    final heroHeight = (screenSize.height * 0.55).clamp(380.0, 560.0);
+    final posterWidth = (screenSize.width / 3.4).clamp(90.0, 130.0);
+    final posterHeight = posterWidth * 1.5;
+
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      child: Shimmer.fromColors(
+        baseColor: const Color(0xFF1E1E1E),
+        highlightColor: const Color(0xFF2C2C2C),
+        period: const Duration(milliseconds: 1300),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Khung Hero banner skeleton
+            Container(
+              height: heroHeight,
+              width: double.infinity,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 12),
+
+            // 2. Khung các chip lọc thể loại
+            SizedBox(
+              height: 34,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                itemCount: 6,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (_, index) => Container(
+                  width: (index == 0) ? 64 : (index.isEven ? 82 : 72),
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // 3. Khung 2 hàng poster phim
+            for (int r = 0; r < 2; r++) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                child: Container(
+                  width: r == 0 ? 170 : 130,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: posterHeight,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  itemCount: 4,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (_, _) => Container(
+                    width: posterWidth,
+                    height: posterHeight,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ],
+        ),
       ),
     );
   }

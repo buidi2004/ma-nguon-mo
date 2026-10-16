@@ -1,65 +1,83 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:smart_splash_kit/smart_splash_kit.dart';
 
+import '../../presentation/widgets/glass/glass_smart_splash.dart';
+import '../../services/auth_service.dart';
+import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+/// Màn hình khởi động S01 của OpenFlix tích hợp Smart Splash Kit chuẩn điện ảnh.
+///
+/// Hỗ trợ:
+/// - Smart Routing: Định tuyến thông minh sau khi kiểm tra phiên đăng nhập và prefetch dữ liệu.
+/// - Hoạt cảnh mượt mà: `fadeScale` phối hợp phóng to nhẹ và độ mờ kính vi mô.
+/// - ApiLoader: Tải trước danh mục phim từ PocketBase với timeout tự động.
+/// - Giao diện Dark Cinema: Nền #141414, hào quang đỏ điện ảnh #E50914.
+class SplashScreen extends StatelessWidget {
+  /// Cấu hình Splash tùy biến (nếu truyền vào).
+  final SplashConfig? config;
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
+  /// Async callback khởi tạo ứng dụng tùy biến.
+  final Future<SplashRoute> Function()? onInit;
 
-class _SplashScreenState extends State<SplashScreen> {
-  Timer? _timer;
+  const SplashScreen({
+    super.key,
+    this.config,
+    this.onInit,
+  });
 
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer(const Duration(milliseconds: 1400), () {
-      if (mounted) {
-        context.go('/');
-      }
-    });
-  }
+  Future<SplashRoute> _defaultStartupFlow() async {
+    // 1. Tải trước dữ liệu phim với ApiLoader của Smart Splash Kit
+    await ApiLoader.run(
+      () => PocketBaseService.instance.getMovies(),
+      timeout: const Duration(seconds: 3),
+      maxRetries: 1,
+    );
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+    // 2. Kiểm tra phiên đăng nhập người dùng
+    final isLoggedIn = AuthService.instance.isLoggedIn;
+    if (isLoggedIn) {
+      return SplashRoute.home();
+    }
+    // Mặc định OpenFlix chuyển thẳng vào Catalog phim cho trải nghiệm tức thì
+    return SplashRoute.home();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'OPENFLIX',
-              style: TextStyle(
-                color: AppColors.red,
-                fontWeight: FontWeight.w900,
-                fontSize: 36,
-                letterSpacing: 4.0,
-              ),
+    return GlassSmartSplash(
+      config: config ??
+          SplashConfig(
+            durationMs: 800,
+            animation: SplashAnimation.fadeScale(
+              durationMs: 650,
+              curve: Curves.easeOutCubic,
             ),
-            SizedBox(height: 24),
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
-                strokeWidth: 2.5,
-              ),
+            layoutType: SplashLayoutType.logoWithText,
+            backgroundColor: AppColors.background,
+            appName: 'OPENFLIX',
+            appNameStyle: const TextStyle(
+              color: AppColors.red,
+              fontWeight: FontWeight.w900,
+              fontSize: 34,
+              letterSpacing: 4.0,
             ),
-          ],
-        ),
-      ),
+            tagline: 'Điện ảnh không giới hạn',
+            taglineStyle: TextStyle(
+              color: Colors.white.withAlpha(200),
+              fontSize: 13,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+            showLoader: true,
+            logo: Image.asset(
+              'assets/icons/app_icon.png',
+              width: 92,
+              height: 92,
+              errorBuilder: (_, _, _) => const SizedBox(width: 92, height: 92),
+            ),
+          ),
+      onInit: onInit ?? _defaultStartupFlow,
     );
   }
 }
