@@ -47,7 +47,8 @@ class PocketBaseService {
 
   String get baseUrl => _currentBaseUrl;
   bool get isUsingOfflineMock => _isUsingOfflineMock;
-  bool get hasCachedMovies => _cachedMovies != null && _cachedMovies!.isNotEmpty;
+  bool get hasCachedMovies =>
+      _cachedMovies != null && _cachedMovies!.isNotEmpty;
 
   void _initPb(String url) {
     _currentBaseUrl = url.replaceAll(RegExp(r'/+$'), '');
@@ -123,7 +124,8 @@ class PocketBaseService {
     String? sort = '-created',
     bool forceRefresh = false,
   }) async {
-    final cacheKey = '${page}_${perPage}_${category ?? ''}_${filter ?? ''}_${sort ?? ''}';
+    final cacheKey =
+        '${page}_${perPage}_${category ?? ''}_${filter ?? ''}_${sort ?? ''}';
 
     if (!forceRefresh && _pagedCache.containsKey(cacheKey)) {
       return _pagedCache[cacheKey]!;
@@ -189,7 +191,9 @@ class PocketBaseService {
       _pagedCache[cacheKey] = pageResult;
       return pageResult;
     } catch (e) {
-      debugPrint('⚠️ Lỗi tải phân trang PocketBase ($e). Phục vụ qua mock cache.');
+      debugPrint(
+        '⚠️ Lỗi tải phân trang PocketBase ($e). Phục vụ qua mock cache.',
+      );
       _isUsingOfflineMock = true;
       return _paginateMockMovies(
         page: page,
@@ -214,17 +218,21 @@ class PocketBaseService {
 
     if (category != null && category.isNotEmpty && category != 'Tất cả') {
       list = list
-          .where((m) => m.category.toLowerCase().contains(category.toLowerCase()))
+          .where(
+            (m) => m.category.toLowerCase().contains(category.toLowerCase()),
+          )
           .toList();
     }
 
     if (filter != null && filter.isNotEmpty) {
       final queryLower = filter.toLowerCase();
       list = list
-          .where((m) =>
-              m.title.toLowerCase().contains(queryLower) ||
-              m.description.toLowerCase().contains(queryLower) ||
-              m.category.toLowerCase().contains(queryLower))
+          .where(
+            (m) =>
+                m.title.toLowerCase().contains(queryLower) ||
+                m.description.toLowerCase().contains(queryLower) ||
+                m.category.toLowerCase().contains(queryLower),
+          )
           .toList();
     }
 
@@ -293,6 +301,113 @@ class PocketBaseService {
           m.description.toLowerCase().contains(lower) ||
           m.category.toLowerCase().contains(lower);
     }).toList();
+  }
+
+  /// Thêm một bộ phim mới vào PocketBase
+  Future<MovieModel> createMovie(Map<String, dynamic> data) async {
+    try {
+      final record = await _pb
+          .collection('movies')
+          .create(body: data)
+          .timeout(const Duration(milliseconds: 5000));
+      final movie = MovieModel.fromRecord(record);
+      clearCache();
+      return movie;
+    } catch (e) {
+      debugPrint('⚠️ Lỗi tạo phim PocketBase ($e). Lưu tạm vào mock.');
+      final id = 'mock_${DateTime.now().millisecondsSinceEpoch}';
+      final map = Map<String, dynamic>.from(data);
+      map['id'] = id;
+      final movie = MovieModel.fromJson(map);
+      _mockMovies.insert(0, movie);
+      clearCache();
+      return movie;
+    }
+  }
+
+  /// Cập nhật thông tin một bộ phim
+  Future<MovieModel> updateMovie(String id, Map<String, dynamic> data) async {
+    try {
+      final record = await _pb
+          .collection('movies')
+          .update(id, body: data)
+          .timeout(const Duration(milliseconds: 5000));
+      final movie = MovieModel.fromRecord(record);
+      clearCache();
+      return movie;
+    } catch (e) {
+      debugPrint('⚠️ Lỗi cập nhật phim PocketBase ($e). Cập nhật vào mock.');
+      final index = _mockMovies.indexWhere((m) => m.id == id);
+      if (index != -1) {
+        final old = _mockMovies[index].toJson();
+        old.addAll(data);
+        final updated = MovieModel.fromJson(old);
+        _mockMovies[index] = updated;
+        clearCache();
+        return updated;
+      }
+      final map = Map<String, dynamic>.from(data);
+      map['id'] = id;
+      final movie = MovieModel.fromJson(map);
+      clearCache();
+      return movie;
+    }
+  }
+
+  /// Xóa một bộ phim theo ID
+  Future<bool> deleteMovie(String id) async {
+    try {
+      await _pb
+          .collection('movies')
+          .delete(id)
+          .timeout(const Duration(milliseconds: 5000));
+      _cachedMovies?.removeWhere((m) => m.id == id);
+      _mockMovies.removeWhere((m) => m.id == id);
+      clearCache();
+      return true;
+    } catch (e) {
+      debugPrint('⚠️ Lỗi xóa phim PocketBase ($e). Xóa trong mock.');
+      _mockMovies.removeWhere((m) => m.id == id);
+      _cachedMovies?.removeWhere((m) => m.id == id);
+      clearCache();
+      return true;
+    }
+  }
+
+  /// Cập nhật nhanh trạng thái phim (Nổi bật, Mới & Hot, Sắp chiếu, Top 10)
+  Future<bool> updateMovieStatus(
+    String id, {
+    bool? isFeatured,
+    bool? isNew,
+    bool? comingSoon,
+    int? rank,
+  }) async {
+    final body = <String, dynamic>{};
+    if (isFeatured != null) body['is_featured'] = isFeatured;
+    if (isNew != null) body['is_new'] = isNew;
+    if (comingSoon != null) body['coming_soon'] = comingSoon;
+    if (rank != null) body['rank'] = rank;
+
+    if (body.isEmpty) return true;
+
+    try {
+      await _pb
+          .collection('movies')
+          .update(id, body: body)
+          .timeout(const Duration(milliseconds: 4000));
+      clearCache();
+      return true;
+    } catch (e) {
+      debugPrint('⚠️ Lỗi cập nhật trạng thái phim ($e). Cập nhật trong mock.');
+      final index = _mockMovies.indexWhere((m) => m.id == id);
+      if (index != -1) {
+        final old = _mockMovies[index].toJson();
+        old.addAll(body);
+        _mockMovies[index] = MovieModel.fromJson(old);
+      }
+      clearCache();
+      return true;
+    }
   }
 
   /// Nạp tự động dữ liệu mẫu vào PocketBase từ ứng dụng

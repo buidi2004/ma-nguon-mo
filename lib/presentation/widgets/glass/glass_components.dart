@@ -17,3 +17,5 @@ export 'glass_smart_splash.dart';
 export 'glass_spec_badge.dart';
 export 'glass_surface.dart';
 export 'glass_trial_promo_modal.dart';
+export 'openflix_morph_icon.dart';
+export 'silk_background.dart';

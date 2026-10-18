@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -26,7 +27,8 @@ class WelcomeScreen extends StatelessWidget {
                   center: const Alignment(0, -0.4),
                   radius: 1.2,
                   colors: [
-                    AppColors.red.withValues(alpha: 0.25),
+                    ThemeService.instance.primaryColor
+                        .withValues(alpha: 0.25),
                     Colors.transparent,
                   ],
                 ),
@@ -44,10 +46,10 @@ class WelcomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(),
-                  const Text(
+                  Text(
                     'OPENFLIX',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontWeight: FontWeight.w900,
                       fontSize: 38,
                       letterSpacing: 4.0,

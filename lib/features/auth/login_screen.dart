@@ -7,7 +7,9 @@ import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? redirect;
+
+  const LoginScreen({super.key, this.redirect});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -50,7 +52,13 @@ class _LoginScreenState extends State<LoginScreen> {
           duration: Duration(seconds: 2),
         ),
       );
-      context.go('/');
+      if (widget.redirect != null && widget.redirect!.isNotEmpty) {
+        context.pushReplacement(widget.redirect!);
+      } else if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/');
+      }
     } else {
       setState(() {
         _isLoading = false;
@@ -71,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(fallbackRoute: '/'),
         title: const Text(
           'Đăng nhập',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -290,7 +299,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => context.push('/register'),
+                        onTap: () {
+                          final registerUrl = (widget.redirect != null &&
+                                  widget.redirect!.isNotEmpty)
+                              ? '/register?redirect=${Uri.encodeComponent(widget.redirect!)}'
+                              : '/register';
+                          context.push(registerUrl);
+                        },
                         child: const Text(
                           'Đăng ký ngay',
                           style: TextStyle(

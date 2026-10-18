@@ -14,6 +14,10 @@ import '../../features/account/playback_settings_screen.dart';
 import '../../features/account/profile_edit_screen.dart';
 import '../../features/account/profiles_screen.dart';
 import '../../features/account/settings_screen.dart';
+import '../../features/admin/admin_auth_gate_screen.dart';
+import '../../features/admin/admin_movie_form_screen.dart';
+import '../../features/admin/admin_movie_list_screen.dart';
+import '../../features/admin/server_monitor_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/onboarding_screen.dart';
@@ -41,9 +45,20 @@ import '../../features/watch/reviews_screen.dart';
 import '../../features/watch/similar_movies_screen.dart';
 import '../../features/watch/trailer_screen.dart';
 import '../../features/watch/write_review_screen.dart';
+import '../../models/movie_model.dart';
 import '../../presentation/screens/shell/main_tabs_screen.dart';
 import '../../screens/home_screen.dart';
 import '../../screens/player_screen.dart';
+import '../../features/cinema/cinema_article_detail_screen.dart';
+import '../../features/cinema/cinema_checkout_screen.dart';
+import '../../features/cinema/cinema_concessions_screen.dart';
+import '../../features/cinema/cinema_hub_screen.dart';
+import '../../features/cinema/cinema_movie_detail_screen.dart';
+import '../../features/cinema/cinema_news_screen.dart';
+import '../../features/cinema/cinema_seat_selection_screen.dart';
+import '../../features/cinema/cinema_ticket_screen.dart';
+import '../../features/cinema/my_cinema_tickets_screen.dart';
+import '../../models/cinema/cinema_models.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -117,17 +132,17 @@ class AppRouter {
               ),
             ],
           ),
-          // Tab 4: Tôi / Trung tâm cá nhân (S30)
+          // Tab 4: Đặt vé rạp toàn quốc (S43)
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/me',
+                path: '/cinema',
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOutCubic,
-                  child: const MeScreen(),
+                  child: const CinemaHubScreen(),
                 ),
               ),
             ],
@@ -158,23 +173,29 @@ class AppRouter {
       ),
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => TransitPage(
-          key: state.pageKey,
-          type: TransitType.fadeSlideUp,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: const LoginScreen(), // S04
-        ),
+        pageBuilder: (context, state) {
+          final redirect = state.uri.queryParameters['redirect'];
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: LoginScreen(redirect: redirect), // S04
+          );
+        },
       ),
       GoRoute(
         path: '/register',
-        pageBuilder: (context, state) => TransitPage(
-          key: state.pageKey,
-          type: TransitType.sharedAxisX,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: const RegisterScreen(), // S05
-        ),
+        pageBuilder: (context, state) {
+          final redirect = state.uri.queryParameters['redirect'];
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.sharedAxisX,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: RegisterScreen(redirect: redirect), // S05
+          );
+        },
       ),
       GoRoute(
         path: '/forgot-password',
@@ -410,6 +431,16 @@ class AppRouter {
 
       // ==================== NHÓM D. CÁ NHÂN & THƯ VIỆN (S25 - S30) ====================
       GoRoute(
+        path: '/me',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const MeScreen(), // S30
+        ),
+      ),
+      GoRoute(
         path: '/me/list',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
@@ -614,6 +645,215 @@ class AppRouter {
           curve: Curves.easeOutCubic,
           child: SystemStatusScreen.notFound(), // S41
         ),
+      ),
+
+      // Admin Security Gate: Khóa xác thực quản trị viên (mật khẩu 123)
+      GoRoute(
+        path: '/admin/auth',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: AdminAuthGateScreen(
+            onAuthenticated: () {
+              final target = state.extra as String? ?? '/admin/movies';
+              context.go(target);
+            },
+          ),
+        ),
+      ),
+
+      // Admin Server Telemetry: Giám sát máy chủ thời gian thực
+      GoRoute(
+        path: '/admin/server',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const ServerMonitorScreen(),
+        ),
+      ),
+
+      // Admin Routes: Quản lý kho phim & Form tạo/sửa phim
+      GoRoute(
+        path: '/admin/movies',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const AdminMovieListScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'create',
+            pageBuilder: (context, state) => TransitPage(
+              key: state.pageKey,
+              type: TransitType.fadeSlideUp,
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              child: const AdminMovieFormScreen(),
+            ),
+          ),
+          GoRoute(
+            path: ':id/edit',
+            pageBuilder: (context, state) {
+              final movie = state.extra as MovieModel?;
+              return TransitPage(
+                key: state.pageKey,
+                type: TransitType.fadeSlideUp,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOutCubic,
+                child: AdminMovieFormScreen(movie: movie),
+              );
+            },
+          ),
+        ],
+      ),
+
+      // ==========================================
+      // MODULE ĐẶT VÉ PHIM RẠP (S43 - S51)
+      // ==========================================
+
+      // S44: Chi tiết phim rạp & suất chiếu
+      GoRoute(
+        path: '/cinema/movie/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaMovieDetailScreen(movieId: id),
+          );
+        },
+      ),
+
+      // S45: Sơ đồ chọn ghế ngồi
+      GoRoute(
+        path: '/cinema/seat-selection',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaSeatSelectionScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+            ),
+          );
+        },
+      ),
+
+      // S46: Chọn bắp nước & combo
+      GoRoute(
+        path: '/cinema/concessions',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaConcessionsScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+              seatLabels: (extra?['seatLabels'] as List<String>?) ?? [],
+              seatsPrice: (extra?['seatsPrice'] as int?) ?? 0,
+            ),
+          );
+        },
+      ),
+
+      // S47: Thanh toán & giữ ghế
+      GoRoute(
+        path: '/cinema/checkout',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaCheckoutScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+              seatLabels: (extra?['seatLabels'] as List<String>?) ?? [],
+              concessions: (extra?['concessions'] as Map<String, int>?) ?? {},
+              totalAmount: (extra?['totalAmount'] as int?) ?? 0,
+            ),
+          );
+        },
+      ),
+
+      // S48: Vé điện tử / QR Code
+      GoRoute(
+        path: '/cinema/ticket/:bookingId',
+        pageBuilder: (context, state) {
+          final bookingId = state.pathParameters['bookingId'] ?? '';
+          final booking = state.extra as CinemaBookingModel?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaTicketScreen(
+              bookingId: bookingId,
+              booking: booking,
+            ),
+          );
+        },
+      ),
+
+      // S49: Vé của tôi
+      GoRoute(
+        path: '/cinema/my-tickets',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const MyCinemaTicketsScreen(),
+        ),
+      ),
+
+      // S50: Tin tức & Blog điện ảnh rạp
+      GoRoute(
+        path: '/cinema/news',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const CinemaNewsScreen(),
+        ),
+      ),
+
+      // S51: Chi tiết bài viết review
+      GoRoute(
+        path: '/cinema/news/:articleId',
+        pageBuilder: (context, state) {
+          final articleId = state.pathParameters['articleId'] ?? '';
+          final article = state.extra as CinemaArticleModel?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaArticleDetailScreen(
+              articleId: articleId,
+              article: article,
+            ),
+          );
+        },
       ),
     ],
 

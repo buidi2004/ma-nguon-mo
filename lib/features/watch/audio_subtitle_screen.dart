@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/primary_button.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class AudioSubtitleScreen extends StatefulWidget {
@@ -86,10 +87,10 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                   vertical: 12,
                 ),
                 children: [
-                  const Text(
+                  Text(
                     'ÂM THANH',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
@@ -149,9 +150,9 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                               ),
                             ),
                             if (isSelected)
-                              const Icon(
+                              Icon(
                                 Icons.check,
-                                color: AppColors.red,
+                                color: ThemeService.instance.primaryColor,
                                 size: 20,
                               ),
                           ],
@@ -160,10 +161,10 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                     );
                   }),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'PHỤ ĐỀ',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
@@ -221,9 +222,9 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                               ),
                             ),
                             if (isSelected)
-                              const Icon(
+                              Icon(
                                 Icons.check,
-                                color: AppColors.red,
+                                color: ThemeService.instance.primaryColor,
                                 size: 20,
                               ),
                           ],
@@ -232,10 +233,10 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                     );
                   }),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'KÍCH THƯỚC CHỮ PHỤ ĐỀ',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
@@ -291,7 +292,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: AppColors.red,
+      selectedColor: ThemeService.instance.primaryColor,
       backgroundColor: AppColors.surface,
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : AppColors.textSecondary,

@@ -113,6 +113,29 @@ void main() {
       expect(find.text('Gia đình'), findsOneWidget);
     });
 
+    testWidgets('Zero overflow when keyboard is open and search results are empty', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 340);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      await tester.pumpWidget(buildTestableSearch(size: const Size(360, 640)));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Enter a query that yields no results
+      await tester.enterText(find.byType(TextField), 'xyz_nonexistent_movie_query_123');
+      await tester.pump(const Duration(milliseconds: 350));
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Không tìm thấy phim phù hợp'), findsOneWidget);
+    });
+
     testWidgets('Renders properly on 800x1200 tablet viewport', (tester) async {
       await tester.pumpWidget(buildTestableSearch(size: const Size(800, 1200)));
       await tester.pump(const Duration(milliseconds: 300));

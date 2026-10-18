@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/brand/user_avatar_circle.dart';
+import '../../presentation/widgets/dialogs/user_avatar_dialog.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../admin/services/admin_auth_service.dart';
 
 class MeScreen extends StatefulWidget {
   const MeScreen({super.key});
@@ -23,6 +27,7 @@ class _MeScreenState extends State<MeScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(fallbackRoute: '/'),
         title: const Text(
           'Tài khoản & Cá nhân',
           style: TextStyle(
@@ -61,36 +66,42 @@ class _MeScreenState extends State<MeScreen>
                 child: Row(
                   children: [
                     GestureDetector(
-                      onTap: () => context.push('/profiles'),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: AppColors.red,
-                              borderRadius: BorderRadius.circular(8),
+                      onTap: () => UserAvatarDialog.show(context),
+                      behavior: HitTestBehavior.opaque,
+                      child: Tooltip(
+                        message: 'Chạm để đổi ảnh đại diện',
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const UserAvatarCircle(
+                              size: 52,
+                              showGlow: true,
                             ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: -4,
-                            right: -4,
-                            child: IgnorePointer(
-                              child: GlassIconButton.circle(
-                                size: 24,
-                                iconSize: 13,
-                                icon: Icons.edit_rounded,
-                                onPressed: () {},
+                            Positioned(
+                              bottom: -2,
+                              right: -2,
+                              child: IgnorePointer(
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.75),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white30,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.edit_rounded,
+                                    size: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -230,6 +241,44 @@ class _MeScreenState extends State<MeScreen>
 
           const SizedBox(height: 24),
           const Text(
+            'QUẢN TRỊ HỆ THỐNG',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildTile(
+            icon: Icons.movie_filter_rounded,
+            iconColor: ThemeService.instance.primaryColor,
+            title: 'Quản lý nội dung phim',
+            subtitle: 'Thêm, sửa, xóa và kiểm soát trạng thái phát hành',
+            onTap: () {
+              if (AdminAuthService.instance.isAuthenticated) {
+                context.push('/admin/movies');
+              } else {
+                context.push('/admin/auth', extra: '/admin/movies');
+              }
+            },
+          ),
+          _buildTile(
+            icon: Icons.speed_rounded,
+            iconColor: const Color(0xFF22C55E),
+            title: 'Giám sát máy chủ (Real-time)',
+            subtitle: 'Theo dõi RAM, CPU, Storage, Ping VPS 180.93.120.246',
+            onTap: () {
+              if (AdminAuthService.instance.isAuthenticated) {
+                context.push('/admin/server');
+              } else {
+                context.push('/admin/auth', extra: '/admin/server');
+              }
+            },
+          ),
+
+          const SizedBox(height: 24),
+          const Text(
             'HỖ TRỢ & HỆ THỐNG',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -307,10 +356,11 @@ class _MeScreenState extends State<MeScreen>
     );
   }
 
-
   Widget _buildTile({
     required IconData icon,
     required String title,
+    String? subtitle,
+    Color? iconColor,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -319,7 +369,7 @@ class _MeScreenState extends State<MeScreen>
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(6),
         child: ListTile(
-          leading: Icon(icon, color: Colors.white, size: 22),
+          leading: Icon(icon, color: iconColor ?? Colors.white, size: 22),
           title: Text(
             title,
             maxLines: 1,
@@ -330,6 +380,17 @@ class _MeScreenState extends State<MeScreen>
               fontWeight: FontWeight.w500,
             ),
           ),
+          subtitle: subtitle != null
+              ? Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                )
+              : null,
           trailing: const Icon(
             Icons.chevron_right,
             color: AppColors.textMuted,

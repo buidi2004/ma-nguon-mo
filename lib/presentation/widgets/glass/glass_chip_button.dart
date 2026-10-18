@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
+import 'openflix_morph_icon.dart';
 
 /// Thẻ lọc tương tác bề mặt kính mờ (Optical Frosted Glass Chip Button).
 /// Sử dụng cho bộ lọc thể loại, quốc gia, năm phát hành, xếp hạng độ tuổi.
@@ -45,6 +46,7 @@ class GlassChipButton extends StatefulWidget {
     required ValueChanged<bool>? onSelected,
     IconData? icon,
     int? count,
+    Color? activeColor,
   }) {
     return GlassChipButton(
       key: key,
@@ -54,7 +56,7 @@ class GlassChipButton extends StatefulWidget {
       icon: icon,
       count: count,
       showCheckmark: true,
-      activeColor: AppColors.red,
+      activeColor: activeColor,
     );
   }
 
@@ -89,7 +91,7 @@ class _GlassChipButtonState extends State<GlassChipButton> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveActiveColor = widget.activeColor ?? AppColors.red;
+    final effectiveActiveColor = widget.activeColor ?? ThemeService.instance.primaryColor;
     final isInteractive = widget.onSelected != null;
 
     final Color backgroundColor = widget.isSelected
@@ -113,10 +115,10 @@ class _GlassChipButtonState extends State<GlassChipButton> {
     final List<BoxShadow> shadows = widget.isSelected
         ? [
             BoxShadow(
-              color: effectiveActiveColor.withValues(alpha: 0.35),
-              blurRadius: 10,
-              spreadRadius: -1,
-              offset: const Offset(0, 2),
+              color: effectiveActiveColor.withValues(alpha: 0.24),
+              blurRadius: 6,
+              spreadRadius: 0,
+              offset: Offset.zero,
             ),
           ]
         : [];
@@ -156,15 +158,15 @@ class _GlassChipButtonState extends State<GlassChipButton> {
                 children: [
                   // Icon đầu thẻ (nếu có) hoặc Checkmark khi đã chọn
                   if (widget.showCheckmark && widget.isSelected) ...[
-                    Icon(
-                      Icons.check_rounded,
+                    OpenFlixMorphIcon.snappy(
+                      icon: Icons.check_rounded,
                       size: 16,
                       color: textColor,
                     ),
                     const SizedBox(width: 6),
                   ] else if (widget.icon != null) ...[
-                    Icon(
-                      widget.icon,
+                    OpenFlixMorphIcon.snappy(
+                      icon: widget.icon!,
                       size: 16,
                       color: textColor,
                     ),

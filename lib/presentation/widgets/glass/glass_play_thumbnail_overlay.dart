@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../services/theme_service.dart';
 import '../../../theme/app_theme.dart';
 import 'glass_icon_button.dart';
 
@@ -105,7 +106,7 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                   icon: Icons.play_arrow_rounded,
                   tooltip: semanticLabel ?? 'Tiếp tục phát',
                   hasGlow: true,
-                  glowColor: AppColors.red,
+                  glowColor: ThemeService.instance.primaryColor,
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     onTap();
@@ -131,10 +132,10 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                         widthFactor: effectiveRatio,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.red.withValues(alpha: 0.6),
+                                color: ThemeService.instance.primaryColor.withValues(alpha: 0.6),
                                 blurRadius: 4,
                                 offset: const Offset(0, -0.5),
                               ),

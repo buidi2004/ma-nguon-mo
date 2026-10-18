@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class SystemStatusScreen extends StatelessWidget {
@@ -74,7 +75,11 @@ class SystemStatusScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white12),
                 ),
-                child: Icon(icon, size: 64, color: AppColors.red),
+                child: Icon(
+                  icon,
+                  size: 64,
+                  color: ThemeService.instance.primaryColor,
+                ),
               ),
               const SizedBox(height: 24),
               Container(
@@ -130,7 +135,7 @@ class SystemStatusScreen extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.red,
+                    backgroundColor: ThemeService.instance.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),

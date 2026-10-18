@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c4f9d7c3-c0a9-4373-8aa1-4461a080fe20",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-023500\\candidate.json",
+  "output": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-023500\\openflix-architecture.html",
+  "specification": {
+    "sha256": "1c9e91cfdef5978917634dc3b9f5427358586193f8b96c6edf145917208f5491",
+    "bytes": 10341
+  },
+  "artifact": {
+    "sha256": "5e53b0eb2ec65d9ecb522ede6c32231c1dccd03c6c0f1a6e44afd8d72345aa9f",
+    "bytes": 850326
+  }
+}

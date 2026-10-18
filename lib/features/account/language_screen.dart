@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/settings_tile.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/language_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class LanguageScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Ngôn ngữ / Language',
           style: TextStyle(
@@ -54,9 +57,9 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     title: 'Tiếng Việt',
                     subtitle: 'Mặc định (Việt Nam)',
                     trailing: currentCode == 'vi'
-                        ? const Icon(
+                        ? Icon(
                             Icons.check_circle,
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                             size: 22,
                           )
                         : null,
@@ -67,9 +70,9 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     title: 'English',
                     subtitle: 'United States / Global',
                     trailing: currentCode == 'en'
-                        ? const Icon(
+                        ? Icon(
                             Icons.check_circle,
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                             size: 22,
                           )
                         : null,
@@ -94,9 +97,9 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.visibility_outlined,
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                             size: 20,
                           ),
                           const SizedBox(width: 8),

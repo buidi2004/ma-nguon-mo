@@ -7,6 +7,8 @@ import 'package:openflix/features/account/about_screen.dart';
 import 'package:openflix/features/account/account_screen.dart';
 import 'package:openflix/features/account/language_screen.dart';
 import 'package:openflix/features/account/me_screen.dart';
+import 'package:openflix/features/admin/services/admin_auth_service.dart';
+import 'package:openflix/features/admin/services/server_telemetry_service.dart';
 import 'package:openflix/features/account/notifications_screen.dart';
 import 'package:openflix/features/account/password_screen.dart';
 import 'package:openflix/features/account/plans_screen.dart';
@@ -624,6 +626,71 @@ void main() {
         print(
           ' [Step 15.4] Hoàn tất E2E-SC15: Trợ giúp & Liên hệ hỗ trợ đạt PASS 100%!',
         );
+      },
+    );
+
+    // =========================================================================
+    // SCENARIO 16: BẢO MẬT QUẢN TRỊ (MK 123) & GIÁM SÁT CẤU HÌNH PHẦN CỨNG VPS THỰC TẾ
+    // =========================================================================
+    test(
+      'E2E-SC16: Luồng Quản Trị Viên - Mở Khóa Bảo Mật (MK 123) & Quét Cấu Hình VPS Thời Gian Thực',
+      () async {
+        print(
+          '\n[E2E-SC16] Bắt đầu Kịch bản 16: Bảo mật quản trị & Quét cấu hình phần cứng VPS Linux...',
+        );
+        final auth = AdminAuthService.instance;
+        final telemetry = ServerTelemetryService.instance;
+
+        // Step 16.1: Khởi tạo & kiểm tra khóa bảo mật
+        auth.logout();
+        expect(auth.isAuthenticated, isFalse);
+        print(' [Step 16.1] Trạng thái khởi tạo: Phân hệ quản trị bị khóa an toàn');
+
+        // Step 16.2: Thử nhập sai mật khẩu
+        final wrongAuth = await auth.authenticate('wrong_pass_999');
+        expect(wrongAuth, isFalse);
+        expect(auth.isAuthenticated, isFalse);
+        print(' [Step 16.2] Thử nghiệm nhập sai mật khẩu: Bị từ chối truy cập an toàn');
+
+        // Step 16.3: Mở khóa bằng mật khẩu 123
+        final correctAuth = await auth.authenticate('123');
+        expect(correctAuth, isTrue);
+        expect(auth.isAuthenticated, isTrue);
+        print(' [Step 16.3] Xác thực mật khẩu 123 thành công: Đã mở khóa cổng quản trị!');
+
+        // Step 16.4: Quét cấu hình VPS trực tiếp thời gian thực
+        print(' [Step 16.4] Thực hiện quét cấu hình thời gian thực máy chủ VPS 180.93.120.246...');
+        await telemetry.scanVpsConfiguration();
+        final data = telemetry.currentData;
+
+        expect(data.isOnline, isTrue);
+        expect(data.vpsHost, equals('180.93.120.246:8090'));
+        expect(data.vpsCpu, contains('2 vCPU'));
+        expect(data.vpsRamTotal, contains('4.0 GB'));
+        expect(data.vpsStorageTotal, contains('50 GB'));
+        expect(data.vpsOs, contains('Ubuntu'));
+        expect(data.serverSoftware, contains('nginx'));
+        expect(data.totalMoviesInDb, greaterThanOrEqualTo(40));
+
+        print('  • Host VPS: ${data.vpsHost} (Ping mạng WAN: ${data.pingMs} ms)');
+        print('  • Vi xử lý VPS: ${data.vpsCpu} (${data.vpsArchitecture}) - Tải: ${data.vpsCpuLoadPercent}%');
+        print('  • Bộ nhớ RAM VPS: ${data.vpsRamUsedGb} / ${data.vpsRamTotalGb} GB (${data.vpsRamUsagePercent.toStringAsFixed(1)}%)');
+        print('  • Ổ cứng SSD VPS: ${data.vpsDiskUsedGb} / ${data.vpsDiskTotalGb} GB (${data.vpsDiskUsagePercent.toStringAsFixed(1)}%)');
+        print('  • Phân bổ SSD: Ubuntu OS: ${data.vpsOsUsedGb} GB | SQLite DB: ${data.vpsDbUsedGb} GB | Media: ${data.vpsMediaUsedGb} GB | Trống: ${data.vpsFreeDiskGb.toStringAsFixed(1)} GB');
+        print('  • Cơ sở dữ liệu: ${data.totalMoviesInDb} bộ phim lưu trong SQLite WAL Mode');
+        print('  • Web Engine: ${data.serverSoftware}');
+        print('  • Trạng thái sao lưu: ${data.pocketBaseStatus}');
+
+        // Step 16.5: Dọn dẹp cache RAM ứng dụng
+        final freed = await telemetry.cleanMemoryCache();
+        expect(freed, greaterThan(0.0));
+        print(' [Step 16.5] Đã giải phóng ${freed.toStringAsFixed(1)} MB bộ nhớ RAM ứng dụng');
+
+        // Step 16.6: Khóa lại phiên làm việc
+        auth.logout();
+        expect(auth.isAuthenticated, isFalse);
+        print(' [Step 16.6] Đã khóa phiên làm việc quản trị an toàn thành công');
+        print(' [Step 16.7] Hoàn tất E2E-SC16: Bảo mật MK 123 & Cấu hình VPS thời gian thực đạt PASS 100%!');
       },
     );
   });

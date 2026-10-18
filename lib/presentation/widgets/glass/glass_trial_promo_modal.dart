@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../services/theme_service.dart';
+import '../brand/app_brand_logo.dart';
+import 'openflix_morph_icon.dart';
 
 
 /// Modal Pop-up Chiến Dịch Ưu Đãi tái tạo chuẩn 100% theo phong cách Pop-up CGV.
@@ -201,25 +204,21 @@ class GlassTrialPromoModal extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 1. Logo OPENFLIX* màu đỏ ở góc trên bên trái
+              // 1. Logo FLIX* với Icon 3D điện ảnh ở góc trên bên trái
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'OPENFLIX',
-                    style: TextStyle(
-                      color: Color(0xFFE50914),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      letterSpacing: 1.5,
-                      fontFamily: 'sans-serif',
-                    ),
+                  const AppBrandLogo.small(
+                    iconSize: 22,
+                    fontSize: 16,
                   ),
-                  const Text(
+                  Text(
                     '*',
                     style: TextStyle(
-                      color: Color(0xFFE50914),
+                      color: ThemeService.instance.primaryColor,
                       fontWeight: FontWeight.w900,
-                      fontSize: 20,
+                      fontSize: 18,
+                      height: 1.0,
                     ),
                   ),
                   const Spacer(),
@@ -541,8 +540,8 @@ class GlassTrialPromoModal extends StatelessWidget {
           Positioned(
             top: 6,
             right: 6,
-            child: Icon(
-              hasHearts ? Icons.favorite_rounded : Icons.star_rounded,
+            child: OpenFlixMorphIcon.snappy(
+              icon: hasHearts ? Icons.favorite_rounded : Icons.star_rounded,
               color: patternColor,
               size: 14,
             ),

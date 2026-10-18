@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class FeedbackScreen extends StatefulWidget {
@@ -60,7 +61,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (_isSubmitted) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: const Text('Gửi phản hồi')),
+        appBar: AppBar(
+          leading: const GlassBackButton(),
+          title: const Text('Gửi phản hồi'),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
@@ -119,6 +123,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Liên hệ & Góp ý',
           style: TextStyle(

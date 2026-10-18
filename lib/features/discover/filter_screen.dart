@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class FilterScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _FilterScreenState extends State<FilterScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Bộ lọc nâng cao',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -149,7 +151,7 @@ class _FilterScreenState extends State<FilterScreen> {
                                 ? Icons.radio_button_checked
                                 : Icons.radio_button_off,
                             color: isSelected
-                                ? AppColors.red
+                                ? ThemeService.instance.primaryColor
                                 : AppColors.textMuted,
                             size: 20,
                           ),

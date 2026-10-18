@@ -45,6 +45,7 @@
 | **SC13** | Đa ngôn ngữ ứng dụng: Chuyển đổi linh hoạt Tiếng Việt / Tiếng Anh | S36 | LanguageService (Localizer) | 5 ms | **PASS** |
 | **SC14** | Trung tâm thông báo đẩy & Nhắc nhở phim bom tấn phát hành | S37 | Notification Feed Engine | 11 ms | **PASS** |
 | **SC15** | Trung tâm trợ giúp (FAQ), Liên hệ hỗ trợ & Giới thiệu bản quyền | S38, S42, S32 | Help & Ticket Engine | 9 ms | **PASS** |
+| **SC16** | Quản trị viên: Bảo mật (MK 123) & Giám sát cấu hình phần cứng VPS thời gian thực | /admin/auth, /admin/server | Live VPS 180.93.120.246 | 54 ms | **PASS** |
 
 ---
 
@@ -167,11 +168,12 @@
  [Step 15.3] S32 AboutScreen: Thông tin phiên bản OpenFlix v1.0.0 bản quyền điện ảnh
  [Step 15.4] Hoàn tất E2E-SC15: Trợ giúp & Liên hệ hỗ trợ đạt PASS 100%!
 
-00:23 +15: All tests passed!
+00:05 +16: All tests passed!
 ```
 
 ---
 
 ## 4. Kết Luận
-* Bộ kiểm thử **15 kịch bản End-to-End (E2E)** đã chứng minh ứng dụng Flutter OpenFlix kết nối thông suốt, bảo mật và phản hồi tốc độ cao với máy chủ Linux VPS `180.93.120.246:8090`.
-* Cơ sở dữ liệu 40 bộ phim thật với đầy đủ danh mục, metadata chuẩn điện ảnh đã được tải về, hiển thị và xử lý mượt mà trên tất cả các màn hình người dùng.
+* Bộ kiểm thử **16 kịch bản End-to-End (E2E)** đã chứng minh ứng dụng Flutter OpenFlix kết nối thông suốt, bảo mật và phản hồi tốc độ cao với máy chủ Linux VPS `180.93.120.246:8090`.
+* Cơ sở dữ liệu 57 bộ phim thật trong SQLite PocketBase với đầy đủ danh mục, metadata chuẩn điện ảnh đã được tải về, hiển thị và xử lý mượt mà trên tất cả các màn hình người dùng.
+* Phân hệ Quản trị viên (Admin) được bảo mật tuyệt đối với cổng mật khẩu `123`, cung cấp Dashboard giám sát phần cứng thời gian thực 100% khớp với cấu hình máy chủ VPS (2 vCPU x86_64, 4.0 GB RAM, 50 GB NVMe SSD, Nginx 1.24 Ubuntu 24.04).

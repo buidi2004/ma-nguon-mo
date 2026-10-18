@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_theme.dart';
+import '../../services/theme_service.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -14,47 +14,63 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
-      ),
-      child: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: onTap,
-        backgroundColor: AppColors.background,
-        indicatorColor: Colors.transparent,
-        elevation: 0,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: AppColors.textMuted),
-            selectedIcon: Icon(Icons.home, color: Colors.white),
-            label: 'Trang chủ',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.search_outlined, color: AppColors.textMuted),
-            selectedIcon: Icon(Icons.search, color: Colors.white),
-            label: 'Tìm kiếm',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.local_fire_department_outlined,
-              color: AppColors.textMuted,
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, _) {
+        final isWin11 = ThemeService.instance.isWindowsBlue;
+        final bg = ThemeService.instance.backgroundColor;
+        final primary = ThemeService.instance.primaryColor;
+        final textMuted = ThemeService.instance.textMuted;
+        final activeColor = isWin11 ? primary : Colors.white;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: bg,
+            border: Border(
+              top: BorderSide(
+                color: isWin11 ? const Color(0xFFE2E8F0) : Colors.white10,
+                width: 0.5,
+              ),
             ),
-            selectedIcon: Icon(
-              Icons.local_fire_department,
-              color: Colors.white,
-            ),
-            label: 'Mới & Hot',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: AppColors.textMuted),
-            selectedIcon: Icon(Icons.person, color: Colors.white),
-            label: 'Tôi',
+          child: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: onTap,
+            backgroundColor: bg,
+            indicatorColor: primary.withValues(alpha: 0.15),
+            elevation: 0,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined, color: textMuted),
+                selectedIcon: Icon(Icons.home, color: activeColor),
+                label: 'Trang chủ',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.search_outlined, color: textMuted),
+                selectedIcon: Icon(Icons.search, color: activeColor),
+                label: 'Tìm kiếm',
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Icons.local_fire_department_outlined,
+                  color: textMuted,
+                ),
+                selectedIcon: Icon(
+                  Icons.local_fire_department,
+                  color: activeColor,
+                ),
+                label: 'Mới & Hot',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.confirmation_number_outlined, color: textMuted),
+                selectedIcon: Icon(Icons.confirmation_number, color: activeColor),
+                label: 'Đặt vé',
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

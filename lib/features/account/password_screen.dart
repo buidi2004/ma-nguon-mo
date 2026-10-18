@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -86,6 +87,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Đổi mật khẩu',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

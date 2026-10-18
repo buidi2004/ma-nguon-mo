@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_splash_kit/smart_splash_kit.dart';
 
+import '../../../services/theme_service.dart';
 import '../../../theme/app_theme.dart';
+import '../brand/v_movie_brand_asset.dart';
 import 'glass_button.dart';
+import 'silk_background.dart';
 
 /// Thành phần Smart Splash Screen chuẩn điện ảnh OpenFlix kết hợp Smart Splash Kit.
 ///
@@ -76,12 +80,14 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
   @override
   void initState() {
     super.initState();
+    ThemeService.instance.addListener(_onThemeChanged);
     _effectiveConfig = widget.config ?? _buildDefaultConfig();
+    final brandColor = ThemeService.instance.primaryColor;
     _effectiveTheme = widget.theme ??
         SplashTheme.custom(
-          backgroundColor: AppColors.background,
-          loaderColor: AppColors.red,
-          textColor: Colors.white,
+          backgroundColor: ThemeService.instance.backgroundColor,
+          loaderColor: brandColor,
+          textColor: ThemeService.instance.textPrimary,
         );
 
     final anim = _effectiveConfig.animation;
@@ -109,33 +115,53 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
 
   SplashConfig _buildDefaultConfig() {
     return SplashConfig(
-      durationMs: 1200,
+      durationMs: 5000,
       animation: SplashAnimation.fadeScale(
-        durationMs: 700,
+        durationMs: 900,
         curve: Curves.easeOutCubic,
       ),
       layoutType: SplashLayoutType.logoWithText,
-      backgroundColor: AppColors.background,
+      backgroundColor: ThemeService.instance.backgroundColor,
       appName: 'OPENFLIX',
-      appNameStyle: const TextStyle(
-        color: AppColors.red,
+      appNameStyle: TextStyle(
+        color: ThemeService.instance.primaryColor,
         fontWeight: FontWeight.w900,
         fontSize: 34,
         letterSpacing: 4.0,
       ),
       tagline: 'Điện ảnh không giới hạn',
       taglineStyle: TextStyle(
-        color: Colors.white.withAlpha(200),
+        color: ThemeService.instance.isWindowsBlue
+            ? const Color(0xFF475569)
+            : Colors.white.withAlpha(200),
         fontSize: 13,
         letterSpacing: 1.5,
         fontWeight: FontWeight.w500,
       ),
       showLoader: true,
-      logo: Image.asset(
-        'assets/icons/app_icon.png',
-        width: 92,
-        height: 92,
-        errorBuilder: (_, _, _) => const SizedBox(width: 92, height: 92),
+      logo: SizedBox(
+        width: 104,
+        height: 104,
+        child: Image.memory(
+          kVMovie3dIconBytes,
+          width: 104,
+          height: 104,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (_, _, _) => Image.asset(
+            'web/icons/Biểu tượng V xem phim 3D điện ảnh.png',
+            width: 104,
+            height: 104,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => Image.asset(
+              'assets/icons/app_icon.png',
+              width: 104,
+              height: 104,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox(width: 104, height: 104),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -177,8 +203,9 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     final stopwatch = _effectiveConfig.enablePerformanceMonitoring ? (Stopwatch()..start()) : null;
     final minMs = _effectiveConfig.durationMs;
 
-    // Timer trần tối đa để không bao giờ treo người dùng quá lâu
-    _maxTimer = Timer(const Duration(milliseconds: 3500), () {
+    // Timer trần tối đa dự phòng (luôn lớn hơn thời gian loang tối thiểu)
+    final maxTimeoutMs = math.max(6500, minMs + 2500);
+    _maxTimer = Timer(Duration(milliseconds: maxTimeoutMs), () {
       if (mounted && _isInitializing) {
         _finishAndNavigate(widget.errorFallbackRoute ?? SplashRoute.home());
       }
@@ -281,8 +308,22 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     }
   }
 
+  void _onThemeChanged() {
+    if (!mounted) return;
+    setState(() {
+      final brandColor = ThemeService.instance.primaryColor;
+      _effectiveTheme = widget.theme ??
+          SplashTheme.custom(
+            backgroundColor: ThemeService.instance.backgroundColor,
+            loaderColor: brandColor,
+            textColor: ThemeService.instance.textPrimary,
+          );
+    });
+  }
+
   @override
   void dispose() {
+    ThemeService.instance.removeListener(_onThemeChanged);
     _minDisplayTimer?.cancel();
     _maxTimer?.cancel();
     _animDelayTimer?.cancel();
@@ -309,79 +350,84 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     }
 
     final cfg = _effectiveConfig;
-    final bgGradient = cfg.backgroundGradient ??
-        const RadialGradient(
-          center: Alignment(0.0, -0.15),
-          radius: 1.15,
-          colors: [
-            Color(0xFF241315), // Ánh đỏ điện ảnh vi mô ở trung tâm
-            Color(0xFF141414), // Nền chuẩn AGENTS.md
-          ],
-        );
-
     Widget content = _buildLayoutContent(cfg);
     Widget animatedContent = _applyAnimation(content, cfg.animation.type);
 
-    return Scaffold(
-      backgroundColor: cfg.backgroundColor ?? _effectiveTheme.backgroundColor,
-      body: GestureDetector(
-        onTap: (_tapContinueReady && cfg.tapToContinue) ? _triggerNavigation : null,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(gradient: bgGradient),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                Center(child: animatedContent),
-                if (cfg.showSkipButton)
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: TextButton(
-                      onPressed: _triggerNavigation,
-                      child: Text(
-                        cfg.skipButtonLabel,
-                        style: TextStyle(
-                          color: _effectiveTheme.textColor.withAlpha(200),
-                          fontWeight: FontWeight.w600,
-                        ),
+    Widget bodyContent = GestureDetector(
+      onTap: (_tapContinueReady && cfg.tapToContinue) ? _triggerNavigation : null,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox.expand(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Center(child: animatedContent),
+              if (cfg.showSkipButton)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: TextButton(
+                    onPressed: _triggerNavigation,
+                    child: Text(
+                      cfg.skipButtonLabel,
+                      style: TextStyle(
+                        color: _effectiveTheme.textColor.withAlpha(200),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                if (_tapContinueReady && cfg.tapToContinue)
-                  Positioned(
-                    bottom: 40,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Text(
-                        'Chạm để tiếp tục',
-                        style: TextStyle(
-                          color: _effectiveTheme.textColor.withAlpha(190),
-                          fontSize: 13,
-                          letterSpacing: 1.0,
-                        ),
+                ),
+              if (_tapContinueReady && cfg.tapToContinue)
+                Positioned(
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      'Chạm để tiếp tục',
+                      style: TextStyle(
+                        color: _effectiveTheme.textColor.withAlpha(190),
+                        fontSize: 13,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
-                if (cfg.enablePerformanceMonitoring && kDebugMode && _loadTimeMs != null)
-                  Positioned(
-                    bottom: 16,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: SplashWidgets.performanceBadge(
-                        loadTimeMs: _loadTimeMs!,
-                        color: _effectiveTheme.loaderColor,
-                      ),
+                ),
+              if (cfg.enablePerformanceMonitoring && kDebugMode && _loadTimeMs != null)
+                Positioned(
+                  bottom: 16,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: SplashWidgets.performanceBadge(
+                      loadTimeMs: _loadTimeMs!,
+                      color: _effectiveTheme.loaderColor,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
+      ),
+    );
+
+    if (cfg.backgroundGradient != null) {
+      return Scaffold(
+        backgroundColor: cfg.backgroundColor ?? _effectiveTheme.backgroundColor,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(gradient: cfg.backgroundGradient),
+          child: bodyContent,
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SilkBackground(
+        speed: 0.45,
+        themeMode: ThemeService.instance.mode,
+        child: bodyContent,
       ),
     );
   }
@@ -390,6 +436,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     if (cfg.layoutType == SplashLayoutType.custom && cfg.customContent != null) {
       return cfg.customContent!;
     }
+
+    final brandColor = ThemeService.instance.primaryColor;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -401,7 +449,7 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.red.withAlpha(50),
+                  color: brandColor.withAlpha(50),
                   blurRadius: 32,
                   spreadRadius: 4,
                 ),
@@ -415,8 +463,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
           Text(
             cfg.appName!,
             style: cfg.appNameStyle ??
-                const TextStyle(
-                  color: AppColors.red,
+                TextStyle(
+                  color: brandColor,
                   fontWeight: FontWeight.w900,
                   fontSize: 34,
                   letterSpacing: 4.0,
@@ -439,11 +487,11 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
         if (cfg.showLoader) ...[
           const SizedBox(height: 28),
           cfg.customLoader ??
-              const SizedBox(
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                  valueColor: AlwaysStoppedAnimation<Color>(brandColor),
                   strokeWidth: 2.5,
                 ),
               ),
@@ -486,10 +534,10 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.wifi_off_rounded,
                 size: 52,
-                color: AppColors.red,
+                color: ThemeService.instance.primaryColor,
               ),
               const SizedBox(height: 16),
               const Text(

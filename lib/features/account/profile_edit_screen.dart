@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/brand/user_avatar_circle.dart';
+import '../../presentation/widgets/dialogs/user_avatar_dialog.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -16,11 +20,11 @@ class ProfileEditScreen extends StatefulWidget {
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _nameController = TextEditingController();
-  Color _selectedColor = AppColors.red;
+  Color _selectedColor = ThemeService.instance.primaryColor;
   bool _isKids = false;
 
-  final List<Color> _palette = [
-    AppColors.red,
+  late final List<Color> _palette = [
+    ThemeService.instance.primaryColor,
     Colors.blueAccent,
     Colors.purpleAccent,
     Colors.tealAccent,
@@ -62,6 +66,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: Text(
           isNew ? 'Thêm hồ sơ' : 'Chỉnh sửa hồ sơ',
           style: const TextStyle(
@@ -75,25 +80,78 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar xem trước
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: _selectedColor,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 10,
+            // Avatar xem trước (Chạm để mở hộp thoại đổi avatar)
+            GestureDetector(
+              onTap: () => UserAvatarDialog.show(context),
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  if (widget.profileId == 'p1' || !isNew)
+                    const UserAvatarCircle(
+                      size: 96,
+                      showGlow: true,
+                    )
+                  else
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        color: _selectedColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: OpenFlixMorphIcon.snappy(
+                          icon: _isKids ? Icons.child_care : Icons.person,
+                          color: Colors.white,
+                          size: 52,
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.85),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white38,
+                          width: 1.2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.edit_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Center(
-                child: Icon(
-                  _isKids ? Icons.child_care : Icons.person,
-                  color: Colors.white,
-                  size: 56,
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => UserAvatarDialog.show(context),
+              borderRadius: BorderRadius.circular(12),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                child: Text(
+                  'Chạm để đổi avatar (Chibi / Link ảnh / Đặt lại)',
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12.5,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white24,
+                  ),
                 ),
               ),
             ),
@@ -165,7 +223,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                 ),
                 value: _isKids,
-                activeThumbColor: AppColors.red,
+                activeThumbColor: ThemeService.instance.primaryColor,
                 onChanged: (val) => setState(() => _isKids = val),
               ),
             ),

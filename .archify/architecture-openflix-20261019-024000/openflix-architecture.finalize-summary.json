@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\candidate.json",
+    "sha256": "342097c14166aa9ce7970009d5a8e25fb1da92ad91ab782b2254071907726579",
+    "bytes": 12249
+  },
+  "artifact": {
+    "path": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+    "sha256": "7d82d19a12b109f34d33977d11be5e88c2248cb7d4018c660f6014a7fad22224",
+    "bytes": 856911
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/evidence-path-conflict",
+      "severity": "error",
+      "message": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json\".",
+      "subject": {
+        "artifact": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "evidencePath": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json"
+      },
+      "evidence": {
+        "reason": {
+          "code": "ownership-artifact-mismatch"
+        }
+      },
+      "supportedFixes": [
+        "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.finalize.json",
+    "summaryReceipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.1.0",
+    "availableVersion": "3.1.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-18T19:34:15.022Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 6583
+}

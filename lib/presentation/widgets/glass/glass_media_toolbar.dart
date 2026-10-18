@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import 'glass_surface.dart';
+import 'openflix_morph_icon.dart';
 
 /// Thanh công cụ điều khiển phương tiện kính mờ quang học (Glass Media Toolbar - Giai đoạn 3).
 /// Thiết kế thanh ngang Capsule kính mờ điện ảnh:
@@ -94,7 +95,7 @@ class GlassMediaToolbar extends StatelessWidget {
             _ToolbarIconButton(
               icon: isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
               tooltip: isMuted ? 'Bật âm thanh' : 'Tắt tiếng',
-              activeColor: isMuted ? AppColors.red : null,
+              activeColor: isMuted ? ThemeService.instance.primaryColor : null,
               onPressed: onMuteToggle,
             ),
 
@@ -170,8 +171,8 @@ class _ToolbarIconButtonState extends State<_ToolbarIconButton> {
             child: Container(
               constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
               alignment: Alignment.center,
-              child: Icon(
-                widget.icon,
+              child: OpenFlixMorphIcon.smooth(
+                icon: widget.icon,
                 color: widget.activeColor ?? Colors.white.withValues(alpha: 0.90),
                 size: 22.0,
               ),
@@ -238,8 +239,8 @@ class _ToolbarTextIconButtonState extends State<_ToolbarTextIconButton> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    widget.icon,
+                  OpenFlixMorphIcon.smooth(
+                    icon: widget.icon,
                     color: Colors.white.withValues(alpha: 0.90),
                     size: 18.0,
                   ),

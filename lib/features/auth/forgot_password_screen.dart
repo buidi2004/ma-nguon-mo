@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -48,16 +49,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/login');
-            }
-          },
-        ),
+        leading: const GlassBackButton(fallbackRoute: '/login'),
         title: const Text(
           'Khôi phục mật khẩu',
           style: TextStyle(
@@ -82,14 +74,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     color: AppColors.cardDark,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.red.withValues(alpha: 0.3),
+                      color: ThemeService.instance.primaryColor
+                          .withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.lock_reset,
                     size: 42,
-                    color: AppColors.red,
+                    color: ThemeService.instance.primaryColor,
                   ),
                 ),
               ),

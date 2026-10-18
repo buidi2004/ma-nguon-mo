@@ -1,10 +1,11 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class VideoScaffold extends StatefulWidget {
@@ -61,8 +62,8 @@ class _VideoScaffoldState extends State<VideoScaffold> {
             ? _videoPlayerController!.value.aspectRatio
             : 16 / 9,
         materialProgressColors: ChewieProgressColors(
-          playedColor: AppColors.red,
-          handleColor: AppColors.red,
+          playedColor: ThemeService.instance.primaryColor,
+          handleColor: ThemeService.instance.primaryColor,
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white54,
         ),
@@ -70,7 +71,7 @@ class _VideoScaffoldState extends State<VideoScaffold> {
           return AnimatedBuilder(
             animation: animation,
             builder: (context, child) {
-              return ChewieControllerProvider(
+               return ChewieControllerProvider(
                 controller: controllerProvider.controller,
                 child: OpenFlixFullscreenPlayer(
                   controller: controllerProvider.controller,
@@ -82,9 +83,11 @@ class _VideoScaffoldState extends State<VideoScaffold> {
         },
         placeholder: Container(
           color: Colors.black,
-          child: const Center(
+          child: Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                ThemeService.instance.primaryColor,
+              ),
             ),
           ),
         ),
@@ -174,15 +177,15 @@ class _VideoScaffoldState extends State<VideoScaffold> {
             // Video Area
             Center(
               child: _isLoading
-                  ? const Column(
+                  ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.red,
+                            ThemeService.instance.primaryColor,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           'Đang tải luồng phát...',
                           style: TextStyle(
@@ -234,17 +237,10 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/');
-                        }
-                      },
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8, right: 8),
+                      child: GlassBackButton(fallbackRoute: '/'),
                     ),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

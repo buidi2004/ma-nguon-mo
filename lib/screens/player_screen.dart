@@ -11,6 +11,7 @@ import '../presentation/widgets/glass/glass_components.dart';
 import '../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/movie_card.dart';
 
@@ -88,9 +89,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
           size: 46,
           iconSize: 22,
           icon: icon,
-          iconColor: isActive ? AppColors.red : Colors.white,
+          iconColor: isActive ? ThemeService.instance.primaryColor : Colors.white,
           hasGlow: isActive,
-          glowColor: AppColors.red,
+          glowColor: ThemeService.instance.primaryColor,
           onPressed: onTap,
         ),
         const SizedBox(height: 6),
@@ -136,10 +137,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
     if (_videoPlayerController!.value.isPlaying) {
       _videoPlayerController!.pause();
-      _showHud('Tạm dừng', Icons.pause_rounded);
     } else {
       _videoPlayerController!.play();
-      _showHud('Phát video', Icons.play_arrow_rounded);
     }
     setState(() {});
   }
@@ -252,8 +251,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         ],
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         materialProgressColors: ChewieProgressColors(
-          playedColor: AppColors.red,
-          handleColor: AppColors.red,
+          playedColor: ThemeService.instance.primaryColor,
+          handleColor: ThemeService.instance.primaryColor,
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
@@ -289,7 +288,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 48),
+                Icon(Icons.error_outline, color: ThemeService.instance.primaryColor, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể phát video: $errorMessage',
@@ -308,7 +307,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.red,
+                    backgroundColor: ThemeService.instance.primaryColor,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -476,6 +475,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const GlassBackButton(),
         title: Text(
           movieTitle,
           maxLines: 1,
@@ -493,17 +493,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
               child: Container(
                 color: Colors.black,
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.red,
+                                ThemeService.instance.primaryColor,
                               ),
                             ),
-                            SizedBox(height: 12),
-                            Text(
+                            const SizedBox(height: 12),
+                            const Text(
                               'Đang tải video luồng cao...',
                               style: TextStyle(
                                 color: Colors.white70,
@@ -520,9 +520,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.warning_amber_rounded,
-                                color: AppColors.red,
+                                color: ThemeService.instance.primaryColor,
                                 size: 40,
                               ),
                               const SizedBox(height: 8),
@@ -550,7 +550,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.red,
+                                  backgroundColor: ThemeService.instance.primaryColor,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
@@ -709,7 +709,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                     color: Colors.black87,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: AppColors.red,
+                                      color: ThemeService.instance.primaryColor,
                                       width: 1,
                                     ),
                                   ),
@@ -749,48 +749,55 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               onPressed: _togglePlayPause,
                             ),
 
-                          // 4. Thông báo nổi HUD giữa màn hình khi Tua hoặc Zoom
+                          // 4. Thông báo nổi HUD phía trên (tránh đè nút tròn Play/Pause)
                           if (_hudMessage != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.85),
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: Colors.white24,
-                                  width: 1,
+                            Positioned(
+                              top: 14,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white24,
+                                      width: 1,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black54,
+                                        blurRadius: 10,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_hudIcon != null) ...[
+                                        Icon(
+                                          _hudIcon,
+                                          color: ThemeService.instance.primaryColor,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      Text(
+                                        _hudMessage!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black54,
-                                    blurRadius: 10,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (_hudIcon != null) ...[
-                                    Icon(
-                                      _hudIcon,
-                                      color: AppColors.red,
-                                      size: 22,
-                                    ),
-                                    const SizedBox(width: 8),
-                                  ],
-                                  Text(
-                                    _hudMessage!,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
                         ],
@@ -816,10 +823,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           overlayShape: const RoundSliderOverlayShape(
                             overlayRadius: 12,
                           ),
-                          activeTrackColor: AppColors.red,
+                          activeTrackColor: ThemeService.instance.primaryColor,
                           inactiveTrackColor: Colors.white24,
-                          thumbColor: AppColors.red,
-                          overlayColor: AppColors.red.withValues(alpha: 0.25),
+                          thumbColor: ThemeService.instance.primaryColor,
+                          overlayColor: ThemeService.instance.primaryColor.withValues(alpha: 0.25),
                         ),
                         child: Builder(
                           builder: (context) {
@@ -901,11 +908,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Thanh công cụ kính mờ quang học (Glass Media Toolbar - Giai đoạn 3)
+                      // Thanh công cụ kính mờ quang học tinh gọn (Glass Media Toolbar)
                       Center(
                         child: GlassMediaToolbar(
-                          onReplay10: () => _quickSeek(-10),
-                          onForward10: () => _quickSeek(10),
                           onFitModeToggle: _cycleFitMode,
                           fitModeLabel: _fitMode == VideoFitMode.fill
                               ? 'Tràn viền'
@@ -960,7 +965,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.red,
+                          color: ThemeService.instance.primaryColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -1029,7 +1034,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                       ? 'Đã thêm "${_activeMovie?.title ?? 'phim'}" vào Danh sách'
                                       : 'Đã xóa khỏi Danh sách của tôi',
                                 ),
-                                backgroundColor: AppColors.red,
+                                backgroundColor: ThemeService.instance.primaryColor,
                                 duration: const Duration(seconds: 1),
                               ),
                             );

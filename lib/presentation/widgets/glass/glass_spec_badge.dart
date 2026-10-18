@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 
 /// Huy hiệu thông số kỹ thuật điện ảnh bề mặt kính mờ (Cinematic Frosted Glass Spec Badge).
 ///
@@ -85,15 +85,17 @@ class GlassSpecBadge extends StatelessWidget {
     Key? key,
     int? rank,
     double height = 22.0,
+    Color? primaryColor,
   }) {
     final text = rank != null ? 'TOP $rank' : 'TOP 10';
+    final primary = primaryColor ?? ThemeService.instance.primaryColor;
     return GlassSpecBadge(
       key: key,
       label: text,
       height: height,
       textColor: Colors.white,
-      borderColor: AppColors.red.withValues(alpha: 0.75),
-      backgroundColor: AppColors.red.withValues(alpha: 0.35),
+      borderColor: primary.withValues(alpha: 0.75),
+      backgroundColor: primary.withValues(alpha: 0.35),
       isCapsule: true,
       borderRadius: 11.0,
     );
@@ -109,8 +111,9 @@ class GlassSpecBadge extends StatelessWidget {
     Color bgColor = const Color(0x331E1E1E);
 
     if (rating.toUpperCase().contains('18')) {
-      bdrColor = AppColors.red.withValues(alpha: 0.6);
-      bgColor = AppColors.red.withValues(alpha: 0.2);
+      final brand = ThemeService.instance.primaryColor;
+      bdrColor = brand.withValues(alpha: 0.6);
+      bgColor = brand.withValues(alpha: 0.2);
     }
 
     return GlassSpecBadge(

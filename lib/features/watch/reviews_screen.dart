@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ReviewItem {
@@ -78,6 +79,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: Text(
           title,
           maxLines: 1,
@@ -92,8 +94,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       floatingActionButton: GlassFAB.extended(
         label: 'Viết đánh giá',
         icon: Icons.rate_review_rounded,
-        backgroundColor: AppColors.red.withValues(alpha: 0.9),
-        glowColor: AppColors.red.withValues(alpha: 0.5),
+        backgroundColor:
+            ThemeService.instance.primaryColor.withValues(alpha: 0.9),
+        glowColor: ThemeService.instance.primaryColor.withValues(alpha: 0.5),
         onPressed: () async {
           final res = await context.push<ReviewItem>(
             '/movie/${widget.movieId}/reviews/new',
@@ -106,9 +109,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         },
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  ThemeService.instance.primaryColor,
+                ),
               ),
             )
           : ListView(
@@ -196,13 +201,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                           children: [
                             CircleAvatar(
                               radius: 16,
-                              backgroundColor: AppColors.red.withValues(
-                                alpha: 0.2,
-                              ),
+                              backgroundColor: ThemeService
+                                  .instance
+                                  .primaryColor
+                                  .withValues(alpha: 0.2),
                               child: Text(
                                 rev.author[0],
-                                style: const TextStyle(
-                                  color: AppColors.red,
+                                style: TextStyle(
+                                  color: ThemeService.instance.primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

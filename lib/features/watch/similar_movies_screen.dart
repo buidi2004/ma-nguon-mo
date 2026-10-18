@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/movie_grid.dart';
 import '../../core/widgets/state_view.dart';
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -55,6 +56,7 @@ class _SimilarMoviesScreenState extends State<SimilarMoviesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: Text(
           _currentMovie != null
               ? 'Tương tự: ${_currentMovie!.title}'

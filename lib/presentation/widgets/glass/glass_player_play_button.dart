@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import 'glass_surface.dart';
+import 'openflix_morph_icon.dart';
 
 /// Nút phát tròn kính mờ quang học (Glass Player Play Button - Giai đoạn 3).
 /// Tuân thủ quy chuẩn thiết kế điện ảnh chuẩn Netflix:
@@ -17,7 +18,7 @@ class GlassPlayerPlayButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final double size;
   final Color iconColor;
-  final Color glowColor;
+  final Color? glowColor;
   final bool enablePulse;
   final String? tooltip;
 
@@ -28,7 +29,7 @@ class GlassPlayerPlayButton extends StatefulWidget {
     this.isLoading = false,
     this.size = 68.0,
     this.iconColor = Colors.white,
-    this.glowColor = AppColors.red,
+    this.glowColor,
     this.enablePulse = true,
     this.tooltip,
   });
@@ -98,6 +99,7 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
   @override
   Widget build(BuildContext context) {
     final double buttonSize = widget.size;
+    final effectiveGlowColor = widget.glowColor ?? ThemeService.instance.primaryColor;
 
     Widget buttonContent = Stack(
       alignment: Alignment.center,
@@ -116,12 +118,12 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: widget.glowColor.withValues(alpha: opacity.clamp(0.0, 1.0)),
+                    color: effectiveGlowColor.withValues(alpha: opacity.clamp(0.0, 1.0)),
                     width: 2.0 * (1.0 - value),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.glowColor.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0)),
+                      color: effectiveGlowColor.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0)),
                       blurRadius: 18.0 * value,
                       spreadRadius: 2.0 * value,
                     ),
@@ -156,8 +158,8 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
                       valueColor: AlwaysStoppedAnimation<Color>(widget.iconColor),
                     ),
                   )
-                : Icon(
-                    widget.isPlaying
+                : OpenFlixMorphIcon.smooth(
+                    icon: widget.isPlaying
                         ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
                     size: buttonSize * 0.52,
@@ -172,23 +174,20 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
     return Semantics(
       button: true,
       label: widget.tooltip ?? (widget.isPlaying ? 'Tạm dừng video' : 'Phát video'),
-      child: Tooltip(
-        message: widget.tooltip ?? (widget.isPlaying ? 'Tạm dừng' : 'Phát'),
-        child: GestureDetector(
-          onTapDown: _handleTapDown,
-          onTapUp: _handleTapUp,
-          onTapCancel: _handleTapCancel,
-          onTap: widget.onPressed,
-          behavior: HitTestBehavior.opaque,
-          child: AnimatedScale(
-            scale: _isPressed ? 0.92 : 1.0,
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            child: SizedBox(
-              width: buttonSize + 28, // Đủ diện tích chứa hào quang pulse
-              height: buttonSize + 28,
-              child: Center(child: buttonContent),
-            ),
+      child: GestureDetector(
+        onTapDown: _handleTapDown,
+        onTapUp: _handleTapUp,
+        onTapCancel: _handleTapCancel,
+        onTap: widget.onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.92 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: SizedBox(
+            width: buttonSize + 28, // Đủ diện tích chứa hào quang pulse
+            height: buttonSize + 28,
+            child: Center(child: buttonContent),
           ),
         ),
       ),

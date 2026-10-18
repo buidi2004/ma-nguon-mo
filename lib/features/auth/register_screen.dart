@@ -7,7 +7,9 @@ import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final String? redirect;
+
+  const RegisterScreen({super.key, this.redirect});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -62,7 +64,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: Duration(seconds: 2),
         ),
       );
-      context.go('/');
+      if (widget.redirect != null && widget.redirect!.isNotEmpty) {
+        context.pushReplacement(widget.redirect!);
+      } else if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/');
+      }
     } else {
       setState(() {
         _isLoading = false;
@@ -77,6 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(fallbackRoute: '/'),
         title: const Text(
           'Đăng ký tài khoản',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

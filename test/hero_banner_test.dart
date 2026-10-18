@@ -78,7 +78,7 @@ void main() {
       expect(find.byIcon(Icons.info_outline), findsOneWidget);
 
       // Meta row
-      expect(find.text('Galaxy VIP'), findsOneWidget);
+      expect(find.text('Cinema VIP'), findsOneWidget);
       expect(find.text('T13'), findsOneWidget);
     });
 

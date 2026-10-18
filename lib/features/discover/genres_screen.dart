@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class GenresScreen extends StatelessWidget {
   const GenresScreen({super.key});
 
-  final List<Map<String, dynamic>> _genres = const [
+  List<Map<String, dynamic>> _getGenres() => [
     {
       'name': 'Hoạt hình',
       'icon': Icons.animation,
-      'gradient': [Color(0xFFE50914), Color(0xFF8B0000)],
+      'gradient': ThemeService.instance.isWindowsBlue
+          ? const [Color(0xFF00A2ED), Color(0xFF005A87)]
+          : const [Color(0xFFE50914), Color(0xFF8B0000)],
       'desc': 'Phim 3D thế giới mở kinh điển',
     },
     {
@@ -47,9 +51,11 @@ class GenresScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final genres = _getGenres();
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Danh mục thể loại',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -58,7 +64,7 @@ class GenresScreen extends StatelessWidget {
       body: GridView.builder(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        itemCount: _genres.length,
+        itemCount: genres.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
@@ -66,7 +72,7 @@ class GenresScreen extends StatelessWidget {
           childAspectRatio: 1.2,
         ),
         itemBuilder: (context, index) {
-          final g = _genres[index];
+          final g = genres[index];
           final List<Color> colors = g['gradient'];
 
           return GestureDetector(

@@ -6,9 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../models/movie_model.dart';
+import '../presentation/widgets/brand/app_brand_logo.dart';
+import '../presentation/widgets/brand/user_avatar_circle.dart';
+import '../presentation/widgets/dialogs/user_avatar_dialog.dart';
 import '../presentation/widgets/glass/glass_components.dart';
+import '../services/auth_guard.dart';
 import '../services/library_service.dart';
 import '../services/pocketbase_service.dart';
+import '../services/theme_service.dart';
 import '../services/trial_promo_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/hero_banner.dart';
@@ -48,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen>
   List<MovieModel> _actionMovies = [];
   List<String> _categories = const ['Tất cả'];
   late bool _isLoading;
-  bool _isSearching = false;
   String _selectedCategory = 'Tất cả';
 
   @override
@@ -244,7 +248,14 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _playMovie(MovieModel movie) {
-    context.push('/watch/${movie.id}');
+    AuthGuard.runWithAuth(
+      context,
+      movieId: movie.id,
+      movieTitle: movie.title,
+      hasTrailer: true,
+      onWatchTrailer: () => _playTrailer(movie),
+      onAuthorized: () => context.push('/watch/${movie.id}'),
+    );
   }
 
   void _playTrailer(MovieModel movie) {
@@ -345,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     vertical: 1.5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.red,
+                                    color: ThemeService.instance.primaryColor,
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                   child: const Text(
@@ -479,9 +490,9 @@ class _HomeScreenState extends State<HomeScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.cloud_outlined, color: AppColors.red),
+                  Icon(Icons.cloud_outlined, color: ThemeService.instance.primaryColor),
                   SizedBox(width: 8),
                   Text(
                     'Cấu hình PocketBase',
@@ -560,7 +571,7 @@ class _HomeScreenState extends State<HomeScreen>
                             content: Text(
                               'Đã nạp thành công $count phim vào PocketBase!',
                             ),
-                            backgroundColor: AppColors.red,
+                            backgroundColor: ThemeService.instance.primaryColor,
                           ),
                         );
                         _pbService.updateBaseUrl(targetUrl);
@@ -569,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen>
                       icon: const Icon(Icons.upload_file, size: 18),
                       label: const Text('Nạp dữ liệu phim mẫu lên Server'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.red,
+                        backgroundColor: ThemeService.instance.primaryColor,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 38),
                         shape: RoundedRectangleBorder(
@@ -624,52 +635,13 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        titleSpacing: (isFilteringCategory && !_isSearching) ? 0 : 12,
-        leading: (isFilteringCategory && !_isSearching)
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 19,
-                  color: Colors.white,
-                ),
-                tooltip: 'Về trang chủ',
+        titleSpacing: isFilteringCategory ? 0 : 12,
+        leading: isFilteringCategory
+            ? GlassBackButton(
                 onPressed: () => _onCategorySelected('Tất cả'),
               )
             : null,
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                onChanged: _onSearchChanged,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
-                decoration: InputDecoration(
-                  hintText: 'Tìm phim, diễn viên, thể loại...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                  ),
-                  border: InputBorder.none,
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: AppColors.textMuted,
-                    size: 20,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.clear,
-                            color: Colors.white70,
-                            size: 18,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearchChanged('');
-                          },
-                        )
-                      : null,
-                ),
-              )
-            : isFilteringCategory
+        title: isFilteringCategory
             ? Row(
                 children: [
                   Expanded(
@@ -691,17 +663,17 @@ class _HomeScreenState extends State<HomeScreen>
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.red.withValues(alpha: 0.20),
+                      color: ThemeService.instance.primaryColor.withValues(alpha: 0.20),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.red.withValues(alpha: 0.50),
+                        color: ThemeService.instance.primaryColor.withValues(alpha: 0.50),
                         width: 0.8,
                       ),
                     ),
                     child: Text(
                       '${_filteredMovies.length} phim',
-                      style: const TextStyle(
-                        color: AppColors.red,
+                      style: TextStyle(
+                        color: ThemeService.instance.primaryColor,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -709,22 +681,80 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ],
               )
-            : const Row(
-                children: [
-                  // OpenFlix Red Wordmark chuẩn Netflix
-                  Text(
-                    'OPENFLIX',
-                    style: TextStyle(
-                      color: AppColors.red,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 21,
-                      letterSpacing: 2.0,
-                    ),
+            : Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          if (_homeScrollController.hasClients) {
+                            _homeScrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // 1. Logo OpenFlix V 3D chính
+                            const AppBrandLogo(
+                              iconSize: 36,
+                              showText: false,
+                            ),
+                            const SizedBox(width: 8),
+                            // Vạch phân cách tinh tế chuẩn rạp chiếu
+                            Container(
+                              width: 1,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.white24,
+                                borderRadius: BorderRadius.circular(0.5),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // 2. Hai biểu tượng hãng phim đối tác xếp 2 tầng (trên - dưới)
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Tầng trên: Legendary Pictures
+                                Image.asset(
+                                  'assets/icons/legendary_logo.png',
+                                  height: 12.5,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                  errorBuilder: (ctx, err, st) => Image.asset(
+                                    'web/icons/legendary-pictures-logo-print-handle-bracket-aluminium-sink-faucet-transparent-png-648907.png',
+                                    height: 12.5,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                // Tầng dưới: Sony Pictures (màu trắng tương phản cao trên nền đen)
+                                Image.asset(
+                                  'assets/icons/sony_logo.png',
+                                  height: 10,
+                                  fit: BoxFit.contain,
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                  filterQuality: FilterQuality.high,
+                                  errorBuilder: (ctx, err, st) => Image.asset(
+                                    'web/icons/sony_logo_PNG2.png',
+                                    height: 10,
+                                    fit: BoxFit.contain,
+                                    color: Colors.white.withValues(alpha: 0.92),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
         actions: [
-          if (isFilteringCategory && !_isSearching)
+          if (isFilteringCategory)
             IconButton(
               icon: const Icon(
                 Icons.refresh_rounded,
@@ -734,37 +764,18 @@ class _HomeScreenState extends State<HomeScreen>
               tooltip: 'Xem tất cả phim',
               onPressed: () => _onCategorySelected('Tất cả'),
             ),
-          IconButton(
-            icon: Icon(
-              _isSearching ? Icons.close : Icons.search,
-              color: Colors.white,
-              size: 24,
+          // Nút Ảnh đại diện chân dung (Chạm: vào màn Tài khoản & Cá nhân, Nhấn giữ: mở nhanh đổi avatar)
+          Padding(
+            padding: const EdgeInsets.only(right: 14, left: 2),
+            child: Center(
+              child: UserAvatarButton(
+                size: 34,
+                tooltip: 'Tài khoản & Cá nhân',
+                onPressed: () => context.push('/me'),
+                onLongPress: () => UserAvatarDialog.show(context),
+              ),
             ),
-            tooltip: _isSearching ? 'Đóng tìm kiếm' : 'Tìm kiếm',
-            onPressed: () {
-              setState(() {
-                if (_isSearching) {
-                  _isSearching = false;
-                  _searchController.clear();
-                  _onSearchChanged('');
-                } else {
-                  _isSearching = true;
-                }
-              });
-            },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.cloud_done_rounded,
-              color: _pbService.isUsingOfflineMock
-                  ? AppColors.warning
-                  : AppColors.success,
-              size: 22,
-            ),
-            tooltip: 'Kết nối máy chủ',
-            onPressed: _openServerConfigDialog,
-          ),
-          const SizedBox(width: 4),
         ],
       ),
       body: _isLoading
@@ -773,7 +784,7 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 RefreshIndicator(
                   onRefresh: _loadData,
-                  color: AppColors.red,
+                  color: ThemeService.instance.primaryColor,
                   backgroundColor: AppColors.surface,
                   child: _buildBody(),
                 ),
@@ -787,9 +798,8 @@ class _HomeScreenState extends State<HomeScreen>
                     child: ValueListenableBuilder<double>(
                       valueListenable: _appBarOpacityNotifier,
                       builder: (context, opacity, child) {
-                        final effectiveOpacity = (_isSearching || isFilteringCategory)
-                            ? 1.0
-                            : opacity;
+                        final effectiveOpacity =
+                            isFilteringCategory ? 1.0 : opacity;
                         return Opacity(
                           opacity: effectiveOpacity,
                           child: child,
@@ -839,7 +849,7 @@ class _HomeScreenState extends State<HomeScreen>
             ElevatedButton(
               onPressed: _openServerConfigDialog,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.red,
+                backgroundColor: ThemeService.instance.primaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -852,8 +862,8 @@ class _HomeScreenState extends State<HomeScreen>
       );
     }
 
-    // Nếu đang tìm kiếm hoặc chọn lọc thể loại
-    if (_isSearching || _selectedCategory != 'Tất cả') {
+    // Nếu đang chọn lọc thể loại
+    if (_selectedCategory != 'Tất cả') {
       return _buildSearchOrFilterGrid();
     }
 
@@ -879,7 +889,7 @@ class _HomeScreenState extends State<HomeScreen>
           // 2. Chip lọc thể loại nhỏ gọn đè nhẹ dưới Hero
           _buildCategoryFilterRow(),
 
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
 
           // 3. Hàng "Tiếp tục xem của bạn" chuẩn Netflix (S26)
           ListenableBuilder(
@@ -946,12 +956,13 @@ class _HomeScreenState extends State<HomeScreen>
   /// Chip lọc danh mục phong cách kính mờ quang học nhẹ nhàng (GlassChipButton)
   Widget _buildCategoryFilterRow() {
     return Container(
-      height: 38,
+      height: 40,
       margin: const EdgeInsets.only(top: 8, bottom: 4),
       child: ListView.separated(
+        clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
         itemCount: _categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -961,7 +972,7 @@ class _HomeScreenState extends State<HomeScreen>
             label: cat,
             isSelected: isSelected,
             height: 34.0,
-            activeColor: AppColors.red,
+            activeColor: ThemeService.instance.primaryColor,
             showCheckmark: false,
             onSelected: (_) => _onCategorySelected(cat),
           );
@@ -1086,10 +1097,10 @@ class _HomeScreenState extends State<HomeScreen>
               if (_selectedCategory != 'Tất cả')
                 GestureDetector(
                   onTap: () => _onCategorySelected('Tất cả'),
-                  child: const Text(
+                  child: Text(
                     'Xem tất cả >',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1159,7 +1170,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 maxHeightDiskCache: 600,
                                 placeholder: (_, _) => Container(
                                   color: AppColors.surface,
-                                  child: const Center(
+                                  child: Center(
                                     child: SizedBox(
                                       width: 20,
                                       height: 20,
@@ -1167,7 +1178,7 @@ class _HomeScreenState extends State<HomeScreen>
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              AppColors.red,
+                                              ThemeService.instance.primaryColor,
                                             ),
                                       ),
                                     ),
@@ -1247,7 +1258,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   ),
                                   decoration: BoxDecoration(
                                     color: movie.isNew
-                                        ? AppColors.red
+                                        ? ThemeService.instance.primaryColor
                                         : Colors.black.withValues(alpha: 0.65),
                                     borderRadius: BorderRadius.circular(4),
                                     border: Border.all(

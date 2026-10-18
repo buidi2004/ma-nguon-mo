@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 
 /// Mục phân đoạn bên trong [GlassSegmentedControl]
 class GlassSegmentItem<T> {
@@ -104,7 +104,7 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveActiveColor = widget.activePillColor ?? AppColors.red;
+    final effectiveActiveColor = widget.activePillColor ?? ThemeService.instance.primaryColor;
     final borderRadius = BorderRadius.circular(widget.height / 2);
 
     return LayoutBuilder(

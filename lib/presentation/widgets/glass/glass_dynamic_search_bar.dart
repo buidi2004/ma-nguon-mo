@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import 'glass_surface.dart';
+import 'openflix_morph_icon.dart';
 
 /// Thanh tìm kiếm kính mờ quang học động (Optical Dynamic Frosted Glass Search Bar).
 ///
@@ -86,6 +87,7 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
   @override
   Widget build(BuildContext context) {
     final borderRadius = widget.height / 2;
+    final primaryColor = ThemeService.instance.primaryColor;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 240),
@@ -96,7 +98,7 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
         boxShadow: _isFocused
             ? [
                 BoxShadow(
-                  color: AppColors.red.withValues(alpha: 0.28),
+                  color: primaryColor.withValues(alpha: 0.28),
                   blurRadius: 14,
                   offset: const Offset(0, 2),
                 ),
@@ -127,13 +129,16 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
               thickness: 36.0,
               padding: widget.padding,
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Icon Kính Lúp
-                  Icon(
-                    Icons.search_rounded,
+                  // Icon Kính Lúp biến hình (Morphing Search Icon)
+                  OpenFlixMorphIcon.snappy(
+                    icon: _hasText
+                        ? Icons.manage_search_rounded
+                        : Icons.search_rounded,
                     size: 22,
                     color: _isFocused
-                        ? AppColors.red
+                        ? primaryColor
                         : Colors.white.withValues(alpha: 0.65),
                   ),
                   const SizedBox(width: 8),
@@ -147,22 +152,28 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
                       onChanged: widget.onChanged,
                       onSubmitted: widget.onSubmitted,
                       textInputAction: TextInputAction.search,
+                      textAlignVertical: TextAlignVertical.center,
+                      cursorColor: primaryColor,
+                      cursorHeight: 18,
+                      cursorWidth: 2,
+                      cursorRadius: const Radius.circular(1),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14.5,
                         fontWeight: FontWeight.w500,
+                        height: 1.2,
                       ),
                       decoration: InputDecoration(
                         isDense: true,
+                        isCollapsed: true,
                         hintText: widget.hintText,
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.45),
                           fontSize: 13.5,
+                          height: 1.2,
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                        ),
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   ),
@@ -236,7 +247,7 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
                     borderRadius: BorderRadius.circular(borderRadius),
                     border: Border.all(
                       color: _isFocused
-                          ? AppColors.red.withValues(alpha: 0.65)
+                          ? primaryColor.withValues(alpha: 0.65)
                           : Colors.white.withValues(alpha: 0.15),
                       width: 1.0,
                     ),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import '../glass/glass_components.dart';
 
 /// Chế độ tỉ lệ khung hình của Video Player
@@ -228,7 +228,6 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
     if (!_videoController.value.isInitialized) return;
     if (_videoController.value.isPlaying) {
       _videoController.pause();
-      _showHud('Tạm dừng', Icons.pause_rounded);
       setState(() {
         _showControls = true;
         _controlsFullyHidden = false;
@@ -236,7 +235,6 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
       _controlsHideTimer?.cancel();
     } else {
       _videoController.play();
-      _showHud('Phát video', Icons.play_arrow_rounded);
       _startControlsHideTimer();
     }
     setState(() {});
@@ -249,14 +247,17 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
           : Duration.zero;
     }
     _accumulatedSeekSeconds += seconds;
+    _showHud(
+      'Tua ${_accumulatedSeekSeconds > 0 ? "+$_accumulatedSeekSeconds" : "$_accumulatedSeekSeconds"}s',
+      _accumulatedSeekSeconds > 0
+          ? Icons.fast_forward_rounded
+          : Icons.fast_rewind_rounded,
+    );
     final totalDuration = _videoController.value.isInitialized
         ? _videoController.value.duration
         : const Duration(minutes: 90);
 
     final isForward = _accumulatedSeekSeconds >= 0;
-    final sign = isForward ? '+' : '';
-    final icon = isForward ? Icons.forward_10_rounded : Icons.replay_10_rounded;
-    _showHud('Tua $sign${_accumulatedSeekSeconds}s', icon);
 
     _rippleTimer?.cancel();
     setState(() {
@@ -465,37 +466,42 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                 ),
               ),
 
-            // 3. THÔNG BÁO NỔI HUD KÍNH MỜ QUANG HỌC CHÍNH GIỮA (HUD PILL)
+            // 3. THÔNG BÁO NỔI HUD KÍNH MỜ QUANG HỌC PHÍA TRÊN (TOP-CENTER HUD PILL)
             if (_hudMessage != null)
-              Center(
-                child: IgnorePointer(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black87, blurRadius: 16, spreadRadius: 3),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_hudIcon != null) ...[
-                          Icon(_hudIcon, color: AppColors.red, size: 24),
-                          const SizedBox(width: 10),
+              Positioned(
+                top: 56,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: IgnorePointer(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black87, blurRadius: 16, spreadRadius: 3),
                         ],
-                        Text(
-                          _hudMessage!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_hudIcon != null) ...[
+                            Icon(_hudIcon, color: ThemeService.instance.primaryColor, size: 20),
+                            const SizedBox(width: 8),
+                          ],
+                          Text(
+                            _hudMessage!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -553,15 +559,13 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  // Nút Trở về / Thoát Fullscreen
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
-                    tooltip: 'Thoát toàn màn hình',
+                  // Nút Trở về / Thoát Fullscreen kính mờ tròn chuẩn OpenFlix
+                  GlassBackButton(
                     onPressed: () {
                       widget.controller.exitFullScreen();
                     },
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
 
                   // Tên phim
                   Expanded(
@@ -587,7 +591,8 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.red.withValues(alpha: 0.85),
+                          color: ThemeService.instance.primaryColor
+                              .withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white, width: 1),
                         ),
@@ -624,8 +629,8 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            _fitMode == VideoFitMode.fill
+                          OpenFlixMorphIcon.smooth(
+                            icon: _fitMode == VideoFitMode.fill
                                 ? Icons.fullscreen_rounded
                                 : (_fitMode == VideoFitMode.stretch
                                     ? Icons.fit_screen_rounded
@@ -675,54 +680,18 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
               ),
             ),
 
-            // CENTER AREA: Nút Play/Pause tròn kính mờ quang học & Nút Tua
+            // CENTER AREA: Nút Phát / Tạm dừng kính mờ quang học tinh gọn chuẩn Netflix
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: _toggleControls,
                 onDoubleTapDown: _handleDoubleTapDown,
                 child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Nút Tua lùi 10s (Tự động ẩn khi đang đệm video để tránh rối mắt)
-                      Opacity(
-                        opacity: _videoController.value.isBuffering ? 0.0 : 1.0,
-                        child: IgnorePointer(
-                          ignoring: _videoController.value.isBuffering,
-                          child: IconButton(
-                            iconSize: 36,
-                            icon: const Icon(Icons.replay_10_rounded, color: Colors.white),
-                            tooltip: 'Tua lại 10 giây',
-                            onPressed: () => _quickSeek(-10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 32),
-
-                      // Nút Phát / Tạm dừng kính mờ quang học
-                      GlassPlayerPlayButton(
-                        isPlaying: _videoController.value.isPlaying,
-                        isLoading: _videoController.value.isBuffering,
-                        size: 64,
-                        onPressed: _togglePlayPause,
-                      ),
-                      const SizedBox(width: 32),
-
-                      // Nút Tua tới 10s (Tự động ẩn khi đang đệm video để tránh rối mắt)
-                      Opacity(
-                        opacity: _videoController.value.isBuffering ? 0.0 : 1.0,
-                        child: IgnorePointer(
-                          ignoring: _videoController.value.isBuffering,
-                          child: IconButton(
-                            iconSize: 36,
-                            icon: const Icon(Icons.forward_10_rounded, color: Colors.white),
-                            tooltip: 'Tua tới 10 giây',
-                            onPressed: () => _quickSeek(10),
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: GlassPlayerPlayButton(
+                    isPlaying: _videoController.value.isPlaying,
+                    isLoading: _videoController.value.isBuffering,
+                    size: 68,
+                    onPressed: _togglePlayPause,
                   ),
                 ),
               ),
@@ -740,10 +709,10 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       trackHeight: 4.0,
                       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
                       overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                      activeTrackColor: AppColors.red,
+                      activeTrackColor: ThemeService.instance.primaryColor,
                       inactiveTrackColor: Colors.white24,
-                      thumbColor: AppColors.red,
-                      overlayColor: AppColors.red.withValues(alpha: 0.25),
+                      thumbColor: ThemeService.instance.primaryColor,
+                      overlayColor: ThemeService.instance.primaryColor.withValues(alpha: 0.25),
                     ),
                     child: Builder(
                       builder: (context) {
@@ -807,8 +776,8 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
 
                         // Nút Bật / Tắt âm thanh
                         IconButton(
-                          icon: Icon(
-                            _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                          icon: OpenFlixMorphIcon.smooth(
+                            icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
                             color: Colors.white,
                             size: 22,
                           ),

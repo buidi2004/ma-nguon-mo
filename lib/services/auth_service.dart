@@ -12,11 +12,17 @@ class AuthService extends ChangeNotifier {
   String _userName = 'Khách Demo';
   String _userEmail = 'demo@openflix.vn';
   String _userId = 'user_demo_1';
+  String _avatarType = 'preset'; // 'preset', 'emoji', 'url'
+  String _avatarValue = '🐼'; // Mặc định Gấu trúc Panda như ảnh người dùng
+  int _avatarBgColor = 0xFF7C83FD; // Màu nền tím nhạt phát sáng
 
   bool get isLoggedIn => _isLoggedIn;
   String get userName => _userName;
   String get userEmail => _userEmail;
   String get userId => _userId;
+  String get avatarType => _avatarType;
+  String get avatarValue => _avatarValue;
+  int get avatarBgColor => _avatarBgColor;
 
   Future<void> _loadSession() async {
     try {
@@ -25,6 +31,9 @@ class AuthService extends ChangeNotifier {
       _userName = prefs.getString('auth_user_name') ?? 'Khách Demo';
       _userEmail = prefs.getString('auth_user_email') ?? 'demo@openflix.vn';
       _userId = prefs.getString('auth_user_id') ?? 'user_demo_1';
+      _avatarType = prefs.getString('auth_avatar_type') ?? 'preset';
+      _avatarValue = prefs.getString('auth_avatar_val') ?? '🐼';
+      _avatarBgColor = prefs.getInt('auth_avatar_bg') ?? 0xFF7C83FD;
       notifyListeners();
     } catch (e) {
       debugPrint('Lỗi tải phiên đăng nhập: $e');
@@ -94,6 +103,36 @@ class AuthService extends ChangeNotifier {
     _userName = newName;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_user_name', newName);
+    notifyListeners();
+  }
+
+  Future<void> updateAvatar({
+    required String type,
+    required String value,
+    int? bgColor,
+  }) async {
+    _avatarType = type;
+    _avatarValue = value;
+    if (bgColor != null) _avatarBgColor = bgColor;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_avatar_type', _avatarType);
+    await prefs.setString('auth_avatar_val', _avatarValue);
+    await prefs.setInt('auth_avatar_bg', _avatarBgColor);
+
+    notifyListeners();
+  }
+
+  Future<void> removeAvatar() async {
+    _avatarType = 'preset';
+    _avatarValue = '🐼';
+    _avatarBgColor = 0xFF7C83FD;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_avatar_type');
+    await prefs.remove('auth_avatar_val');
+    await prefs.remove('auth_avatar_bg');
+
     notifyListeners();
   }
 

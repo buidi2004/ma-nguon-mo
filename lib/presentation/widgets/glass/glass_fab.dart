@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 
 /// Nút hành động nổi bề mặt kính mờ (Optical Frosted Glass Floating Action Button).
 /// - Dạng tròn cổ điển (56x56px) hoặc viên thuốc mở rộng (Extended Capsule).
@@ -160,7 +160,7 @@ class _GlassFABState extends State<GlassFAB> {
   @override
   Widget build(BuildContext context) {
     final isInteractive = widget.onPressed != null;
-    final effectiveGlowColor = widget.glowColor ?? AppColors.red;
+    final effectiveGlowColor = widget.glowColor ?? ThemeService.instance.primaryColor;
 
     final Color bgColor = widget.backgroundColor ??
         (_isPressed

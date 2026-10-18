@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
+import 'openflix_morph_icon.dart';
 
 /// Nút hành động tương tác dọc kính mờ (Vertical Optical Glass Action Button).
 /// Thiết kế chuẩn điện ảnh theo quy chuẩn Netflix:
@@ -55,6 +56,7 @@ class GlassActionButton extends StatefulWidget {
     required VoidCallback? onPressed,
     String label = 'Thêm vào DS',
     String? tooltip,
+    Color? activeIconColor,
   }) {
     return GlassActionButton(
       key: key,
@@ -62,7 +64,7 @@ class GlassActionButton extends StatefulWidget {
       icon: Icons.bookmark_outline_rounded,
       activeIcon: Icons.bookmark_rounded,
       isActive: isBookmarked,
-      activeIconColor: AppColors.red,
+      activeIconColor: activeIconColor,
       onPressed: onPressed,
       tooltip: tooltip ?? (isBookmarked ? 'Xóa khỏi danh sách' : 'Thêm vào danh sách'),
     );
@@ -138,7 +140,7 @@ class GlassActionButton extends StatefulWidget {
       icon: Icons.thumb_up_alt_outlined,
       activeIcon: Icons.thumb_up_alt_rounded,
       isActive: isLiked,
-      activeIconColor: AppColors.red,
+      activeIconColor: ThemeService.instance.primaryColor,
       onPressed: onPressed,
       tooltip: tooltip ?? (isLiked ? 'Bỏ thích' : 'Yêu thích bộ phim này'),
     );
@@ -180,7 +182,7 @@ class _GlassActionButtonState extends State<GlassActionButton> {
         : widget.icon;
 
     final effectiveIconColor = widget.isActive
-        ? (widget.activeIconColor ?? AppColors.red)
+        ? (widget.activeIconColor ?? ThemeService.instance.primaryColor)
         : (widget.iconColor ?? Colors.white);
 
     final effectiveTextColor = widget.isActive
@@ -235,8 +237,8 @@ class _GlassActionButtonState extends State<GlassActionButton> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(
-                      effectiveIcon,
+                    OpenFlixMorphIcon.snappy(
+                      icon: effectiveIcon,
                       size: widget.iconSize,
                       color: isInteractive
                           ? effectiveIconColor
