@@ -50,6 +50,7 @@ dependencies:
   carousel_slider: ^5.1.2
   smart_splash_kit: ^1.0.1
   image_picker: ^1.2.4
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:

@@ -74,6 +74,57 @@ class _LoginScreenState extends State<LoginScreen> {
     _handleLogin();
   }
 
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await AuthService.instance.signInWithGoogle();
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Đăng nhập Google thành công! Chào ${AuthService.instance.userName}',
+            ),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        if (widget.redirect != null && widget.redirect!.isNotEmpty) {
+          context.pushReplacement(widget.redirect!);
+        } else if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã hủy đăng nhập Google.'),
+            backgroundColor: AppColors.surfaceLight,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      String message = 'Lỗi đăng nhập Google: $e';
+      if (e.toString().contains('10') || e.toString().contains('DEVELOPER_ERROR')) {
+        message = 'Lỗi xác thực Google (Mã 10): Cần thêm mã SHA-1 của máy/keystore vào Google Cloud Console.';
+      } else if (e.toString().contains('12500')) {
+        message = 'Lỗi OAuth: Cần thêm email vào mục Test Users trên Google Cloud Console (OAuth Consent Screen).';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -256,14 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: GlassButtonStyle.neutralDark,
                         height: 38,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đang kết nối tài khoản Google...'),
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
-                        },
+                        onPressed: _isLoading ? null : _handleGoogleLogin,
                       ),
                       GlassButton.capsule(
                         text: 'Apple',
