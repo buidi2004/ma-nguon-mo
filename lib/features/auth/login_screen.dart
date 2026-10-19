@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showGoogleError10Dialog() {
     const sha1 = '28:32:8A:1F:30:8F:CB:B9:69:97:03:F7:91:CF:C3:44:C3:8A:FA:33';
-    const pkg = 'com.openflix.openflix';
+    const pkg = 'com.openflix.app';
 
     showModalBottomSheet(
       context: context,

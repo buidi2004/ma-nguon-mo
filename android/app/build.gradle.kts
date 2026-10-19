@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.openflix.openflix"
+        applicationId = "com.openflix.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
