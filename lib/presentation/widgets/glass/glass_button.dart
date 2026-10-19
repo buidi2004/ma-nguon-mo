@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import 'glass_optical_tokens.dart';
 import 'glass_surface.dart';
 
@@ -250,17 +250,28 @@ class _GlassButtonState extends State<GlassButton>
         );
 
       case GlassButtonStyle.brandRed:
+        final primary = ThemeService.instance.primaryColor;
+        final isBlue = ThemeService.instance.currentMode == AppThemeMode.windowsBlue;
         return _StyleConfig(
-          tintColor: AppColors.red.withValues(alpha: 0.40),
+          tintColor: primary.withValues(alpha: 0.40),
           textColor: Colors.white,
           blur: 8.5,
           refractiveIndex: 1.80,
           thickness: 52.0,
           border: Border.all(
-            color: const Color(0xFFFF4D4D).withValues(alpha: 0.55),
+            color: isBlue
+                ? const Color(0xFF66C7F4).withValues(alpha: 0.65)
+                : const Color(0xFFFF4D4D).withValues(alpha: 0.55),
             width: GlassOpticalTokens.hairlineRimWidth,
           ),
-          textShadow: const [Shadow(color: Color(0x88000000), blurRadius: 4)],
+          textShadow: [
+            Shadow(
+              color: isBlue
+                  ? const Color(0xFF00A2ED).withValues(alpha: 0.6)
+                  : const Color(0x88000000),
+              blurRadius: 4,
+            ),
+          ],
         );
 
       case GlassButtonStyle.neutralDark:

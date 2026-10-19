@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/movie_model.dart';
-import '../../theme/app_theme.dart';
+import '../../services/theme_service.dart';
 import '../../widgets/movie_card.dart';
 import 'state_view.dart';
 
@@ -105,16 +105,18 @@ class MovieGrid extends StatelessWidget {
             ),
           ),
           if (isLoadingMore)
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Center(
                   child: SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        ThemeService.instance.primaryColor,
+                      ),
                     ),
                   ),
                 ),

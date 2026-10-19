@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class HelpScreen extends StatefulWidget {
@@ -61,16 +63,7 @@ class _HelpScreenState extends State<HelpScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/me');
-            }
-          },
-        ),
+        leading: const GlassBackButton(fallbackRoute: '/me'),
         title: const Text(
           'Trung tâm trợ giúp',
           style: TextStyle(
@@ -88,7 +81,7 @@ class _HelpScreenState extends State<HelpScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.red.withValues(alpha: 0.8),
+                  ThemeService.instance.primaryColor.withValues(alpha: 0.8),
                   AppColors.surface,
                 ],
                 begin: Alignment.topLeft,
@@ -167,10 +160,10 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'HỖ TRỢ TRỰC TIẾP',
             style: TextStyle(
-              color: AppColors.red,
+              color: ThemeService.instance.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1,
@@ -190,11 +183,11 @@ class _HelpScreenState extends State<HelpScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white12),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
                         Icon(
                           Icons.mail_outline,
-                          color: AppColors.red,
+                          color: ThemeService.instance.primaryColor,
                           size: 26,
                         ),
                         SizedBox(height: 8),
@@ -292,7 +285,8 @@ class _HelpScreenState extends State<HelpScreen> {
                             icon: const Icon(Icons.copy, size: 16),
                             label: const Text('Sao chép số'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.red,
+                              backgroundColor:
+                                  ThemeService.instance.primaryColor,
                             ),
                           ),
                         ],
@@ -341,10 +335,10 @@ class _HelpScreenState extends State<HelpScreen> {
             ],
           ),
           const SizedBox(height: 28),
-          const Text(
+          Text(
             'CÂU HỎI THƯỜNG GẶP (FAQ)',
             style: TextStyle(
-              color: AppColors.red,
+              color: ThemeService.instance.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1,
@@ -382,7 +376,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      iconColor: AppColors.red,
+                      iconColor: ThemeService.instance.primaryColor,
                       collapsedIconColor: Colors.white70,
                       childrenPadding: const EdgeInsets.only(
                         left: 16,

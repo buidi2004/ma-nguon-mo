@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/primary_button.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -92,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Icon(
                             _getIcon(page['icon']!),
                             size: 80,
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                           ),
                         ),
                         const SizedBox(height: 36),
@@ -133,7 +134,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: _currentIndex == i ? 24 : 8,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: _currentIndex == i ? AppColors.red : Colors.white24,
+                    color: _currentIndex == i
+                        ? ThemeService.instance.primaryColor
+                        : Colors.white24,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),

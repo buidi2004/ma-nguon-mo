@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "OpenFlix 01: Kiến Trúc Hệ Thống Tổng Thể End-to-End (FE / BE / Realtime / Media)",
+    "output": "suite/01_architecture.html",
+    "quality_profile": "standard"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Khách Xem Phim",
+      "sublabel": "Thiết bị Android / Web",
+      "pos": [
+        30,
+        260
+      ],
+      "size": [
+        140,
+        60
+      ],
+      "tag": "Mobile Client",
+      "icon": "person"
+    },
+    {
+      "id": "ui_shell",
+      "type": "frontend",
+      "label": "Flutter Client Engine",
+      "sublabel": "GoRouter + 42 Màn Hình",
+      "pos": [
+        230,
+        150
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "S01 - S42",
+      "icon": "frontend"
+    },
+    {
+      "id": "player_engine",
+      "type": "frontend",
+      "label": "Trình Phát Video Chewie",
+      "sublabel": "Gesture Tua ±10s & Fullscreen",
+      "pos": [
+        230,
+        260
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "VideoPlayer",
+      "icon": "frontend"
+    },
+    {
+      "id": "offline_cache",
+      "type": "frontend",
+      "label": "Bộ Nhớ Cục Bộ (Local)",
+      "sublabel": "SharedPreferences & Mock Seed",
+      "pos": [
+        230,
+        370
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Offline State",
+      "icon": "database"
+    },
+    {
+      "id": "nginx_proxy",
+      "type": "backend",
+      "label": "Nginx Reverse Proxy",
+      "sublabel": "SSL Let's Encrypt / Gzip",
+      "pos": [
+        470,
+        210
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "tag": "Cổng Cân Bằng Tải",
+      "icon": "backend"
+    },
+    {
+      "id": "pocketbase",
+      "type": "backend",
+      "label": "PocketBase BaaS Engine",
+      "sublabel": "Golang Daemon + Auth Rules",
+      "pos": [
+        680,
+        150
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "REST & SSE Realtime",
+      "icon": "backend"
+    },
+    {
+      "id": "sqlite_wal",
+      "type": "database",
+      "label": "SQLite WAL Database",
+      "sublabel": "10 Collections Nhúng Siêu Nhanh",
+      "pos": [
+        920,
+        150
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Zero Latency DB",
+      "icon": "database"
+    },
+    {
+      "id": "media_server",
+      "type": "cloud",
+      "label": "Linux Media Storage",
+      "sublabel": "Chuẩn Hóa FFmpeg 1080p MP4",
+      "pos": [
+        680,
+        290
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Byte-Range Streaming",
+      "icon": "cloud"
+    },
+    {
+      "id": "cdn_images",
+      "type": "cloud",
+      "label": "ImageKit Cloud CDN",
+      "sublabel": "Phân Phối Poster & Backdrop WebP",
+      "pos": [
+        680,
+        410
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Edge Cache",
+      "icon": "cloud"
+    },
+    {
+      "id": "cicd_pipeline",
+      "type": "messagebus",
+      "label": "GitHub Actions CI/CD",
+      "sublabel": "129 Tests & Build Release APK",
+      "pos": [
+        470,
+        40
+      ],
+      "size": [
+        160,
+        54
+      ],
+      "tag": "DevOps Pipeline",
+      "icon": "messagebus"
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "client",
+      "to": "ui_shell"
+    },
+    {
+      "id": "c2",
+      "from": "ui_shell",
+      "to": "player_engine"
+    },
+    {
+      "id": "c3",
+      "from": "ui_shell",
+      "to": "offline_cache"
+    },
+    {
+      "id": "c4",
+      "from": "ui_shell",
+      "to": "nginx_proxy",
+      "label": "REST API"
+    },
+    {
+      "id": "c5",
+      "from": "nginx_proxy",
+      "to": "pocketbase"
+    },
+    {
+      "id": "c6",
+      "from": "pocketbase",
+      "to": "sqlite_wal"
+    },
+    {
+      "id": "c7",
+      "from": "player_engine",
+      "to": "media_server",
+      "label": "HTTP 206"
+    },
+    {
+      "id": "c8",
+      "from": "ui_shell",
+      "to": "cdn_images"
+    },
+    {
+      "id": "c9",
+      "from": "cicd_pipeline",
+      "to": "nginx_proxy"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+Mình chỉ đọc được tài liệu này, chưa thấy code, nên có thể vài thứ đã có trong code mà tài liệu chưa ghi.
+
+**Sửa ngay (rẻ mà quan trọng)**
+- **Port bị đảo:** bảng ghi wallet 8082 và payment 8083, nhưng gateway lại route `/wallets` → 8083 và `/cash` → 8082. Nếu code cũng như vậy thì request đang vào nhầm service.
+- **`X-Branch-Id` lấy từ client:** teller có thể giả mạo chi nhánh khác. Nên chỉ lấy từ JWT claim `branchId`.
+- **Fallback `/api/v1/**` → monolith:** route nào không khớp sẽ lọt sang monolith. Cần kiểm tra JWT filter có áp dụng cho nhánh này không, và có kế hoạch tắt monolith.
+- **Tên DB không khớp:** sơ đồ ghi `identity_db`, bảng ghi `ewallet_identity_db`.
+- **Câu chữ quá tay:** "Production Ready" và "100% không ảo giác" nên bỏ, vì bản học tập chưa có bằng chứng cho những câu đó.
+
+**Thiếu quan trọng nhất (đúng chất ngân hàng)**
+1. **Idempotency xuyên suốt:** hiện mới thấy `JournalEntry` idempotent. Cần thêm `Idempotency-Key` ở API chuyển tiền, `request_id` trong gRPC Debit/Credit và bảng `processed_events` ở consumer. Kafka là at-least-once, retry saga dễ làm trừ tiền hai lần nếu thiếu.
+2. **Transactional Outbox:** sơ đồ có nhắc nhưng tài liệu không mô tả relay (polling hay Debezium), retry và thứ tự gửi.
+3. **Saga recovery:** cần lưu state saga, timeout và job quét giao dịch kẹt (đã debit chưa credit). Cũng cần xử lý khi chính bước bù trừ thất bại, ví dụ retry rồi đẩy sang hàng đợi xử lý thủ công.
+4. **Đối soát tự động:** hiện chỉ có API. Nên có job định kỳ so số dư `wallet` với `ledger` và cảnh báo khi lệch.
+5. **Deadlock khi A→B và B→A cùng lúc:** cần khóa ví theo thứ tự id cố định.
+6. **Sổ cái:**
+   - Chart of accounts: tiền mặt quầy, phải trả khách hàng, doanh thu phí.
+   - Sửa sai bằng bút toán đảo, không sửa bản ghi.
+   - Ràng buộc Nợ = Có cũng nên ở tầng DB, không chỉ ở app.
+   - Tiền dùng `NUMERIC`/`BigDecimal`, quy định làm tròn rõ ràng.
+7. **Observability:** correlation/trace id đi xuyên HTTP → gRPC → Kafka header, cộng Prometheus/Grafana và log tập trung. Saga chạy qua 5 service mà không có trace thì rất khó debug.
+8. **Test:** hiện chỉ thấy script hạ tầng và unit test của gateway. Nên thêm:
+   - Test song song: 1000 lệnh chuyển cùng lúc, tổng tiền hệ thống phải bảo toàn.
+   - Test chaos: kill payment-service giữa bước debit và credit.
+   - Testcontainers.
+   - Contract test cho proto và schema event.
+
+**Bảo mật**
+- JWT HMAC dùng chung secret nên chuyển sang RS256 với JWKS.
+- gRPC 9090 chưa thấy auth/mTLS.
+- PIN cần giới hạn số lần sai, khóa tạm, và rate limit ở gateway.
+- Dữ liệu eKYC (CCCD) nên mã hóa, kèm audit log cho hành động của admin/teller/manager.
+- Maker-Checker nên kiểm tra manager cùng chi nhánh, phiếu pending có hạn hết hạn, và có đối soát quỹ cuối ngày của teller.
+
+**Broker và hạ tầng**
+- **Hai broker chồng chức năng:** ledger và notification đều nhận được từ cả Kafka lẫn RabbitMQ, dễ xử lý trùng. Nên chọn một đường chính cho mỗi luồng, ví dụ Kafka cho sự kiện nghiệp vụ và RabbitMQ cho tác vụ/thông báo.
+- **Kafka:** cần partition key theo `walletId`/`transactionId` để giữ thứ tự, và dead-letter topic cho consumer (hiện chỉ RabbitMQ có DLQ). Event cũng cần schema versioning.
+- **gRPC:** cần deadline, retry có backoff và circuit breaker (Resilience4j).
+- **CI và backup:** GitHub Actions chạy build + test + verify script, và backup DB.
+
+Không cần cho bản học tập: Kubernetes, Kafka nhiều broker/RF 3, multi-region, ML chống gian lận. Nếu chỉ chọn 3 việc đáng làm nhất thì mình chọn: (1) idempotency + outbox, (2) saga recovery + đối soát tự động, (3) test song song và chaos.
+
+Bạn muốn mình đi sâu phần nào trước, ví dụ thiết kế idempotency hay test bảo toàn tiền?

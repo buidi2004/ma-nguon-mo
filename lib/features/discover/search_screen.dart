@@ -8,6 +8,7 @@ import '../../core/widgets/movie_grid.dart';
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -667,7 +668,7 @@ class _SearchScreenState extends State<SearchScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.red,
+        color: ThemeService.instance.primaryColor,
         borderRadius: BorderRadius.circular(3),
       ),
       child: const Text(

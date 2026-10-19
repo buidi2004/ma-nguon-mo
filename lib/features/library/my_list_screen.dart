@@ -6,6 +6,7 @@ import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class MyListScreen extends StatefulWidget {
@@ -47,6 +48,7 @@ class _MyListScreenState extends State<MyListScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
+            leading: const GlassBackButton(),
             title: const Text(
               'Danh sách của tôi',
               style: TextStyle(
@@ -98,9 +100,11 @@ class _MyListScreenState extends State<MyListScreen> {
             ],
           ),
           body: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      ThemeService.instance.primaryColor,
+                    ),
                   ),
                 )
               : _movies.isEmpty || ids.isEmpty

@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "OpenFlix 03: Database Entity-Relationship Diagram (SQLite PocketBase)",
+    "output": "suite/03_erd_database.html",
+    "quality_profile": "standard",
+    "locale": "en",
+    "viewBox": [
+      1400,
+      920
+    ],
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "layout": {
+    "mode": "grid",
+    "gapX": 90,
+    "gapY": 70
+  },
+  "entities": [
+    {
+      "id": "users",
+      "label": "users",
+      "tag": "Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "email",
+          "type": "text"
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "avatar",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "profiles",
+      "label": "profiles",
+      "tag": "Identity",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "is_kids",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "id": "movies",
+      "label": "movies",
+      "tag": "Catalog",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "title",
+          "type": "text"
+        },
+        {
+          "name": "category",
+          "type": "text"
+        },
+        {
+          "name": "video_url",
+          "type": "text"
+        },
+        {
+          "name": "poster_url",
+          "type": "text"
+        },
+        {
+          "name": "is_featured",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "id": "episodes",
+      "label": "episodes",
+      "tag": "Catalog",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "movie_id",
+          "type": "text",
+          "key": "fk",
+          "references": "movies.id"
+        },
+        {
+          "name": "season_num",
+          "type": "int"
+        },
+        {
+          "name": "episode_num",
+          "type": "int"
+        },
+        {
+          "name": "video_url",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "watch_progress",
+      "label": "watch_progress",
+      "tag": "Activity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "movie_id",
+          "type": "text",
+          "key": "fk",
+          "references": "movies.id"
+        },
+        {
+          "name": "position_sec",
+          "type": "int"
+        },
+        {
+          "name": "total_sec",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": "my_list",
+      "label": "my_list",
+      "tag": "Activity",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "movie_id",
+          "type": "text",
+          "key": "fk",
+          "references": "movies.id"
+        },
+        {
+          "name": "added_at",
+          "type": "datetime"
+        }
+      ]
+    },
+    {
+      "id": "reviews",
+      "label": "reviews",
+      "tag": "Community",
+      "row": 0,
+      "col": 2,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "movie_id",
+          "type": "text",
+          "key": "fk",
+          "references": "movies.id"
+        },
+        {
+          "name": "rating",
+          "type": "int"
+        },
+        {
+          "name": "comment",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "label": "feedback",
+      "tag": "Community",
+      "row": 1,
+      "col": 2,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "text",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "topic",
+          "type": "text"
+        },
+        {
+          "name": "message",
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "users",
+      "to": "profiles",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "movies",
+      "to": "episodes",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "users",
+      "to": "watch_progress",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "movies",
+      "to": "watch_progress",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "users",
+      "to": "my_list",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "movies",
+      "to": "my_list",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "users",
+      "to": "reviews",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "movies",
+      "to": "reviews",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "from": "users",
+      "to": "feedback",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ]
+}

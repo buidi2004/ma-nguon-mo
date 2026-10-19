@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-18T19:40:42.342Z",
+  "specification": {
+    "path": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\candidate.json",
+    "sha256": "342097c14166aa9ce7970009d5a8e25fb1da92ad91ab782b2254071907726579",
+    "bytes": 12249
+  },
+  "artifact": {
+    "path": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+    "sha256": "7d82d19a12b109f34d33977d11be5e88c2248cb7d4018c660f6014a7fad22224",
+    "bytes": 856911
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Users\\buidi\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.agent\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "architecture",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\candidate.json",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "342097c14166aa9ce7970009d5a8e25fb1da92ad91ab782b2254071907726579",
+          "bytes": 12249
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 3336,
+      "command": [
+        "C:\\Users\\buidi\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.agent\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "architecture",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\candidate.json",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "71ba1064-e8aa-4cdd-9d78-b05c6748bb4d",
+        "ok": true,
+        "command": "deliver",
+        "type": "architecture",
+        "input": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\candidate.json",
+        "output": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "specification": {
+          "sha256": "342097c14166aa9ce7970009d5a8e25fb1da92ad91ab782b2254071907726579",
+          "bytes": 12249
+        },
+        "artifact": {
+          "sha256": "7d82d19a12b109f34d33977d11be5e88c2248cb7d4018c660f6014a7fad22224",
+          "bytes": 856911
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/buidi2004/ma-nguon-mo",
+          "revision": "b921d4a72458889eeae1022b485bd7a92cb4bd02",
+          "references": 9
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 498,
+      "command": [
+        "C:\\Users\\buidi\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.agent\\skills\\archify\\bin\\archify.mjs",
+        "check",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "artifact": {
+          "sha256": "7d82d19a12b109f34d33977d11be5e88c2248cb7d4018c660f6014a7fad22224",
+          "bytes": 856911
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 15.8,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 7.477777777777778,
+            "maxBends": 2,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1.214,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 24,
+            "minInteriorSegmentPx": 105,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": true,
+            "emptyTopPx": 10,
+            "emptyTopRatio": 0.014,
+            "occupiedTop": 10,
+            "viewBoxTop": 0,
+            "canvasHeight": 731,
+            "typicalNodeHeight": 60,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "recognized-declared-wide",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 1346,
+            "actualBudgetPx": 1346,
+            "actualReaderWidth": 1376,
+            "desiredReaderWidth": 1380,
+            "viewportCap": 1376,
+            "limit": "viewport-cap",
+            "requestedTargetPx": 7.5,
+            "requestedTargetMet": false,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "edge",
+              "id": "client-ui",
+              "from": "client",
+              "to": "ui_shell"
+            },
+            "minimumSourceTextPx": 8,
+            "minimumProjectedTextPx": 7.477777777777778,
+            "semanticTextCount": 55
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "71ba1064-e8aa-4cdd-9d78-b05c6748bb4d"
+      }
+    },
+    "browser-check": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": 189,
+      "command": [
+        "C:\\Users\\buidi\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.agent\\skills\\archify\\bin\\archify.mjs",
+        "browser-check",
+        "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "--json",
+        "--require-provenance"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "fail",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "71ba1064-e8aa-4cdd-9d78-b05c6748bb4d",
+        "artifact": {
+          "path": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+          "sha256": "7d82d19a12b109f34d33977d11be5e88c2248cb7d4018c660f6014a7fad22224",
+          "bytes": 856911
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "not-checked",
+          "executable": null
+        },
+        "diagnostics": [
+          {
+            "code": "viewer/evidence-path-conflict",
+            "severity": "error",
+            "message": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json\".",
+            "subject": {
+              "artifact": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+              "evidencePath": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json"
+            },
+            "evidence": {
+              "reason": {
+                "code": "ownership-artifact-mismatch"
+              }
+            },
+            "supportedFixes": [
+              "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+            ]
+          }
+        ],
+        "containment": {
+          "status": "fail",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": []
+        },
+        "themeStates": {
+          "status": "fail",
+          "viewports": []
+        },
+        "readability": {
+          "status": "fail",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": []
+        },
+        "viewerChrome": {
+          "status": "fail",
+          "viewports": []
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "openflix-architecture.browser-check.json",
+          "files": []
+        },
+        "error": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json\"."
+      }
+    }
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/evidence-path-conflict",
+      "severity": "error",
+      "message": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json\".",
+      "subject": {
+        "artifact": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.html",
+        "evidencePath": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json"
+      },
+      "evidence": {
+        "reason": {
+          "code": "ownership-artifact-mismatch"
+        }
+      },
+      "supportedFixes": [
+        "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.finalize.json",
+    "summaryReceipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\buidi\\.gemini\\antigravity-ide\\scratch\\openflix\\.archify\\architecture-openflix-20261019-024000\\openflix-architecture.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "browser-check",
+  "finishedAt": "2026-10-18T19:40:48.925Z",
+  "durationMs": 6583,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.1.0",
+    "availableVersion": "3.1.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-18T19:34:15.022Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

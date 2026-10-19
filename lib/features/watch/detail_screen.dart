@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/auth_guard.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -80,17 +82,26 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   void _playMovie(MovieModel movie) {
-    context.push('/watch/${movie.id}');
+    AuthGuard.runWithAuth(
+      context,
+      movieId: movie.id,
+      movieTitle: movie.title,
+      hasTrailer: true,
+      onWatchTrailer: () => context.push('/movie/${movie.id}/trailer'),
+      onAuthorized: () => context.push('/watch/${movie.id}'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              ThemeService.instance.primaryColor,
+            ),
           ),
         ),
       );
@@ -99,7 +110,7 @@ class _DetailScreenState extends State<DetailScreen> {
     if (_movie == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(leading: const BackButton()),
+        appBar: AppBar(leading: const GlassBackButton()),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -141,14 +152,7 @@ class _DetailScreenState extends State<DetailScreen> {
             pinned: true,
             expandedHeight: 260,
             backgroundColor: AppColors.background,
-            leading: Center(
-              child: GlassIconButton.circle(
-                size: 38,
-                iconSize: 20,
-                icon: Icons.arrow_back,
-                onPressed: () => context.pop(),
-              ),
-            ),
+            leading: const GlassBackButton(),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -159,10 +163,10 @@ class _DetailScreenState extends State<DetailScreen> {
                     icon: Icons.share_outlined,
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Đã sao chép liên kết chia sẻ phim!'),
-                          backgroundColor: AppColors.red,
-                          duration: Duration(seconds: 2),
+                        SnackBar(
+                          content: const Text('Đã sao chép liên kết chia sẻ phim!'),
+                          backgroundColor: ThemeService.instance.primaryColor,
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     },
@@ -254,7 +258,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Hàng nút Phát và Trailer
+                  // Hàng nút Phát, Trailer và Đặt Vé Rạp
                   Row(
                     children: [
                       Expanded(
@@ -266,7 +270,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           onPressed: () => _playMovie(movie),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         flex: 2,
                         child: GlassButton.neutral(
@@ -277,6 +281,13 @@ class _DetailScreenState extends State<DetailScreen> {
                           onPressed: () =>
                               context.push('/movie/${movie.id}/trailer'),
                         ),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassIconButton(
+                        icon: Icons.confirmation_num_rounded,
+                        tooltip: 'Đặt vé rạp',
+                        size: 46,
+                        onPressed: () => context.push('/cinema'),
                       ),
                     ],
                   ),
@@ -337,7 +348,8 @@ class _DetailScreenState extends State<DetailScreen> {
                                       ? 'Đã thêm "${movie.title}" vào Danh sách của tôi'
                                       : 'Đã xóa khỏi Danh sách của tôi',
                                 ),
-                                backgroundColor: AppColors.red,
+                                backgroundColor:
+                                    ThemeService.instance.primaryColor,
                                 duration: const Duration(seconds: 1),
                               ),
                             );
@@ -410,10 +422,10 @@ class _DetailScreenState extends State<DetailScreen> {
                         TextButton(
                           onPressed: () =>
                               context.push('/movie/${movie.id}/similar'),
-                          child: const Text(
+                          child: Text(
                             'Xem tất cả >',
                             style: TextStyle(
-                              color: AppColors.red,
+                              color: ThemeService.instance.primaryColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -505,16 +517,20 @@ class _DetailScreenState extends State<DetailScreen> {
           size: 46,
           iconSize: 22,
           icon: icon,
-          iconColor: isActive ? AppColors.red : Colors.white,
+          iconColor:
+              isActive ? ThemeService.instance.primaryColor : Colors.white,
           hasGlow: isActive,
-          glowColor: AppColors.red,
+          glowColor: ThemeService.instance.primaryColor,
           onPressed: onTap,
         ),
         const SizedBox(height: 6),
         Text(
           label,
           style: TextStyle(
-            color: isActive ? AppColors.red : AppColors.textSecondary,
+            color:
+                isActive
+                    ? ThemeService.instance.primaryColor
+                    : AppColors.textSecondary,
             fontSize: 11.5,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
           ),

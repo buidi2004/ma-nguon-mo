@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "diagram_type": "class",
+  "meta": {
+    "title": "OpenFlix 02: Sơ Đồ Lớp Kiến Trúc Phân Tầng (Clean Layered Architecture)",
+    "subtitle": "Phân tách chặt chẽ giữa Models, Repositories, Services, Controllers và UI Presentation",
+    "output": "suite/02_class_layers.html",
+    "quality_profile": "standard"
+  },
+  "layout": {
+    "mode": "grid",
+    "gapX": 80,
+    "gapY": 80
+  },
+  "types": [
+    {
+      "id": "movie_model",
+      "label": "MovieModel",
+      "kind": "class",
+      "sublabel": "Thực thể phim điện ảnh",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "String",
+          "visibility": "public"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "visibility": "public"
+        },
+        {
+          "name": "videoUrl",
+          "type": "String",
+          "visibility": "public"
+        },
+        {
+          "name": "posterUrl",
+          "type": "String",
+          "visibility": "public"
+        },
+        {
+          "name": "rating",
+          "type": "double",
+          "visibility": "public"
+        },
+        {
+          "name": "isFeatured",
+          "type": "bool",
+          "visibility": "public"
+        }
+      ],
+      "methods": [
+        {
+          "name": "fromJson",
+          "parameters": "json: Map",
+          "returns": "MovieModel",
+          "visibility": "public"
+        },
+        {
+          "name": "toJson",
+          "returns": "Map<String, dynamic>",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "i_movie_repo",
+      "label": "IMovieRepository",
+      "kind": "interface",
+      "sublabel": "Hợp đồng trừu tượng dữ liệu",
+      "row": 0,
+      "col": 1,
+      "methods": [
+        {
+          "name": "getMovies",
+          "returns": "Future<List<MovieModel>>",
+          "visibility": "public",
+          "abstract": true
+        },
+        {
+          "name": "getMovieById",
+          "parameters": "id: String",
+          "returns": "Future<MovieModel?>",
+          "visibility": "public",
+          "abstract": true
+        },
+        {
+          "name": "searchMovies",
+          "parameters": "query: String",
+          "returns": "Future<List<MovieModel>>",
+          "visibility": "public",
+          "abstract": true
+        }
+      ]
+    },
+    {
+      "id": "pocketbase_service",
+      "label": "PocketBaseService",
+      "kind": "class",
+      "sublabel": "Triển khai Singleton giao tiếp Server",
+      "row": 0,
+      "col": 2,
+      "attributes": [
+        {
+          "name": "pb",
+          "type": "PocketBase",
+          "visibility": "private"
+        },
+        {
+          "name": "_instance",
+          "type": "PocketBaseService",
+          "visibility": "private"
+        }
+      ],
+      "methods": [
+        {
+          "name": "getMovies",
+          "returns": "Future<List<MovieModel>>",
+          "visibility": "public"
+        },
+        {
+          "name": "login",
+          "parameters": "email, pass",
+          "returns": "Future<bool>",
+          "visibility": "public"
+        },
+        {
+          "name": "saveProgress",
+          "parameters": "movieId, sec",
+          "returns": "Future<void>",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "player_controller",
+      "label": "PlayerController",
+      "kind": "class",
+      "sublabel": "Điều khiển trình phát Chewie",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "videoController",
+          "type": "VideoPlayerController",
+          "visibility": "private"
+        },
+        {
+          "name": "chewieController",
+          "type": "ChewieController?",
+          "visibility": "public"
+        }
+      ],
+      "methods": [
+        {
+          "name": "initialize",
+          "parameters": "url: String",
+          "returns": "Future<void>",
+          "visibility": "public"
+        },
+        {
+          "name": "seekForward10",
+          "returns": "void",
+          "visibility": "public"
+        },
+        {
+          "name": "seekBackward10",
+          "returns": "void",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "library_service",
+      "label": "LibraryService",
+      "kind": "class",
+      "sublabel": "Quản lý Thư viện cá nhân",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "myList",
+          "type": "List<String>",
+          "visibility": "private"
+        },
+        {
+          "name": "likedMovies",
+          "type": "List<String>",
+          "visibility": "private"
+        }
+      ],
+      "methods": [
+        {
+          "name": "toggleMyList",
+          "parameters": "movieId: String",
+          "returns": "void",
+          "visibility": "public"
+        },
+        {
+          "name": "isLiked",
+          "parameters": "movieId: String",
+          "returns": "bool",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "home_screen",
+      "label": "HomeScreen (S09)",
+      "kind": "class",
+      "sublabel": "Trang chủ hiển thị danh mục",
+      "row": 1,
+      "col": 2,
+      "methods": [
+        {
+          "name": "build",
+          "parameters": "context: BuildContext",
+          "returns": "Widget",
+          "visibility": "public"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "pocketbase_service",
+      "to": "i_movie_repo",
+      "kind": "realization"
+    },
+    {
+      "from": "pocketbase_service",
+      "to": "movie_model",
+      "kind": "dependency"
+    },
+    {
+      "from": "home_screen",
+      "to": "pocketbase_service",
+      "kind": "association"
+    },
+    {
+      "from": "player_controller",
+      "to": "movie_model",
+      "kind": "association"
+    },
+    {
+      "from": "home_screen",
+      "to": "library_service",
+      "kind": "association"
+    }
+  ]
+}

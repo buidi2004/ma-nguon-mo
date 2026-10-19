@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../services/theme_service.dart';
 import '../../../theme/app_theme.dart';
 import 'glass_surface.dart';
 
@@ -79,7 +80,7 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveActive = activeColor ?? AppColors.red;
+    final effectiveActive = activeColor ?? ThemeService.instance.primaryColor;
 
     if (isWrap) {
       return Wrap(

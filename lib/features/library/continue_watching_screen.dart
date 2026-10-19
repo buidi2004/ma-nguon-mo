@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/auth_guard.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ContinueWatchingScreen extends StatefulWidget {
@@ -56,6 +58,7 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
+            leading: const GlassBackButton(),
             title: const Text(
               'Đang xem dở',
               style: TextStyle(
@@ -66,9 +69,11 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
             ),
           ),
           body: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      ThemeService.instance.primaryColor,
+                    ),
                   ),
                 )
               : activeMovies.isEmpty
@@ -134,7 +139,18 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(6),
-                        onTap: () => context.push('/watch/${movie.id}'),
+                        onTap: () {
+                          AuthGuard.runWithAuth(
+                            context,
+                            movieId: movie.id,
+                            movieTitle: movie.title,
+                            hasTrailer: true,
+                            onWatchTrailer: () =>
+                                context.push('/movie/${movie.id}/trailer'),
+                            onAuthorized: () =>
+                                context.push('/watch/${movie.id}'),
+                          );
+                        },
                         child: Column(
                           children: [
                             Row(
@@ -182,8 +198,9 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                         'Tiến độ: ${(ratio * 100).toInt()}%',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.red,
+                                        style: TextStyle(
+                                          color: ThemeService
+                                              .instance.primaryColor,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -204,7 +221,7 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                                 ),
                               ],
                             ),
-                            // Thanh tiến độ đỏ chuẩn Netflix
+                            // Thanh tiến độ chuẩn theme
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(
                                 bottom: Radius.circular(6),
@@ -212,8 +229,8 @@ class _ContinueWatchingScreenState extends State<ContinueWatchingScreen> {
                               child: LinearProgressIndicator(
                                 value: ratio,
                                 backgroundColor: Colors.white12,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.red,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  ThemeService.instance.primaryColor,
                                 ),
                                 minHeight: 4,
                               ),

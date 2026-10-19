@@ -1,100 +1,221 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:morphnext/morphnext.dart';
 
-/// Icon 4 ô vuông bo góc đa sắc XOAY NGHIÊNG CHÉO 3D kèm ánh sáng tỏa tròn (Radial Glow)
-/// Khớp chuẩn xác góc nghiêng ~22 độ và bề mặt nổi 3D
-class FourTileQuickActionIcon extends StatelessWidget {
+import '../../services/theme_service.dart';
+
+/// Icon 4 ô vuông bo góc đa sắc XOAY NGHIÊNG CHÉO 3D với chuyển động nhịp thở thạch (Jelly Pulse)
+/// và lơ lửng bồng bềnh vi mô (Micro-Float), lệch pha 90 độ, tuyệt đối không chạm viền ngoài.
+class FourTileQuickActionIcon extends StatefulWidget {
   final double size;
-  const FourTileQuickActionIcon({super.key, this.size = 32});
+  final bool? animate;
+  const FourTileQuickActionIcon({
+    super.key,
+    this.size = 32,
+    this.animate,
+  });
+
+  @override
+  State<FourTileQuickActionIcon> createState() => _FourTileQuickActionIconState();
+}
+
+class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  bool get _shouldAnimate {
+    if (widget.animate != null) return widget.animate!;
+    final isTestEnv =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    return !isTestEnv;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    );
+    if (_shouldAnimate) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(FourTileQuickActionIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animate != oldWidget.animate) {
+      if (_shouldAnimate) {
+        if (!_controller.isAnimating) _controller.repeat();
+      } else {
+        if (_controller.isAnimating) _controller.stop();
+      }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion || !_shouldAnimate) {
+      if (_controller.isAnimating) _controller.stop();
+    } else {
+      if (!_controller.isAnimating) _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final size = widget.size;
     final tileSize = size * 0.42;
     final borderRadius = BorderRadius.circular(tileSize * 0.38);
-    return SizedBox(
-      width: size + 8,
-      height: size + 8,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Hiệu ứng ánh sáng tỏa tròn (Radial Glow) sắc đỏ thương hiệu
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFE50914).withValues(alpha: 0.35),
-                    const Color(0xFFB81D24).withValues(alpha: 0.15),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.55, 1.0],
+
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final double t = _controller.value * 2.0 * math.pi;
+
+          // 1. Độ phồng thạch dẻo lệch pha 90 độ cho từng viên (Scale: 0.95 - 1.05)
+          final s1 = 1.0 + 0.05 * math.sin(t);
+          final s2 = 1.0 + 0.05 * math.sin(t + math.pi / 2.0);
+          final s3 = 1.0 + 0.05 * math.sin(t + math.pi);
+          final s4 = 1.0 + 0.05 * math.sin(t + 3.0 * math.pi / 2.0);
+
+          // 2. Chuyển động lơ lửng bồng bềnh vi mô (tối đa ±1.2px)
+          final dy = 1.2 * math.cos(t);
+          final dx = 0.6 * math.sin(t);
+
+          // 3. Lắc lư góc nghiêng vi mô (22 độ ± 1.5 độ)
+          final angle = 0.384 + 0.026 * math.sin(t);
+
+          // 4. Hào quang thở (Radial Glow)
+          final glowOpacity = 0.22 + 0.14 * (0.5 + 0.5 * math.sin(t));
+
+          return SizedBox(
+            width: size + 8,
+            height: size + 8,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Hiệu ứng ánh sáng tỏa tròn (Radial Glow) thở nhịp nhàng
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          ThemeService.instance.primaryColor
+                              .withValues(alpha: glowOpacity),
+                          ThemeService.instance.accentColor
+                              .withValues(alpha: glowOpacity * 0.45),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.55, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          // Khối 4 ô vuông xoay góc 22 độ
-          Transform.rotate(
-            angle: 0.384, // ~22 độ
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 1. Ô TRÊN-TRÁI: Cyan phát sáng
-                      _buildTile(
-                        size: tileSize,
-                        borderRadius: borderRadius,
-                        colors: const [Color(0xFF2AF598), Color(0xFF009EFD)],
-                        shadowColor: const Color(0xFF00E5FF)
-                            .withValues(alpha: 0.60),
-                        hasSpecularHighlight: true,
+                // Khối 4 ô vuông bồng bềnh và lắc lư nhẹ
+                Transform.translate(
+                  offset: Offset(dx, dy),
+                  child: Transform.rotate(
+                    angle: angle,
+                    child: SizedBox(
+                      width: size,
+                      height: size,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 1. Ô TRÊN-TRÁI: Cyan phát sáng (thở nhịp 1)
+                              Transform.scale(
+                                scale: s1,
+                                child: _buildTile(
+                                  size: tileSize,
+                                  borderRadius: borderRadius,
+                                  colors: const [
+                                    Color(0xFF2AF598),
+                                    Color(0xFF009EFD),
+                                  ],
+                                  shadowColor: const Color(0xFF00E5FF)
+                                      .withValues(alpha: 0.60),
+                                  hasSpecularHighlight: true,
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              // 2. Ô TRÊN-PHẢI: Royal Blue (thở nhịp 2)
+                              Transform.scale(
+                                scale: s2,
+                                child: _buildTile(
+                                  size: tileSize,
+                                  borderRadius: borderRadius,
+                                  colors: const [
+                                    Color(0xFF5B86E5),
+                                    Color(0xFF363795),
+                                  ],
+                                  shadowColor: const Color(0xFF5B86E5)
+                                      .withValues(alpha: 0.50),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 3. Ô DƯỚI-TRÁI: Vàng cam Sunburst (thở nhịp 3)
+                              Transform.scale(
+                                scale: s3,
+                                child: _buildTile(
+                                  size: tileSize,
+                                  borderRadius: borderRadius,
+                                  colors: const [
+                                    Color(0xFFFFB300),
+                                    Color(0xFFFF6F00),
+                                  ],
+                                  shadowColor: const Color(0xFFFF9800)
+                                      .withValues(alpha: 0.55),
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              // 4. Ô DƯỚI-PHẢI: Xanh lá mạ Neon Green (thở nhịp 4)
+                              Transform.scale(
+                                scale: s4,
+                                child: _buildTile(
+                                  size: tileSize,
+                                  borderRadius: borderRadius,
+                                  colors: const [
+                                    Color(0xFFB4EC51),
+                                    Color(0xFF429321),
+                                  ],
+                                  shadowColor: const Color(0xFF7ED321)
+                                      .withValues(alpha: 0.50),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 3),
-                      // 2. Ô TRÊN-PHẢI: Royal Blue
-                      _buildTile(
-                        size: tileSize,
-                        borderRadius: borderRadius,
-                        colors: const [Color(0xFF5B86E5), Color(0xFF363795)],
-                        shadowColor: const Color(0xFF5B86E5)
-                            .withValues(alpha: 0.50),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 3),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 3. Ô DƯỚI-TRÁI: Vàng cam Sunburst
-                      _buildTile(
-                        size: tileSize,
-                        borderRadius: borderRadius,
-                        colors: const [Color(0xFFFFB300), Color(0xFFFF6F00)],
-                        shadowColor: const Color(0xFFFF9800)
-                            .withValues(alpha: 0.55),
-                      ),
-                      const SizedBox(width: 3),
-                      // 4. Ô DƯỚI-PHẢI: Xanh lá mạ Neon Green
-                      _buildTile(
-                        size: tileSize,
-                        borderRadius: borderRadius,
-                        colors: const [Color(0xFFB4EC51), Color(0xFF429321)],
-                        shadowColor: const Color(0xFF7ED321)
-                            .withValues(alpha: 0.50),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -211,30 +332,40 @@ class FloatingGlassBottomBar extends StatelessWidget
   final int selectedIndex;
   final ValueChanged<int> onTabSelected;
   final VoidCallback onQuickActionPressed;
+  final bool? animateQuickAction;
 
   const FloatingGlassBottomBar({
     super.key,
     required this.selectedIndex,
     required this.onTabSelected,
     required this.onQuickActionPressed,
+    this.animateQuickAction,
   });
 
   @override
   Size get preferredSize => const Size.fromHeight(88);
 
-  static const List<({IconData active, IconData inactive})> _tabIcons = [
-    (active: Icons.home_rounded, inactive: Icons.home_outlined),
-    (active: Icons.search_rounded, inactive: Icons.search_outlined),
+  static const List<({IconData active, IconData inactive, String label})> _tabIcons = [
+    (active: Icons.home_rounded, inactive: Icons.home_outlined, label: 'Trang chủ'),
+    (active: Icons.search_rounded, inactive: Icons.search_outlined, label: 'Tìm kiếm'),
     (
       active: Icons.local_fire_department_rounded,
       inactive: Icons.local_fire_department_outlined,
+      label: 'Mới & Hot',
     ),
-    (active: Icons.person_rounded, inactive: Icons.person_outline_rounded),
+    (
+      active: Icons.confirmation_number_rounded,
+      inactive: Icons.confirmation_number_outlined,
+      label: 'Đặt vé',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return GlassAdaptiveScope(
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, _) {
+        return GlassAdaptiveScope(
       // Khóa cứng sàn và trần chất lượng ở Premium để ngăn Phase 2 Warm-up Benchmark
       // (180 frames ≈ 3s) tự động hạ cấp xuống Standard, duy trì vĩnh viễn hiệu ứng
       // khúc xạ quang học bẻ cong hình ảnh nền (Snell's Law: refractiveIndex 1.28).
@@ -292,12 +423,18 @@ class FloatingGlassBottomBar extends StatelessWidget
                                     width: pillWidth,
                                     height: pillHeight,
                                     child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFFFF2E3D),
-                                            Color(0xFFE50914),
-                                          ],
+                                       decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: ThemeService
+                                                  .instance.isWindowsBlue
+                                              ? const [
+                                                  Color(0xFF66C7F4),
+                                                  Color(0xFF00A2ED),
+                                                ]
+                                              : const [
+                                                  Color(0xFFFF2E3D),
+                                                  Color(0xFFE50914),
+                                                ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -306,7 +443,8 @@ class FloatingGlassBottomBar extends StatelessWidget
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFFE50914)
+                                            color: ThemeService
+                                                .instance.primaryColor
                                                 .withValues(alpha: 0.42),
                                             blurRadius: 10,
                                             offset: const Offset(0, 2),
@@ -365,12 +503,15 @@ class FloatingGlassBottomBar extends StatelessWidget
                             HapticFeedback.selectionClick();
                             onQuickActionPressed();
                           },
-                          splashColor: const Color(0xFFE50914)
+                          splashColor: ThemeService.instance.primaryColor
                               .withValues(alpha: 0.25),
                           highlightColor: Colors.white.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(33),
-                          child: const Center(
-                            child: FourTileQuickActionIcon(size: 30),
+                          child: Center(
+                            child: FourTileQuickActionIcon(
+                              size: 30,
+                              animate: animateQuickAction,
+                            ),
                           ),
                         ),
                       ),
@@ -383,35 +524,45 @@ class FloatingGlassBottomBar extends StatelessWidget
         ),
       ),
     );
+      },
+    );
   }
 
   Widget _buildTabItem({
-    required ({IconData active, IconData inactive}) tab,
+    required ({IconData active, IconData inactive, String label}) tab,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Center(
-        child: SizedBox(
-          width: 56,
-          height: 42,
+    return Semantics(
+      button: true,
+      label: tab.label,
+      selected: isSelected,
+      child: Tooltip(
+        message: tab.label,
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
+          behavior: HitTestBehavior.opaque,
           child: Center(
-            child: AnimatedScale(
-              scale: isSelected ? 1.10 : 1.0,
-              duration: const Duration(milliseconds: 360),
-              curve: Curves.easeOutQuart,
-              child: AnimatedMorphIcon(
-                icon: isSelected ? tab.active : tab.inactive,
-                size: 22,
-                color: isSelected
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.65),
-                spring: MorphSprings.smooth,
+            child: SizedBox(
+              width: 56,
+              height: 42,
+              child: Center(
+                child: AnimatedScale(
+                  scale: isSelected ? 1.10 : 1.0,
+                  duration: const Duration(milliseconds: 360),
+                  curve: Curves.easeOutQuart,
+                  child: AnimatedMorphIcon(
+                    icon: isSelected ? tab.active : tab.inactive,
+                    size: 22,
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.65),
+                    spring: MorphSprings.smooth,
+                  ),
+                ),
               ),
             ),
           ),

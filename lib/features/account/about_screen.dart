@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/config.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 /// S38 — Giới thiệu & giấy phép (P0). Route: /about
@@ -26,6 +28,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Giới thiệu & Giấy phép',
           style: TextStyle(
@@ -41,10 +44,10 @@ class AboutScreen extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                const Text(
+                Text(
                   'OPENFLIX',
                   style: TextStyle(
-                    color: AppColors.red,
+                    color: ThemeService.instance.primaryColor,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 3,
@@ -110,11 +113,11 @@ class AboutScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 1.5),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 1.5),
                           child: Icon(
                             Icons.check_circle_outline,
-                            color: AppColors.red,
+                            color: ThemeService.instance.primaryColor,
                             size: 16,
                           ),
                         ),

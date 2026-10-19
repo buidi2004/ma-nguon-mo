@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/movie_model.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 
 class MovieRow extends StatelessWidget {
@@ -55,10 +56,10 @@ class MovieRow extends StatelessWidget {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: onSeeAll,
-                  child: const Text(
+                  child: Text(
                     'Xem tất cả >',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -188,7 +189,7 @@ class MovieRow extends StatelessWidget {
                                   fontSize: 52,
                                   fontWeight: FontWeight.w900,
                                   color: rank <= 3
-                                      ? AppColors.red
+                                      ? ThemeService.instance.primaryColor
                                       : Colors.white,
                                 ),
                               ),

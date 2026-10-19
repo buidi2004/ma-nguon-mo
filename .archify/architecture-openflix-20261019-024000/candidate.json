@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "OpenFlix Full-Stack Streaming Architecture (Flutter / Nginx / PocketBase / SQLite / CDN)",
+    "output": ".archify/architecture-openflix-20261019-024000/openflix-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/buidi2004/ma-nguon-mo.git",
+      "revision": "b921d4a72458889eeae1022b485bd7a92cb4bd02"
+    }
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Người Dùng (Client)",
+      "sublabel": "Mobile App Flutter",
+      "pos": [30, 280],
+      "size": [140, 60],
+      "tag": "Android / iOS / Web",
+      "icon": "person"
+    },
+    {
+      "id": "theme_engine",
+      "type": "frontend",
+      "label": "Theme & Color Engine",
+      "sublabel": "ThemeService State",
+      "pos": [230, 40],
+      "size": [150, 54],
+      "tag": "Netflix Red / Win Blue",
+      "sources": [
+        { "path": "lib/theme/app_theme.dart", "line": 5, "label": "AppTheme" }
+      ]
+    },
+    {
+      "id": "ui_shell",
+      "type": "frontend",
+      "label": "UI Shell & Router",
+      "sublabel": "GoRouter + 42 Màn Hình",
+      "pos": [230, 160],
+      "size": [150, 60],
+      "tag": "S01 - S42 Screens",
+      "icon": "frontend",
+      "sources": [
+        { "path": "lib/core/router/app_router.dart", "line": 40, "label": "AppRouter" }
+      ]
+    },
+    {
+      "id": "glass_engine",
+      "type": "frontend",
+      "label": "Optical Glass & Shaders",
+      "sublabel": "GlassSurface & Silk Shader",
+      "pos": [230, 300],
+      "size": [150, 60],
+      "tag": "Snell's Law Optics",
+      "sources": [
+        { "path": "lib/presentation/widgets/glass/glass_surface.dart", "line": 30, "label": "GlassSurface" }
+      ]
+    },
+    {
+      "id": "admin_portal",
+      "type": "frontend",
+      "label": "Admin Gate & Portal",
+      "sublabel": "Hardware Telemetry & CRUD",
+      "pos": [230, 440],
+      "size": [150, 60],
+      "tag": "Device Fingerprint & PIN"
+    },
+    {
+      "id": "player_engine",
+      "type": "frontend",
+      "label": "Cinematic Player Engine",
+      "sublabel": "PlayerScreen & Overlay HUD",
+      "pos": [230, 580],
+      "size": [150, 60],
+      "tag": "Gesture Seek / Multi-Audio",
+      "sources": [
+        { "path": "lib/screens/player_screen.dart", "line": 65, "label": "PlayerScreen" }
+      ]
+    },
+    {
+      "id": "offline_store",
+      "type": "database",
+      "label": "Dữ Liệu Ngoại Tuyến",
+      "sublabel": "mock_movies.json Asset",
+      "pos": [480, 40],
+      "size": [150, 54],
+      "tag": "Zero-Downtime Fallback",
+      "icon": "database",
+      "sources": [
+        { "path": "lib/services/pocketbase_service.dart", "line": 70, "label": "OfflineMockFallback" }
+      ]
+    },
+    {
+      "id": "cache_layer",
+      "type": "database",
+      "label": "Bộ Nhớ Đệm RAM LRU",
+      "sublabel": "In-Memory Multi-Tier",
+      "pos": [650, 40],
+      "size": [150, 54],
+      "tag": "LRU In-Flight Cache",
+      "icon": "database",
+      "sources": [
+        { "path": "lib/services/pocketbase_service.dart", "line": 40, "label": "MemoryCache" }
+      ]
+    },
+    {
+      "id": "pb_client",
+      "type": "backend",
+      "label": "PocketBase Client Service",
+      "sublabel": "Deduplication & Timeout",
+      "pos": [540, 160],
+      "size": [160, 60],
+      "tag": "3.5s Timeout Guard",
+      "icon": "backend",
+      "sources": [
+        { "path": "lib/services/pocketbase_service.dart", "line": 25, "label": "PocketBaseService" }
+      ]
+    },
+    {
+      "id": "library_service",
+      "type": "backend",
+      "label": "Library & History Service",
+      "sublabel": "MyList, Likes, History",
+      "pos": [540, 300],
+      "size": [160, 60],
+      "tag": "Local + Cloud Sync",
+      "sources": [
+        { "path": "lib/services/library_service.dart", "line": 20, "label": "LibraryService" }
+      ]
+    },
+    {
+      "id": "auth_guard",
+      "type": "security",
+      "label": "Auth Guard & Security",
+      "sublabel": "Token Store & Session",
+      "pos": [540, 440],
+      "size": [160, 60],
+      "tag": "PocketBase AuthStore",
+      "icon": "security",
+      "sources": [
+        { "path": "lib/services/pocketbase_service.dart", "line": 20, "label": "PocketBaseAuthStore" }
+      ]
+    },
+    {
+      "id": "reverse_proxy",
+      "type": "cloud",
+      "label": "Nginx Reverse Proxy",
+      "sublabel": "SSL/TLS & Rate Limiting",
+      "pos": [860, 40],
+      "size": [160, 54],
+      "tag": "HTTPS :443 / Gzip / WAF",
+      "icon": "cloud"
+    },
+    {
+      "id": "pb_server",
+      "type": "backend",
+      "label": "PocketBase Server (Go)",
+      "sublabel": "REST API & Realtime SSE",
+      "pos": [860, 175],
+      "size": [160, 68],
+      "tag": "Go Runtime Engine :8090",
+      "icon": "backend"
+    },
+    {
+      "id": "file_storage",
+      "type": "cloud",
+      "label": "PocketBase File Storage",
+      "sublabel": "/api/files/ Static Engine",
+      "pos": [860, 310],
+      "size": [160, 60],
+      "tag": "Posters & Backdrops",
+      "icon": "cloud"
+    },
+    {
+      "id": "auth_engine",
+      "type": "security",
+      "label": "PocketBase Auth & RBAC",
+      "sublabel": "JWT Tokens & Mailer",
+      "pos": [860, 440],
+      "size": [160, 60],
+      "tag": "Role-Based Access Rules",
+      "icon": "security"
+    },
+    {
+      "id": "sqlite_db",
+      "type": "database",
+      "label": "SQLite 3 Database",
+      "sublabel": "WAL Mode & B-Tree Index",
+      "pos": [1160, 175],
+      "size": [160, 68],
+      "tag": "Collections & Migrations",
+      "icon": "database"
+    },
+    {
+      "id": "media_cdn",
+      "type": "cloud",
+      "label": "Media Stream CDN / S3",
+      "sublabel": "HTTP Byte-Range & HLS",
+      "pos": [1160, 575],
+      "size": [160, 68],
+      "tag": "Adaptive Bitrate Video",
+      "icon": "cloud"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Tầng Giao Diện Flutter (Presentation Layer)",
+      "wraps": ["theme_engine", "ui_shell", "glass_engine", "admin_portal", "player_engine"]
+    },
+    {
+      "kind": "region",
+      "label": "Tầng Dịch Vụ & Trạng Thái Client (State & Cache Layer)",
+      "wraps": ["offline_store", "cache_layer", "pb_client", "library_service", "auth_guard"]
+    },
+    {
+      "kind": "region",
+      "label": "Tầng Máy Chủ Backend PocketBase & Gateway (Nginx + Go)",
+      "wraps": ["reverse_proxy", "pb_server", "file_storage", "auth_engine"]
+    },
+    {
+      "kind": "region",
+      "label": "Hạ Tầng Lưu Trữ Dữ Liệu & Media CDN (Data & Streaming)",
+      "wraps": ["sqlite_db", "media_cdn"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-ui",
+      "from": "client",
+      "to": "ui_shell",
+      "label": "Tương tác người dùng",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-theme",
+      "from": "ui_shell",
+      "to": "theme_engine",
+      "label": "Theme Đỏ / Xanh",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "ui-glass",
+      "from": "ui_shell",
+      "to": "glass_engine",
+      "label": "Kính quang học",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "ui-admin",
+      "from": "ui_shell",
+      "to": "admin_portal",
+      "label": "Cổng quản trị",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [[200, 190], [200, 470]]
+    },
+    {
+      "id": "ui-player",
+      "from": "ui_shell",
+      "to": "player_engine",
+      "label": "Kích hoạt Player",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [[185, 190], [185, 610]]
+    },
+    {
+      "id": "ui-pb",
+      "from": "ui_shell",
+      "to": "pb_client",
+      "label": "Yêu cầu API dữ liệu",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pb-mock",
+      "from": "pb_client",
+      "to": "offline_store",
+      "label": "Dự phòng ngoại tuyến",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "pb-cache",
+      "from": "pb_client",
+      "to": "cache_layer",
+      "label": "Đọc/Ghi RAM LRU",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "pb-proxy",
+      "from": "pb_client",
+      "to": "reverse_proxy",
+      "label": "HTTPS :443 API Call",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-server",
+      "from": "reverse_proxy",
+      "to": "pb_server",
+      "label": "proxy_pass :8090",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "pb-db",
+      "from": "pb_server",
+      "to": "sqlite_db",
+      "label": "Truy vấn SQL B-Tree WAL",
+      "variant": "default"
+    },
+    {
+      "id": "pb-files",
+      "from": "pb_server",
+      "to": "file_storage",
+      "label": "Phục vụ ảnh poster",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "file-auth",
+      "from": "file_storage",
+      "to": "auth_engine",
+      "label": "Quy tắc File Rule",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "admin-auth",
+      "from": "admin_portal",
+      "to": "auth_guard",
+      "label": "Xác thực PIN & thiết bị",
+      "variant": "security"
+    },
+    {
+      "id": "auth-engine-sync",
+      "from": "auth_guard",
+      "to": "auth_engine",
+      "label": "Phiên làm việc JWT",
+      "variant": "security"
+    },
+    {
+      "id": "lib-sync",
+      "from": "library_service",
+      "to": "pb_server",
+      "label": "Đồng bộ MyList & Lịch sử",
+      "variant": "default"
+    },
+    {
+      "id": "player-cdn",
+      "from": "player_engine",
+      "to": "media_cdn",
+      "label": "Luồng video Byte-Range MP4 / HLS",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Tầng Trình Diễn & Kính Quang Học (Flutter UI/UX)",
+      "items": [
+        "Cấu trúc 42 màn hình S01–S42 chuẩn Netflix với GoRouter định tuyến theo URL",
+        "Bộ điều khiển kính quang học GlassSurface với định luật Snell (khúc xạ n=1.28)",
+        "Động cơ Theme đa sắc: Chuyển đổi tức thì giữa Đỏ Netflix (#E50914) và Xanh (#00A2ED)",
+        "Trình phát video thông minh hỗ trợ thao tác vuốt HUD, tua đúp 10s và luồng dự phòng"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Tầng Dịch Vụ, Đệm RAM & Dự Phòng Ngoại Tuyến (Edge Services)",
+      "items": [
+        "PocketBaseService tích hợp cơ chế chống trùng lặp yêu cầu song song (_inFlightRequests)",
+        "Bộ nhớ đệm đa tầng trong RAM (LRU Cache) giảm 80% tải truy vấn lên máy chủ",
+        "Chế độ ngoại tuyến tự động: Khi mất mạng hoặc quá 3.5s tự chuyển sang mock_movies.json",
+        "AuthGuard và HardwareReader bảo vệ cửa quản trị viên với mã PIN và vân tay thiết bị"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Hạ Tầng Backend PocketBase & Cổng Mạng Nginx (BE Core & Security)",
+      "items": [
+        "Nginx Reverse Proxy: SSL/TLS Let's Encrypt :443, nén Gzip/Brotli, Rate Limiting chống DDoS",
+        "PocketBase Go REST Engine: Máy chủ viết bằng Go siêu nhẹ (~15MB), đa luồng Goroutines",
+        "Realtime SSE (Server-Sent Events): Đẩy thông báo và đồng bộ danh mục tức thì đến app",
+        "Bảo mật RBAC & JWT: Phân quyền API Rules chi tiết, SMTP Mailer gửi OTP và khôi phục mật khẩu"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Cơ Sở Dữ Liệu SQLite WAL & Truyền Phát Media CDN (Database & Streaming)",
+      "items": [
+        "SQLite 3 chế độ WAL (Write-Ahead Logging): Đọc/ghi đồng thời không nghẽn, truy vấn <5ms",
+        "Chỉ mục B-Tree (Indexes) tối ưu hóa tìm kiếm phim theo thể loại, tiêu đề và năm phát hành",
+        "PocketBase File Storage: Phân phối ảnh poster và ảnh bìa qua endpoint tĩnh /api/files/",
+        "Media CDN / S3: Truyền phát video chất lượng cao với HTTP 206 Partial Content (Byte-Range)"
+      ]
+    }
+  ]
+}

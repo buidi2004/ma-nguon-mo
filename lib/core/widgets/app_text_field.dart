@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../presentation/widgets/glass/openflix_morph_icon.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class AppTextField extends StatefulWidget {
@@ -12,6 +14,7 @@ class AppTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
   final bool autofocus;
+  final int maxLines;
 
   const AppTextField({
     super.key,
@@ -24,6 +27,7 @@ class AppTextField extends StatefulWidget {
     this.validator,
     this.onChanged,
     this.autofocus = false,
+    this.maxLines = 1,
   });
 
   @override
@@ -60,6 +64,11 @@ class _AppTextFieldState extends State<AppTextField> {
           autofocus: widget.autofocus,
           validator: widget.validator,
           onChanged: widget.onChanged,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
+          textAlignVertical: TextAlignVertical.center,
+          cursorColor: ThemeService.instance.primaryColor,
+          cursorHeight: 18,
+          cursorRadius: const Radius.circular(1),
           style: const TextStyle(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             filled: true,
@@ -74,8 +83,8 @@ class _AppTextFieldState extends State<AppTextField> {
                 : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
-                    icon: Icon(
-                      _obscureText
+                    icon: OpenFlixMorphIcon.snappy(
+                      icon: _obscureText
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
                       color: AppColors.textMuted,
@@ -98,11 +107,11 @@ class _AppTextFieldState extends State<AppTextField> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: AppColors.red, width: 1.2),
+              borderSide: BorderSide(color: AppColors.red, width: 1.2),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: AppColors.red, width: 1.4),
+              borderSide: BorderSide(color: AppColors.red, width: 1.4),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,

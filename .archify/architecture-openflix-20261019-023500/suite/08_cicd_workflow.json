@@ -1,0 +1,106 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "OpenFlix 08: Quy Trình Tự Động Hóa CI/CD GitHub Actions",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "standard",
+    "output": "suite/08_cicd_workflow.html"
+  },
+  "lanes": [
+    {
+      "id": "code",
+      "label": "Kho Mã Nguồn (GitHub)"
+    },
+    {
+      "id": "ci",
+      "label": "Kiểm Thử & Đóng Gói (Runner)"
+    },
+    {
+      "id": "deploy",
+      "label": "Phát Hành & Máy Chủ VPS"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "git_push",
+      "lane": "code",
+      "col": 0,
+      "type": "external",
+      "label": "Git Push main",
+      "sublabel": "Kỹ sư commit mã nguồn"
+    },
+    {
+      "id": "lint_check",
+      "lane": "ci",
+      "col": 1,
+      "type": "backend",
+      "label": "Dart Analyze",
+      "sublabel": "Kiểm tra lỗi cú pháp lints"
+    },
+    {
+      "id": "unit_test",
+      "lane": "ci",
+      "col": 2,
+      "type": "backend",
+      "label": "129 Tests Suite",
+      "sublabel": "Chạy Unit & Widget Test"
+    },
+    {
+      "id": "build_apk",
+      "lane": "ci",
+      "col": 3,
+      "type": "backend",
+      "label": "Build Release APK",
+      "sublabel": "Ký chứng chỉ số Keystore"
+    },
+    {
+      "id": "github_rel",
+      "lane": "deploy",
+      "col": 4,
+      "type": "cloud",
+      "label": "GitHub Release v6.0.0",
+      "sublabel": "Tải lên tệp APK Artifact"
+    },
+    {
+      "id": "vps_deploy",
+      "lane": "deploy",
+      "col": 5,
+      "type": "cloud",
+      "label": "Deploy Linux VPS",
+      "sublabel": "Tải Docker Container mới"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "git_push",
+      "to": "lint_check"
+    },
+    {
+      "id": "e2",
+      "from": "lint_check",
+      "to": "unit_test",
+      "label": "Lint Passed"
+    },
+    {
+      "id": "e3",
+      "from": "unit_test",
+      "to": "build_apk",
+      "label": "100% Tests Passed"
+    },
+    {
+      "id": "e4",
+      "from": "build_apk",
+      "to": "github_rel",
+      "label": "APK Created"
+    },
+    {
+      "id": "e5",
+      "from": "github_rel",
+      "to": "vps_deploy",
+      "label": "Trigger Webhook"
+    }
+  ]
+}

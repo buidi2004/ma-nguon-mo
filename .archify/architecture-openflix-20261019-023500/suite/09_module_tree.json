@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "diagram_type": "tree",
+  "meta": {
+    "title": "OpenFlix 09: Cấu Trúc Phân Rã Module Hệ Thống (Component Tree)",
+    "output": "suite/09_module_tree.html",
+    "quality_profile": "standard"
+  },
+  "nodes": [
+    {
+      "id": "root",
+      "label": "OpenFlix Flutter Project (v6.0.0)",
+      "sublabel": "Clean Architecture Monorepo"
+    },
+    {
+      "id": "core",
+      "label": "lib/core",
+      "parent": "root",
+      "sublabel": "Nền tảng dùng chung"
+    },
+    {
+      "id": "router",
+      "label": "router (GoRouter)",
+      "parent": "core",
+      "sublabel": "42 Routes ánh xạ S01-S42"
+    },
+    {
+      "id": "theme",
+      "label": "theme (Netflix Dark)",
+      "parent": "core",
+      "sublabel": "Màu #141414, #E50914"
+    },
+    {
+      "id": "widgets",
+      "label": "widgets (Shared)",
+      "parent": "core",
+      "sublabel": "AppBottomNav, MovieCard"
+    },
+    {
+      "id": "features",
+      "label": "lib/features",
+      "parent": "root",
+      "sublabel": "6 Module Nghiệp vụ"
+    },
+    {
+      "id": "auth",
+      "label": "auth (S01-S06)",
+      "parent": "features",
+      "sublabel": "Splash, Login, Register"
+    },
+    {
+      "id": "discover",
+      "label": "discover (S09-S17)",
+      "parent": "features",
+      "sublabel": "Home, Search, Genres"
+    },
+    {
+      "id": "watch",
+      "label": "watch (S18-S24)",
+      "parent": "features",
+      "sublabel": "Detail, Player, Reviews"
+    },
+    {
+      "id": "library",
+      "label": "library (S25-S29)",
+      "parent": "features",
+      "sublabel": "MyList, WatchHistory"
+    },
+    {
+      "id": "account",
+      "label": "account (S30-S38, S42)",
+      "parent": "features",
+      "sublabel": "Me, Settings, Plans"
+    },
+    {
+      "id": "system",
+      "label": "system (S39-S41)",
+      "parent": "features",
+      "sublabel": "Offline, Error, 404"
+    },
+    {
+      "id": "services",
+      "label": "lib/services",
+      "parent": "root",
+      "sublabel": "Tầng giao tiếp dữ liệu"
+    },
+    {
+      "id": "pb_svc",
+      "label": "PocketBaseService",
+      "parent": "services",
+      "sublabel": "REST API & SSE Auth"
+    },
+    {
+      "id": "lib_svc",
+      "label": "LibraryService",
+      "parent": "services",
+      "sublabel": "Đồng bộ Thư viện cá nhân"
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/brand/user_avatar_circle.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProfileItem {
@@ -29,8 +31,12 @@ class ProfilesScreen extends StatefulWidget {
 class _ProfilesScreenState extends State<ProfilesScreen> {
   bool _isEditing = false;
 
-  final List<ProfileItem> _profiles = [
-    ProfileItem(id: 'p1', name: 'Tôi (Mặc định)', color: AppColors.red),
+  late final List<ProfileItem> _profiles = [
+    ProfileItem(
+      id: 'p1',
+      name: 'Tôi (Mặc định)',
+      color: ThemeService.instance.primaryColor,
+    ),
     ProfileItem(id: 'p2', name: 'Gia đình', color: Colors.blueAccent),
     ProfileItem(
       id: 'p3',
@@ -61,6 +67,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Ai đang xem?',
           style: TextStyle(
@@ -163,27 +170,33 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                         Stack(
                           alignment: Alignment.center,
                           children: [
-                            Container(
-                              width: 88,
-                              height: 88,
-                              decoration: BoxDecoration(
-                                color: profile.color,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.white12,
-                                  width: 2,
+                            if (profile.id == 'p1')
+                              const UserAvatarCircle(
+                                size: 88,
+                                showGlow: false,
+                              )
+                            else
+                              Container(
+                                width: 88,
+                                height: 88,
+                                decoration: BoxDecoration(
+                                  color: profile.color,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.white12,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    profile.isKids
+                                        ? Icons.child_care
+                                        : Icons.person,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
                                 ),
                               ),
-                              child: Center(
-                                child: Icon(
-                                  profile.isKids
-                                      ? Icons.child_care
-                                      : Icons.person,
-                                  color: Colors.white,
-                                  size: 48,
-                                ),
-                              ),
-                            ),
                             if (_isEditing)
                               Container(
                                 width: 88,

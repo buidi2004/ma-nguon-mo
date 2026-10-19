@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_theme.dart';
+import '../../services/theme_service.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Color textColor;
   final IconData? icon;
   final double height;
@@ -16,7 +16,7 @@ class PrimaryButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.isLoading = false,
-    this.backgroundColor = AppColors.red,
+    this.backgroundColor,
     this.textColor = Colors.white,
     this.icon,
     this.height = 48,
@@ -36,15 +36,17 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBg = backgroundColor ?? ThemeService.instance.primaryColor;
+
     return SizedBox(
       width: double.infinity,
       height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
+          backgroundColor: effectiveBg,
           foregroundColor: textColor,
-          disabledBackgroundColor: backgroundColor.withValues(alpha: 0.6),
+          disabledBackgroundColor: effectiveBg.withValues(alpha: 0.6),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.symmetric(horizontal: 16),

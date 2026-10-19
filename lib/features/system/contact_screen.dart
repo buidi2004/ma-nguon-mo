@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class ContactScreen extends StatefulWidget {
@@ -69,16 +71,7 @@ class _ContactScreenState extends State<ContactScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/help');
-            }
-          },
-        ),
+        leading: const GlassBackButton(fallbackRoute: '/help'),
         title: const Text(
           'Liên hệ & Góp ý',
           style: TextStyle(
@@ -157,10 +150,10 @@ class _ContactScreenState extends State<ContactScreen> {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
+                    Text(
                       'CHỦ ĐỀ GÓP Ý',
                       style: TextStyle(
-                        color: AppColors.red,
+                        color: ThemeService.instance.primaryColor,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.1,
@@ -219,10 +212,10 @@ class _ContactScreenState extends State<ContactScreen> {
                       prefixIcon: Icons.title,
                     ),
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       'NỘI DUNG CHI TIẾT',
                       style: TextStyle(
-                        color: AppColors.red,
+                        color: ThemeService.instance.primaryColor,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.1,

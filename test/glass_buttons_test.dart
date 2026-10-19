@@ -303,4 +303,60 @@ void main() {
       expect(GlassOpticalTokens.mediaToolbarRadius, equals(24.0));
     });
   });
+
+  group('Kế hoạch đồng bộ hóa 100%: GlassBackButton Tests', () {
+    testWidgets('Renders with standard size 38x38px and icon arrow_back 20px', (tester) async {
+      await tester.pumpWidget(
+        buildTestable(
+          const GlassBackButton(),
+        ),
+      );
+
+      final backBtn = find.byType(GlassBackButton);
+      expect(backBtn, findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+
+      // Verify no Tooltip is rendered (preventing overlay popup bug)
+      expect(find.byType(Tooltip), findsNothing);
+
+      // Verify semantics label for accessibility
+      expect(find.bySemanticsLabel('Quay lại'), findsOneWidget);
+    });
+
+    testWidgets('Triggers custom onPressed callback when tapped', (tester) async {
+      bool tapped = false;
+      await tester.pumpWidget(
+        buildTestable(
+          GlassBackButton(
+            onPressed: () {
+              tapped = true;
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(GlassBackButton));
+      await tester.pumpAndSettle();
+
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('Supports long-press without popping up any grey text tooltip', (tester) async {
+      await tester.pumpWidget(
+        buildTestable(
+          const GlassBackButton(),
+        ),
+      );
+
+      // Simulate long-press gesture (> 500ms)
+      await tester.longPress(find.byType(GlassBackButton));
+      await tester.pump(const Duration(milliseconds: 600));
+
+      // Absolutely no Tooltip or text popup appears
+      expect(find.byType(Tooltip), findsNothing);
+      expect(find.text('Back'), findsNothing);
+      expect(find.text('Quay lại'), findsNothing);
+    });
+  });
 }
+

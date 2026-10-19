@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class PlaybackSettingsScreen extends StatefulWidget {
@@ -62,6 +63,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Phát lại & Chất lượng',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -198,7 +200,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
             ),
           ),
           value: value,
-          activeThumbColor: AppColors.red,
+          activeThumbColor: ThemeService.instance.primaryColor,
           onChanged: onChanged,
         ),
       ),

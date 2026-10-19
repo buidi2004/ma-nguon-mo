@@ -106,4 +106,15 @@ void main() {
       expect(finalBar.selectedIndex, 0);
     },
   );
+
+  testWidgets('AppRouter /feedback route navigates and renders FeedbackScreen', (tester) async {
+    final router = AppRouter.router;
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    router.push('/feedback');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('Liên hệ & Góp ý'), findsOneWidget);
+    expect(find.text('CHỦ ĐỀ PHẢN HỒI'), findsOneWidget);
+    expect(find.text('Gửi phản hồi'), findsOneWidget);
+  });
 }

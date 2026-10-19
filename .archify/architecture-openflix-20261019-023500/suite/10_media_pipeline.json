@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "OpenFlix 10: Quy Trình Xử Lý & Truyền Dẫn Media Tự Chủ Linux (FFmpeg Pipeline)",
+    "output": "suite/10_media_pipeline.html",
+    "quality_profile": "standard"
+  },
+  "components": [
+    {
+      "id": "raw_video",
+      "type": "database",
+      "label": "Video Gốc 4K/FullHD",
+      "sublabel": "3.5GB - 4.5GB Dung Lượng Lớn",
+      "pos": [
+        30,
+        200
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "tag": "Đầu Vào",
+      "icon": "database"
+    },
+    {
+      "id": "ffmpeg_worker",
+      "type": "backend",
+      "label": "FFmpeg Transcoder",
+      "sublabel": "H.264 CRF 24 + AAC 128kbps",
+      "pos": [
+        260,
+        200
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Chuẩn Hóa",
+      "icon": "backend"
+    },
+    {
+      "id": "faststart_opt",
+      "type": "backend",
+      "label": "Tối Ưu Moov Atom",
+      "sublabel": "+faststart Đặt Đầu Tệp",
+      "pos": [
+        490,
+        200
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Instant Play",
+      "icon": "backend"
+    },
+    {
+      "id": "linux_media",
+      "type": "cloud",
+      "label": "Máy Chủ Media Linux",
+      "sublabel": "Tệp 550MB Chuẩn Mobile",
+      "pos": [
+        720,
+        200
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Lưu Trữ Tự Chủ",
+      "icon": "cloud"
+    },
+    {
+      "id": "nginx_streamer",
+      "type": "backend",
+      "label": "Nginx Byte-Range",
+      "sublabel": "Phản Hồi HTTP 206 Partial",
+      "pos": [
+        720,
+        330
+      ],
+      "size": [
+        160,
+        60
+      ],
+      "tag": "Truyền Dẫn",
+      "icon": "backend"
+    },
+    {
+      "id": "flutter_player",
+      "type": "frontend",
+      "label": "Flutter Chewie Player",
+      "sublabel": "Bắt Đầu Phát Trong 0.5 Giây",
+      "pos": [
+        380,
+        330
+      ],
+      "size": [
+        170,
+        60
+      ],
+      "tag": "Thiết Bị Người Xem",
+      "icon": "frontend"
+    }
+  ],
+  "connections": [
+    {
+      "id": "m1",
+      "from": "raw_video",
+      "to": "ffmpeg_worker"
+    },
+    {
+      "id": "m2",
+      "from": "ffmpeg_worker",
+      "to": "faststart_opt"
+    },
+    {
+      "id": "m3",
+      "from": "faststart_opt",
+      "to": "linux_media"
+    },
+    {
+      "id": "m4",
+      "from": "linux_media",
+      "to": "nginx_streamer"
+    },
+    {
+      "id": "m5",
+      "from": "nginx_streamer",
+      "to": "flutter_player",
+      "label": "Byte-Range"
+    }
+  ]
+}

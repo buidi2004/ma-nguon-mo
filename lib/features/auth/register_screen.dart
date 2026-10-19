@@ -7,7 +7,9 @@ import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final String? redirect;
+
+  const RegisterScreen({super.key, this.redirect});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -29,6 +31,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  /// Đích đến sau khi đăng ký thành công.
+  ///
+  /// Ưu tiên tham số `redirect` (ví dụ `/watch/:id`), mặc định về Trang chủ.
+  String get _postAuthTarget {
+    final redirect = widget.redirect;
+    if (redirect != null && redirect.isNotEmpty) return redirect;
+    return '/';
+  }
+
+  /// Vào thẳng app sau khi đăng ký thành công.
+  ///
+  /// Trước đây dùng `context.pop()` nên khi màn Đăng ký được mở từ màn Đăng
+  /// nhập, người dùng bị đẩy ngược về chính màn Đăng nhập. Dùng `go` để thay
+  /// thế toàn bộ ngăn xếp và loại bỏ các màn hình xác thực.
+  void _enterApp() {
+    if (!mounted) return;
+    context.go(_postAuthTarget);
   }
 
   Future<void> _handleRegister() async {
@@ -62,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: Duration(seconds: 2),
         ),
       );
-      context.go('/');
+      _enterApp();
     } else {
       setState(() {
         _isLoading = false;
@@ -77,6 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(fallbackRoute: '/'),
         title: const Text(
           'Đăng ký tài khoản',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

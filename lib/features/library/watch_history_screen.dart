@@ -6,6 +6,7 @@ import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class WatchHistoryScreen extends StatefulWidget {
@@ -55,6 +56,7 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
+            leading: const GlassBackButton(),
             title: const Text(
               'Lịch sử xem phim',
               style: TextStyle(
@@ -104,9 +106,11 @@ class _WatchHistoryScreenState extends State<WatchHistoryScreen> {
             ],
           ),
           body: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.red),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      ThemeService.instance.primaryColor,
+                    ),
                   ),
                 )
               : activeMovies.isEmpty

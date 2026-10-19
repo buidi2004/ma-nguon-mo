@@ -55,3 +55,6 @@ app.*.map.json
 android/.kotlin/
 scratch/
 archify/
+*.jks
+*.keystore
+**/key.properties

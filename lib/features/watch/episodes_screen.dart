@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/state_view.dart';
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -98,6 +99,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: Text(
           _movie != null ? 'Tập phim: ${_movie!.title}' : 'Danh sách tập',
           maxLines: 1,
@@ -176,7 +178,16 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       return InkWell(
                         onTap: () {
                           if (_movie != null) {
-                            context.push('/watch/${_movie!.id}');
+                            AuthGuard.runWithAuth(
+                              context,
+                              movieId: _movie!.id,
+                              movieTitle: '${_movie!.title} - Tập ${ep.number}',
+                              hasTrailer: true,
+                              onWatchTrailer: () =>
+                                  context.push('/movie/${_movie!.id}/trailer'),
+                              onAuthorized: () =>
+                                  context.push('/watch/${_movie!.id}'),
+                            );
                           }
                         },
                         borderRadius: BorderRadius.circular(8),

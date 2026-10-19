@@ -1,0 +1,12 @@
+[Unit]
+Description=Chạy OpenFlix metrics collector mỗi 5 giây
+Documentation=file:/opt/openflix-vps-metrics/README.md
+
+[Timer]
+OnBootSec=15s
+OnUnitActiveSec=5s
+AccuracySec=1s
+Unit=openflix-metrics.service
+
+[Install]
+WantedBy=timers.target

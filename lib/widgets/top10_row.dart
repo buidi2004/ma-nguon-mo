@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/movie_model.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 
 /// Hàng Top 10 (S17): số thứ hạng xám to nằm sau, poster 2:3 đè lên nửa phải số.
@@ -59,10 +60,10 @@ class Top10Row extends StatelessWidget {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: onSeeAll,
-                  child: const Text(
+                  child: Text(
                     'Xem tất cả >',
                     style: TextStyle(
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -235,7 +236,7 @@ class _Top10Poster extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.red,
+                  color: ThemeService.instance.primaryColor,
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: Text(

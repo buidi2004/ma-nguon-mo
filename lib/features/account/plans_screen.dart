@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class PlanOption {
@@ -106,8 +107,8 @@ class _PlansScreenState extends State<PlansScreen> {
         children: [
           Text(
             'Giá gói: ${plan.price}',
-            style: const TextStyle(
-              color: AppColors.red,
+            style: TextStyle(
+              color: ThemeService.instance.primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
@@ -153,6 +154,7 @@ class _PlansScreenState extends State<PlansScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Gói Thành Viên OpenFlix',
           style: TextStyle(
@@ -174,16 +176,18 @@ class _PlansScreenState extends State<PlansScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.red.withAlpha(128)),
+                border: Border.all(
+                  color: ThemeService.instance.primaryColor.withAlpha(128),
+                ),
               ),
-              child: const Row(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: 1.0),
+                    padding: const EdgeInsets.only(top: 1.0),
                     child: Icon(
                       Icons.verified_user_outlined,
-                      color: AppColors.red,
+                      color: ThemeService.instance.primaryColor,
                       size: 20,
                     ),
                   ),
@@ -246,7 +250,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: _selectedPlanId == plan.id
-                          ? AppColors.red
+                          ? ThemeService.instance.primaryColor
                           : Colors.white12,
                       width: _selectedPlanId == plan.id ? 2 : 1,
                     ),
@@ -280,7 +284,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.red,
+                                      color: ThemeService.instance.primaryColor,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: const Text(
@@ -302,7 +306,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                 ? Icons.check_circle
                                 : Icons.radio_button_unchecked,
                             color: _selectedPlanId == plan.id
-                                ? AppColors.red
+                                ? ThemeService.instance.primaryColor
                                 : Colors.white38,
                           ),
                         ],
@@ -310,8 +314,8 @@ class _PlansScreenState extends State<PlansScreen> {
                       const SizedBox(height: 6),
                       Text(
                         plan.price,
-                        style: const TextStyle(
-                          color: AppColors.red,
+                        style: TextStyle(
+                          color: ThemeService.instance.primaryColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),

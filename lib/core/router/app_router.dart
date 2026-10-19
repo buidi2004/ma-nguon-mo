@@ -4,6 +4,7 @@ import 'package:transit_kit/transit_kit.dart';
 
 import '../../features/account/about_screen.dart';
 import '../../features/account/account_screen.dart';
+import '../../features/account/feedback_screen.dart';
 import '../../features/account/language_screen.dart';
 import '../../features/account/me_screen.dart';
 import '../../features/account/notifications_screen.dart';
@@ -13,6 +14,10 @@ import '../../features/account/playback_settings_screen.dart';
 import '../../features/account/profile_edit_screen.dart';
 import '../../features/account/profiles_screen.dart';
 import '../../features/account/settings_screen.dart';
+import '../../features/admin/admin_auth_gate_screen.dart';
+import '../../features/admin/admin_movie_form_screen.dart';
+import '../../features/admin/admin_movie_list_screen.dart';
+import '../../features/admin/server_monitor_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/onboarding_screen.dart';
@@ -40,18 +45,118 @@ import '../../features/watch/reviews_screen.dart';
 import '../../features/watch/similar_movies_screen.dart';
 import '../../features/watch/trailer_screen.dart';
 import '../../features/watch/write_review_screen.dart';
+import '../../models/movie_model.dart';
 import '../../presentation/screens/shell/main_tabs_screen.dart';
+import '../../services/auth_service.dart';
 import '../../screens/home_screen.dart';
 import '../../screens/player_screen.dart';
+import '../../features/cinema/cinema_article_detail_screen.dart';
+import '../../features/cinema/cinema_checkout_screen.dart';
+import '../../features/cinema/cinema_concessions_screen.dart';
+import '../../features/cinema/cinema_hub_screen.dart';
+import '../../features/cinema/cinema_movie_detail_screen.dart';
+import '../../features/cinema/cinema_news_screen.dart';
+import '../../features/cinema/cinema_seat_selection_screen.dart';
+import '../../features/cinema/cinema_ticket_screen.dart';
+import '../../features/cinema/my_cinema_tickets_screen.dart';
+import '../../models/cinema/cinema_models.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
 );
 
+/// Cầu nối `Listenable` chỉ phát khi trạng thái đăng nhập đổi.
+///
+/// Dùng làm `refreshListenable` cho [GoRouter] để router không phải đánh giá
+/// lại điều hướng mỗi khi `AuthService.notifyListeners()` được gọi vì lý do
+/// khác (đổi ảnh đại diện, đổi tên hiển thị…).
+class _AuthGateListenable extends ChangeNotifier {
+  _AuthGateListenable() {
+    _lastIsLoggedIn = AuthService.instance.isLoggedIn;
+    AuthService.instance.addListener(_handleAuthChanged);
+  }
+
+  late bool _lastIsLoggedIn;
+
+  void _handleAuthChanged() {
+    final bool current = AuthService.instance.isLoggedIn;
+    if (current == _lastIsLoggedIn) return;
+    _lastIsLoggedIn = current;
+    notifyListeners();
+  }
+}
+
 class AppRouter {
+  /// Các tuyến chỉ dành cho phiên CHƯA đăng nhập (màn hình xác thực).
+  ///
+  /// Khi phiên đã đăng nhập, người dùng phải được đưa thẳng vào app thay vì
+  /// bị kẹt ở màn Đăng nhập / Đăng ký / Chào mừng (nguồn gốc bug "đăng ký xong
+  /// lại nhảy ra màn đăng nhập").
+  static const Set<String> _guestOnlyRoutes = <String>{
+    '/login',
+    '/register',
+    '/welcome',
+  };
+
+  /// Các tuyến chứa DỮ LIỆU CÁ NHÂN: khách vãng lai bị chuyển tới màn Đăng nhập
+  /// kèm `?redirect=` để sau khi đăng nhập quay lại đúng màn đang muốn xem.
+  ///
+  /// Áp dụng cho cả tuyến con (ví dụ `/profiles/edit/new`).
+  static const List<String> _protectedRoutePrefixes = <String>[
+    '/me/list',
+    '/me/continue',
+    '/me/history',
+    '/me/liked',
+    '/me/notifications',
+    '/me/downloads',
+    '/me/account',
+    '/me/password',
+    '/profiles',
+  ];
+
+  static bool _isProtected(String path) => _protectedRoutePrefixes.any(
+    (prefix) => path == prefix || path.startsWith('$prefix/'),
+  );
+
+  /// Chỉ thông báo cho router khi trạng thái ĐĂNG NHẬP thực sự đổi.
+  ///
+  /// Tránh việc đổi ảnh đại diện / tên hiển thị (cũng gọi `notifyListeners`)
+  /// kích hoạt đánh giá lại điều hướng không cần thiết.
+  static final _AuthGateListenable _authGate = _AuthGateListenable();
+
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    // Tự động đánh giá lại điều hướng mỗi khi phiên đăng nhập thay đổi.
+    refreshListenable: _authGate,
+    redirect: (BuildContext context, GoRouterState state) {
+      final bool isLoggedIn = AuthService.instance.isLoggedIn;
+      final String path = state.uri.path;
+
+      if (!isLoggedIn) {
+        // Khách vãng lai được tự do duyệt toàn bộ app; chỉ các màn dữ liệu cá
+        // nhân mới bị chặn và chuyển tới màn Đăng nhập (kèm redirect quay lại).
+        if (_isProtected(path)) {
+          final String target = Uri.encodeComponent(state.uri.toString());
+          return '/login?redirect=$target';
+        }
+        return null;
+      }
+
+      // Phiên đã đăng nhập: không được kẹt ở màn hình xác thực.
+      if (!_guestOnlyRoutes.contains(path)) return null;
+
+      // Tôn trọng tham số ?redirect=... (ví dụ /watch/:id khi mở khóa phim).
+      final String? redirectTarget = state.uri.queryParameters['redirect'];
+      if (redirectTarget != null &&
+          redirectTarget.isNotEmpty &&
+          !_guestOnlyRoutes.contains(redirectTarget)) {
+        return redirectTarget;
+      }
+
+      // Mặc định: đưa thẳng vào ứng dụng.
+      return '/';
+    },
     routes: [
       // S01: Splash Screen — Mở đầu mượt mà, nhẹ nhàng
       GoRoute(
@@ -116,17 +221,17 @@ class AppRouter {
               ),
             ],
           ),
-          // Tab 4: Tôi / Trung tâm cá nhân (S30)
+          // Tab 4: Đặt vé rạp toàn quốc (S43)
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/me',
+                path: '/cinema',
                 pageBuilder: (context, state) => TransitPage(
                   key: state.pageKey,
                   type: TransitType.fadeThrough,
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOutCubic,
-                  child: const MeScreen(),
+                  child: const CinemaHubScreen(),
                 ),
               ),
             ],
@@ -157,23 +262,29 @@ class AppRouter {
       ),
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => TransitPage(
-          key: state.pageKey,
-          type: TransitType.fadeSlideUp,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: const LoginScreen(), // S04
-        ),
+        pageBuilder: (context, state) {
+          final redirect = state.uri.queryParameters['redirect'];
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: LoginScreen(redirect: redirect), // S04
+          );
+        },
       ),
       GoRoute(
         path: '/register',
-        pageBuilder: (context, state) => TransitPage(
-          key: state.pageKey,
-          type: TransitType.sharedAxisX,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          child: const RegisterScreen(), // S05
-        ),
+        pageBuilder: (context, state) {
+          final redirect = state.uri.queryParameters['redirect'];
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.sharedAxisX,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: RegisterScreen(redirect: redirect), // S05
+          );
+        },
       ),
       GoRoute(
         path: '/forgot-password',
@@ -409,6 +520,16 @@ class AppRouter {
 
       // ==================== NHÓM D. CÁ NHÂN & THƯ VIỆN (S25 - S30) ====================
       GoRoute(
+        path: '/me',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const MeScreen(), // S30
+        ),
+      ),
+      GoRoute(
         path: '/me/list',
         pageBuilder: (context, state) => TransitPage(
           key: state.pageKey,
@@ -549,7 +670,7 @@ class AppRouter {
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
           fullscreenDialog: true,
-          child: const ContactScreen(), // S37 alias
+          child: const FeedbackScreen(),
         ),
       ),
       GoRoute(
@@ -613,6 +734,215 @@ class AppRouter {
           curve: Curves.easeOutCubic,
           child: SystemStatusScreen.notFound(), // S41
         ),
+      ),
+
+      // Admin Security Gate: Khóa xác thực quản trị viên (mật khẩu 123)
+      GoRoute(
+        path: '/admin/auth',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.fadeSlideUp,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: AdminAuthGateScreen(
+            onAuthenticated: () {
+              final target = state.extra as String? ?? '/admin/movies';
+              context.go(target);
+            },
+          ),
+        ),
+      ),
+
+      // Admin Server Telemetry: Giám sát máy chủ thời gian thực
+      GoRoute(
+        path: '/admin/server',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const ServerMonitorScreen(),
+        ),
+      ),
+
+      // Admin Routes: Quản lý kho phim & Form tạo/sửa phim
+      GoRoute(
+        path: '/admin/movies',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const AdminMovieListScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'create',
+            pageBuilder: (context, state) => TransitPage(
+              key: state.pageKey,
+              type: TransitType.fadeSlideUp,
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              child: const AdminMovieFormScreen(),
+            ),
+          ),
+          GoRoute(
+            path: ':id/edit',
+            pageBuilder: (context, state) {
+              final movie = state.extra as MovieModel?;
+              return TransitPage(
+                key: state.pageKey,
+                type: TransitType.fadeSlideUp,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOutCubic,
+                child: AdminMovieFormScreen(movie: movie),
+              );
+            },
+          ),
+        ],
+      ),
+
+      // ==========================================
+      // MODULE ĐẶT VÉ PHIM RẠP (S43 - S51)
+      // ==========================================
+
+      // S44: Chi tiết phim rạp & suất chiếu
+      GoRoute(
+        path: '/cinema/movie/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaMovieDetailScreen(movieId: id),
+          );
+        },
+      ),
+
+      // S45: Sơ đồ chọn ghế ngồi
+      GoRoute(
+        path: '/cinema/seat-selection',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaSeatSelectionScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+            ),
+          );
+        },
+      ),
+
+      // S46: Chọn bắp nước & combo
+      GoRoute(
+        path: '/cinema/concessions',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaConcessionsScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+              seatLabels: (extra?['seatLabels'] as List<String>?) ?? [],
+              seatsPrice: (extra?['seatsPrice'] as int?) ?? 0,
+            ),
+          );
+        },
+      ),
+
+      // S47: Thanh toán & giữ ghế
+      GoRoute(
+        path: '/cinema/checkout',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaCheckoutScreen(
+              movie: extra?['movie'] as CinemaMovieModel,
+              theater: extra?['theater'] as CinemaTheaterModel,
+              showtime: extra?['showtime'] as CinemaShowtimeModel,
+              seatLabels: (extra?['seatLabels'] as List<String>?) ?? [],
+              concessions: (extra?['concessions'] as Map<String, int>?) ?? {},
+              totalAmount: (extra?['totalAmount'] as int?) ?? 0,
+            ),
+          );
+        },
+      ),
+
+      // S48: Vé điện tử / QR Code
+      GoRoute(
+        path: '/cinema/ticket/:bookingId',
+        pageBuilder: (context, state) {
+          final bookingId = state.pathParameters['bookingId'] ?? '';
+          final booking = state.extra as CinemaBookingModel?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaTicketScreen(
+              bookingId: bookingId,
+              booking: booking,
+            ),
+          );
+        },
+      ),
+
+      // S49: Vé của tôi
+      GoRoute(
+        path: '/cinema/my-tickets',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const MyCinemaTicketsScreen(),
+        ),
+      ),
+
+      // S50: Tin tức & Blog điện ảnh rạp
+      GoRoute(
+        path: '/cinema/news',
+        pageBuilder: (context, state) => TransitPage(
+          key: state.pageKey,
+          type: TransitType.slideRightFade,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: const CinemaNewsScreen(),
+        ),
+      ),
+
+      // S51: Chi tiết bài viết review
+      GoRoute(
+        path: '/cinema/news/:articleId',
+        pageBuilder: (context, state) {
+          final articleId = state.pathParameters['articleId'] ?? '';
+          final article = state.extra as CinemaArticleModel?;
+          return TransitPage(
+            key: state.pageKey,
+            type: TransitType.slideRightFade,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: CinemaArticleDetailScreen(
+              articleId: articleId,
+              article: article,
+            ),
+          );
+        },
       ),
     ],
 

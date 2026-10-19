@@ -1,0 +1,21 @@
+[Unit]
+Description=OpenFlix metrics collector (ghi /metrics cho app Giám sát Máy chủ)
+Documentation=file:/opt/openflix-vps-metrics/README.md
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/openflix-vps-metrics/openflix-metrics.sh
+# Chạy dưới quyền root để đọc /proc, df và du các thư mục hệ thống.
+User=root
+Environment=OUT_FILE=/var/www/openflix-metrics/metrics.json
+Environment=PB_DATA_DIR=/opt/openflix-backend/pb_data
+Environment=MEDIA_DIR=/var/www/openflix-media
+Environment=CPU_SAMPLE_MS=500
+# Chỉ bật dòng dưới nếu muốn ghim phiên bản PocketBase (nếu không, agent tự dò).
+# Environment=POCKETBASE_VERSION=0.22.29
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target

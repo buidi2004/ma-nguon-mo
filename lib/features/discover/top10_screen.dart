@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/state_view.dart';
 import '../../models/movie_model.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class Top10Screen extends StatefulWidget {
@@ -40,6 +43,7 @@ class _Top10ScreenState extends State<Top10Screen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Top 10 Phim Thịnh Hành',
           style: TextStyle(
@@ -80,7 +84,9 @@ class _Top10ScreenState extends State<Top10Screen> {
                             style: TextStyle(
                               fontSize: 42,
                               fontWeight: FontWeight.w900,
-                              color: rank <= 3 ? AppColors.red : Colors.white70,
+                              color: rank <= 3
+                                  ? ThemeService.instance.primaryColor
+                                  : Colors.white70,
                               shadows: [
                                 Shadow(
                                   color: Colors.black.withAlpha(200),
@@ -137,7 +143,8 @@ class _Top10ScreenState extends State<Top10Screen> {
                                       ),
                                       margin: const EdgeInsets.only(right: 6),
                                       decoration: BoxDecoration(
-                                        color: AppColors.red,
+                                        color:
+                                            ThemeService.instance.primaryColor,
                                         borderRadius: BorderRadius.circular(3),
                                       ),
                                       child: const Text(
@@ -198,8 +205,8 @@ class _Top10ScreenState extends State<Top10Screen> {
                                     movie.category,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.red,
+                                    style: TextStyle(
+                                      color: ThemeService.instance.primaryColor,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -227,7 +234,18 @@ class _Top10ScreenState extends State<Top10Screen> {
                             color: Colors.white,
                             size: 36,
                           ),
-                          onPressed: () => context.push('/watch/${movie.id}'),
+                          onPressed: () {
+                            AuthGuard.runWithAuth(
+                              context,
+                              movieId: movie.id,
+                              movieTitle: movie.title,
+                              hasTrailer: true,
+                              onWatchTrailer: () =>
+                                  context.push('/movie/${movie.id}/trailer'),
+                              onAuthorized: () =>
+                                  context.push('/watch/${movie.id}'),
+                            );
+                          },
                         ),
                       ],
                     ),

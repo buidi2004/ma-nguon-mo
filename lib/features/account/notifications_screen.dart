@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/state_view.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class NotificationItem {
@@ -107,6 +108,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -127,7 +129,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.red,
+                  color: ThemeService.instance.primaryColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -146,13 +148,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (unreadCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: GlassButton.capsule(
-                text: 'Đọc tất cả',
-                icon: Icons.done_all_rounded,
-                style: GlassButtonStyle.neutralDark,
-                height: 34,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                onPressed: _markAllAsRead,
+              child: Builder(
+                builder: (context) {
+                  final isNarrow = MediaQuery.sizeOf(context).width < 360;
+                  if (isNarrow) {
+                    return GlassIconButton.circle(
+                      icon: Icons.done_all_rounded,
+                      size: 34,
+                      iconSize: 18,
+                      tooltip: 'Đọc tất cả',
+                      onPressed: _markAllAsRead,
+                    );
+                  }
+                  return GlassButton.capsule(
+                    text: 'Đọc tất cả',
+                    icon: Icons.done_all_rounded,
+                    style: GlassButtonStyle.neutralDark,
+                    height: 34,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    onPressed: _markAllAsRead,
+                  );
+                },
               ),
             ),
         ],
@@ -257,7 +273,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             border: Border.all(
                               color: item.isRead
                                   ? Colors.white10
-                                  : AppColors.red.withAlpha(128),
+                                  : ThemeService.instance.primaryColor
+                                      .withAlpha(128),
                             ),
                           ),
                           child: Row(
@@ -266,18 +283,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color:
-                                      (item.isRead
-                                              ? Colors.white24
-                                              : AppColors.red)
-                                          .withAlpha(35),
+                                  color: (item.isRead
+                                          ? Colors.white24
+                                          : ThemeService.instance.primaryColor)
+                                      .withAlpha(35),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   item.icon,
                                   color: item.isRead
                                       ? Colors.white70
-                                      : AppColors.red,
+                                      : ThemeService.instance.primaryColor,
                                   size: 22,
                                 ),
                               ),
@@ -309,8 +325,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             margin: const EdgeInsets.only(top: 4, left: 6),
                                             width: 8,
                                             height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: AppColors.red,
+                                            decoration: BoxDecoration(
+                                              color: ThemeService
+                                                  .instance.primaryColor,
                                               shape: BoxShape.circle,
                                             ),
                                           ),

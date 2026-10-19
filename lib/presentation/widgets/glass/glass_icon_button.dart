@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../services/theme_service.dart';
 import 'glass_surface.dart';
+import 'openflix_morph_icon.dart';
 
 /// Nút bấm Icon kính mờ quang học (Optical Glass Icon Button).
 /// Thích hợp cho các nút điều khiển Player (Play, Pause, Tua, Subtitle),
@@ -149,7 +152,7 @@ class _GlassIconButtonState extends State<GlassIconButton>
                           : BorderRadius.circular(widget.borderRadius),
                       gradient: RadialGradient(
                         colors: [
-                          (widget.glowColor ?? const Color(0xFFE50914))
+                          (widget.glowColor ?? ThemeService.instance.primaryColor)
                               .withValues(alpha: 0.35),
                           Colors.transparent,
                         ],
@@ -171,8 +174,8 @@ class _GlassIconButtonState extends State<GlassIconButton>
                 thickness: 52.0,
                 useBackdropFilter: widget.useBackdropFilter,
                 child: Center(
-                  child: Icon(
-                    widget.icon,
+                  child: OpenFlixMorphIcon.snappy(
+                    icon: widget.icon,
                     size: widget.iconSize,
                     color: widget.iconColor,
                   ),
@@ -191,3 +194,64 @@ class _GlassIconButtonState extends State<GlassIconButton>
     return button;
   }
 }
+
+/// Nút Quay lại kính mờ quang học tròn chuẩn OpenFlix (Glass Back Button).
+/// - Kích thước chuẩn: 38x38px, iconSize: 20px, icon: Icons.arrow_back.
+/// - Tự động pop route an toàn qua GoRouter / Navigator.
+/// - Không bọc Tooltip để triệt tiêu vĩnh viễn lỗi bung nhãn chữ "Back" màu xám khi chạm giữ.
+/// - Thẩm mỹ kính mờ cao cấp đồng bộ 100% toàn ứng dụng.
+class GlassBackButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final String? fallbackRoute;
+  final double size;
+  final double iconSize;
+  final Color? iconColor;
+  final Color? tintColor;
+
+  const GlassBackButton({
+    super.key,
+    this.onPressed,
+    this.fallbackRoute,
+    this.size = 38.0,
+    this.iconSize = 20.0,
+    this.iconColor = Colors.white,
+    this.tintColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Semantics(
+        button: true,
+        label: 'Quay lại',
+        child: GlassIconButton.circle(
+          size: size,
+          iconSize: iconSize,
+          icon: Icons.arrow_back,
+          iconColor: iconColor,
+          tintColor: tintColor,
+          tooltip: null, // Tuyệt đối không dùng Tooltip để tránh lỗi đè nhãn chữ "Back"
+          onPressed: onPressed ??
+              () {
+                try {
+                  if (context.canPop()) {
+                    context.pop();
+                    return;
+                  }
+                } catch (_) {
+                  // Fallback an toàn khi context nằm ngoài GoRouter
+                }
+                if (fallbackRoute != null) {
+                  try {
+                    context.go(fallbackRoute!);
+                    return;
+                  } catch (_) {}
+                }
+                Navigator.of(context).maybePop();
+              },
+        ),
+      ),
+    );
+  }
+}
+

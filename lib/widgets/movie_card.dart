@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie_model.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 
 class MovieCard extends StatelessWidget {
@@ -27,6 +28,8 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = ThemeService.instance.primaryColor;
+
     return GestureDetector(
       onTap: onTap ?? () => context.push('/movie/${movie.id}'),
       child: Container(
@@ -57,14 +60,14 @@ class MovieCard extends StatelessWidget {
                 maxHeightDiskCache: 600,
                 placeholder: (context, url) => Container(
                   color: const Color(0xFF222222),
-                  child: const Center(
+                  child: Center(
                     child: SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.red,
+                          primaryColor,
                         ),
                       ),
                     ),
@@ -126,13 +129,13 @@ class MovieCard extends StatelessWidget {
                       fontSize: 56,
                       fontWeight: FontWeight.w900,
                       color: Colors.white.withAlpha(220),
-                      shadows: const [
-                        Shadow(
+                      shadows: [
+                        const Shadow(
                           color: Colors.black,
                           blurRadius: 10,
                           offset: Offset(2, 2),
                         ),
-                        Shadow(color: AppColors.red, blurRadius: 12),
+                        Shadow(color: primaryColor, blurRadius: 12),
                       ],
                     ),
                   ),
@@ -150,7 +153,7 @@ class MovieCard extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.red,
+                      color: primaryColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -210,8 +213,8 @@ class MovieCard extends StatelessWidget {
                               '• ${movie.category}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.red,
+                              style: TextStyle(
+                                color: primaryColor,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -233,8 +236,8 @@ class MovieCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progressRatio,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.red,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      primaryColor,
                     ),
                     minHeight: 3.5,
                   ),

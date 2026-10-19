@@ -10,6 +10,7 @@ import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class TrailerScreen extends StatefulWidget {
@@ -132,8 +133,8 @@ class _TrailerScreenState extends State<TrailerScreen> {
         ],
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         materialProgressColors: ChewieProgressColors(
-          playedColor: AppColors.red,
-          handleColor: AppColors.red,
+          playedColor: ThemeService.instance.primaryColor,
+          handleColor: ThemeService.instance.primaryColor,
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
@@ -234,9 +235,13 @@ class _TrailerScreenState extends State<TrailerScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: AppColors.red)),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: ThemeService.instance.primaryColor,
+          ),
+        ),
       );
     }
 
@@ -262,17 +267,8 @@ class _TrailerScreenState extends State<TrailerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
-                  GlassIconButton.circle(
-                    size: 38,
-                    iconSize: 20,
-                    icon: Icons.arrow_back,
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/movie/${widget.movieId}');
-                      }
-                    },
+                  GlassBackButton(
+                    fallbackRoute: '/movie/${widget.movieId}',
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -312,9 +308,9 @@ class _TrailerScreenState extends State<TrailerScreen> {
                   child: Container(
                     color: Colors.black,
                     child: _isVideoLoading
-                        ? const Center(
+                        ? Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.red,
+                              color: ThemeService.instance.primaryColor,
                             ),
                           )
                         : _videoError != null
@@ -324,9 +320,9 @@ class _TrailerScreenState extends State<TrailerScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.warning_amber_rounded,
-                                    color: AppColors.red,
+                                    color: ThemeService.instance.primaryColor,
                                     size: 40,
                                   ),
                                   const SizedBox(height: 8),
@@ -358,7 +354,8 @@ class _TrailerScreenState extends State<TrailerScreen> {
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.red,
+                                      backgroundColor:
+                                          ThemeService.instance.primaryColor,
                                       foregroundColor: Colors.white,
                                     ),
                                   ),

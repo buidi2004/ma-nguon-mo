@@ -1,0 +1,10 @@
+# Cấu hình `dart test` / `flutter test` cho OpenFlix.
+#
+# Mục đích: khai báo tag đã dùng trong repo để `--tags` / `--exclude-tags`
+# hoạt động không kèm cảnh báo "tag chưa được khai báo".
+tags:
+  e2e:
+    description: >-
+      Test chạm backend thật (PocketBase trên VPS) — cần mạng, chỉ chạy trong
+      lane riêng: `flutter test --tags e2e test/e2e_real_backend_test.dart`.
+      Lane mặc định loại trừ bằng `--exclude-tags e2e`.

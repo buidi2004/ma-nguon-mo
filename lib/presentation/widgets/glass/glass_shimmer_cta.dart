@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../theme/app_theme.dart';
+import '../../../services/theme_service.dart';
 import 'glass_surface.dart';
 
 /// Nút bấm kêu gọi hành động kính mờ cao cấp với hiệu ứng ánh kim điện ảnh lướt qua
@@ -59,7 +59,7 @@ class GlassShimmerCTA extends StatefulWidget {
       height: height,
       width: width,
       isCapsule: true,
-      glowColor: glowColor ?? AppColors.red,
+      glowColor: glowColor,
       enableShimmer: enableShimmer,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -89,6 +89,7 @@ class GlassShimmerCTA extends StatefulWidget {
     String qualityTag = 'HD',
     double height = 46.0,
     double? width,
+    Color? glowColor,
   }) {
     return GlassShimmerCTA(
       key: key,
@@ -96,7 +97,7 @@ class GlassShimmerCTA extends StatefulWidget {
       height: height,
       width: width,
       isCapsule: true,
-      glowColor: AppColors.red.withValues(alpha: 0.5),
+      glowColor: glowColor,
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Row(
@@ -215,7 +216,7 @@ class _GlassShimmerCTAState extends State<GlassShimmerCTA>
         : widget.borderRadius;
     final isEnabled = widget.onPressed != null;
 
-    final effectiveGlow = widget.glowColor ?? AppColors.red;
+    final effectiveGlow = widget.glowColor ?? ThemeService.instance.primaryColor;
 
     final Color bgColor = widget.backgroundColor ??
         (_isPressed

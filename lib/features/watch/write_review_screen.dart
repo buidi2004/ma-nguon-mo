@@ -61,6 +61,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Viết đánh giá',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -105,8 +106,8 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Icon(
-                        starValue <= _selectedStars
+                      child: OpenFlixMorphIcon.snappy(
+                        icon: starValue <= _selectedStars
                             ? Icons.star
                             : Icons.star_border,
                         color: Colors.amber,

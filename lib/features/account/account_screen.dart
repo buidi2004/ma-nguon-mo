@@ -3,7 +3,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
+import '../../presentation/widgets/brand/user_avatar_circle.dart';
+import '../../presentation/widgets/dialogs/user_avatar_dialog.dart';
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -55,73 +59,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   void _showAvatarPicker() {
-    showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        final double bottomInset = MediaQuery.of(ctx).padding.bottom + 20.0;
-        return SafeArea(
-          top: false,
-          bottom: false,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, bottomInset),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Chọn biểu tượng đại diện',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildAvatarOption(ctx, Icons.person, AppColors.red),
-                    _buildAvatarOption(ctx, Icons.movie_outlined, Colors.blue),
-                    _buildAvatarOption(ctx, Icons.star_border, Colors.amber),
-                    _buildAvatarOption(ctx, Icons.face, Colors.purple),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAvatarOption(BuildContext ctx, IconData icon, Color color) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(ctx);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã cập nhật ảnh đại diện hồ sơ!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: Colors.white, size: 32),
-      ),
-    );
+    UserAvatarDialog.show(context);
   }
 
   void _handleLogout() {
@@ -165,6 +103,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: const GlassBackButton(),
         title: const Text(
           'Thông tin tài khoản',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -173,42 +112,42 @@ class _AccountScreenState extends State<AccountScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // Avatar lớn
+          // Avatar lớn người dùng (Chibi dễ thương / Link ảnh / Hào quang phát sáng)
           Center(
             child: GestureDetector(
               onTap: _showAvatarPicker,
+              behavior: HitTestBehavior.opaque,
               child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
                 children: [
-                  Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: AppColors.red,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.person, color: Colors.white, size: 52),
-                    ),
+                  const UserAvatarCircle(
+                    size: 96,
+                    showGlow: true,
                   ),
                   Positioned(
-                    bottom: -2,
-                    right: -2,
+                    bottom: 0,
+                    right: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: AppColors.surface,
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.85),
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white38,
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 6,
+                          ),
+                        ],
                       ),
                       child: const Icon(
-                        Icons.camera_alt,
+                        Icons.camera_alt_rounded,
                         color: Colors.white,
-                        size: 16,
+                        size: 18,
                       ),
                     ),
                   ),
@@ -216,11 +155,37 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          const Center(
-            child: Text(
-              'Chạm để đổi biểu tượng đại diện',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+          const SizedBox(height: 12),
+          Center(
+            child: InkWell(
+              onTap: _showAvatarPicker,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 14,
+                      color: ThemeService.instance.primaryColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Đổi ảnh đại diện',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: ThemeService.instance.primaryColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -315,8 +280,8 @@ class _AccountScreenState extends State<AccountScreen> {
             width: double.infinity,
             child: TextButton.icon(
               onPressed: _handleLogout,
-              icon: const Icon(Icons.logout, color: AppColors.red, size: 20),
-              label: const Text(
+              icon: Icon(Icons.logout, color: AppColors.red, size: 20),
+              label: Text(
                 'Đăng xuất khỏi thiết bị',
                 style: TextStyle(
                   color: AppColors.red,

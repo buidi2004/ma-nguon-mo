@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 
 class PlaceholderScreen extends StatelessWidget {
@@ -49,12 +50,7 @@ class PlaceholderScreen extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        leading: canPop
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                onPressed: () => context.pop(),
-              )
-            : null,
+        leading: canPop ? const GlassBackButton() : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.home_outlined),

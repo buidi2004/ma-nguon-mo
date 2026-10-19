@@ -39,6 +39,7 @@ import 'package:openflix/features/watch/similar_movies_screen.dart';
 import 'package:openflix/features/watch/trailer_screen.dart';
 import 'package:openflix/features/watch/write_review_screen.dart';
 import 'package:openflix/models/movie_model.dart';
+import 'package:openflix/presentation/widgets/brand/app_brand_logo.dart';
 import 'package:openflix/screens/home_screen.dart';
 import 'package:openflix/screens/player_screen.dart';
 import 'package:openflix/theme/app_theme.dart';
@@ -124,7 +125,7 @@ void main() {
   group('Group B: Khám phá (S09 - S17)', () {
     testWidgets('S09: Home screen renders main layout', (tester) async {
       await tester.pumpWidget(buildTestableWidget(const HomeScreen()));
-      expect(find.text('OPENFLIX'), findsOneWidget);
+      expect(find.byType(AppBrandLogo), findsOneWidget);
       await tester.pump(const Duration(milliseconds: 300));
     });
 
@@ -444,7 +445,7 @@ void main() {
         await tester.pumpWidget(
           buildTestableWidget(const HomeScreen(), size: const Size(360, 780)),
         );
-        expect(find.text('OPENFLIX'), findsOneWidget);
+        expect(find.byType(AppBrandLogo), findsOneWidget);
         await tester.pump(const Duration(milliseconds: 300));
       },
     );
@@ -462,7 +463,7 @@ void main() {
       await tester.pumpWidget(
         buildTestableWidget(const HomeScreen(), size: const Size(800, 1200)),
       );
-      expect(find.text('OPENFLIX'), findsOneWidget);
+      expect(find.byType(AppBrandLogo), findsOneWidget);
       await tester.pump(const Duration(milliseconds: 300));
     });
   });

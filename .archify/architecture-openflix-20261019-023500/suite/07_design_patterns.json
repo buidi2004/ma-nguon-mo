@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "diagram_type": "class",
+  "meta": {
+    "title": "OpenFlix 07: Sơ Đồ Các Mẫu Thiết Kế Phần Mềm (Core Design Patterns)",
+    "subtitle": "Hiện thực hóa Repository, Singleton, Adapter và Observer Pattern",
+    "output": "suite/07_design_patterns.html",
+    "quality_profile": "standard"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "types": [
+    {
+      "id": "i_repo",
+      "label": "IMovieRepository",
+      "kind": "interface",
+      "sublabel": "Repository Pattern",
+      "row": 0,
+      "col": 0,
+      "methods": [
+        {
+          "name": "fetchCatalog",
+          "returns": "List<Movie>",
+          "abstract": true
+        }
+      ]
+    },
+    {
+      "id": "pb_repo",
+      "label": "PocketBaseMovieRepo",
+      "kind": "class",
+      "sublabel": "Remote Data Source",
+      "row": 1,
+      "col": 0,
+      "methods": [
+        {
+          "name": "fetchCatalog",
+          "returns": "HTTP REST"
+        }
+      ]
+    },
+    {
+      "id": "mock_repo",
+      "label": "MockOfflineMovieRepo",
+      "kind": "class",
+      "sublabel": "Offline Fallback Source",
+      "row": 1,
+      "col": 1,
+      "methods": [
+        {
+          "name": "fetchCatalog",
+          "returns": "Asset Seed JSON"
+        }
+      ]
+    },
+    {
+      "id": "singleton_pb",
+      "label": "PocketBaseClient",
+      "kind": "class",
+      "sublabel": "Singleton Pattern",
+      "row": 0,
+      "col": 2,
+      "attributes": [
+        {
+          "name": "_instance",
+          "type": "PocketBaseClient",
+          "visibility": "private"
+        }
+      ],
+      "methods": [
+        {
+          "name": "getInstance",
+          "returns": "PocketBaseClient",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "player_adapter",
+      "label": "VideoPlayerAdapter",
+      "kind": "class",
+      "sublabel": "Adapter / Factory Pattern",
+      "row": 1,
+      "col": 2,
+      "methods": [
+        {
+          "name": "createController",
+          "parameters": "url",
+          "returns": "ChewieController"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "pb_repo",
+      "to": "i_repo",
+      "kind": "realization",
+      "label": "implements"
+    },
+    {
+      "from": "mock_repo",
+      "to": "i_repo",
+      "kind": "realization",
+      "label": "implements"
+    },
+    {
+      "from": "pb_repo",
+      "to": "singleton_pb",
+      "kind": "dependency",
+      "label": "uses"
+    }
+  ]
+}

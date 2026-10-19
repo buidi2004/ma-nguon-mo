@@ -1,0 +1,157 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "OpenFlix 06: Sơ Đồ Vòng Đời Trạng Thái Trình Phát Video (Chewie Lifecycle)",
+    "output": "suite/06_lifecycle_player.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "standard"
+  },
+  "mainPath": [
+    "idle",
+    "initializing",
+    "ready",
+    "playing",
+    "completed"
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "type": "start",
+      "label": "Khởi Tạo (Idle)",
+      "sublabel": "Gán videoUrl",
+      "tag": "init",
+      "step": "01"
+    },
+    {
+      "id": "initializing",
+      "type": "active",
+      "label": "Nạp Moov Atom",
+      "sublabel": "Tải đệm 1MB đầu",
+      "tag": "buffering",
+      "step": "02"
+    },
+    {
+      "id": "ready",
+      "type": "decision",
+      "label": "Sẵn Sàng (Ready)",
+      "sublabel": "Khóa tỷ lệ khung hình",
+      "tag": "ready",
+      "step": "03"
+    },
+    {
+      "id": "playing",
+      "type": "success",
+      "label": "Đang Phát (60fps)",
+      "sublabel": "Render phần cứng",
+      "tag": "playing",
+      "step": "04"
+    },
+    {
+      "id": "paused",
+      "type": "waiting",
+      "label": "Tạm Dừng (Paused)",
+      "sublabel": "Giữ texture trong RAM",
+      "tag": "pause"
+    },
+    {
+      "id": "seeking",
+      "type": "active",
+      "label": "Đang Tua (Seeking)",
+      "sublabel": "Cử chỉ chạm ±10s",
+      "tag": "seek"
+    },
+    {
+      "id": "buffering",
+      "type": "waiting",
+      "label": "Chờ Mạng (Buffering)",
+      "sublabel": "Tải tiếp byte-range",
+      "tag": "wait"
+    },
+    {
+      "id": "completed",
+      "type": "success",
+      "label": "Xem Xong (Ended)",
+      "sublabel": "Tự phát tập tiếp",
+      "tag": "terminal",
+      "step": "05"
+    },
+    {
+      "id": "error",
+      "type": "failure",
+      "label": "Lỗi Phát (Error)",
+      "sublabel": "Đổi sang link dự phòng",
+      "tag": "terminal"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t1",
+      "from": "idle",
+      "to": "initializing",
+      "label": "initialize()"
+    },
+    {
+      "id": "t2",
+      "from": "initializing",
+      "to": "ready",
+      "label": "header ok"
+    },
+    {
+      "id": "t3",
+      "from": "ready",
+      "to": "playing",
+      "label": "play()"
+    },
+    {
+      "id": "t4",
+      "from": "playing",
+      "to": "paused",
+      "label": "user tap pause"
+    },
+    {
+      "id": "t5",
+      "from": "paused",
+      "to": "playing",
+      "label": "user tap play"
+    },
+    {
+      "id": "t6",
+      "from": "playing",
+      "to": "seeking",
+      "label": "double tap ±10s"
+    },
+    {
+      "id": "t7",
+      "from": "seeking",
+      "to": "playing",
+      "label": "seek completed"
+    },
+    {
+      "id": "t8",
+      "from": "playing",
+      "to": "buffering",
+      "label": "mạng chậm"
+    },
+    {
+      "id": "t9",
+      "from": "buffering",
+      "to": "playing",
+      "label": "buffer ready"
+    },
+    {
+      "id": "t10",
+      "from": "playing",
+      "to": "completed",
+      "label": "hết phim"
+    },
+    {
+      "id": "t11",
+      "from": "initializing",
+      "to": "error",
+      "label": "link chết / 404",
+      "variant": "security"
+    }
+  ]
+}

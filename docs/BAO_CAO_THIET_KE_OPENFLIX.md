@@ -394,14 +394,14 @@ Hệ thống OpenFlix đã được nâng cấp toàn diện từ kiến trúc c
 | **S12** | Bộ lọc phim đa tiêu chí | `/search/filter` | P2 | `lib/features/discover/filter_screen.dart` |
 | **S13** | Danh mục tất cả thể loại | `/genres` | P2 | `lib/features/discover/genres_screen.dart` |
 | **S14** | Lưới phim theo thể loại | `/genre/:name` | P0 | `lib/features/discover/movie_grid_screen.dart` |
-| **S15** | Xem tất cả / Top 10 thịnh hành | `/see-all/:key`, `/top10` | P0 | `lib/features/discover/movie_grid_screen.dart` |
+| **S15** | Xem tất cả danh mục hàng ngang | `/see-all/:rowKey` | P0 | `lib/features/discover/movie_grid_screen.dart` |
 | **S16** | Mới & Hot | `/hot` (Tab 3) | P2 | `lib/features/discover/hot_screen.dart` |
-| **S17** | Trình phát Trailer chính thức | `/movie/:id/trailer` | P2 | `lib/features/watch/trailer_screen.dart` |
+| **S17** | Top 10 thịnh hành | `/top10` | P2 | `lib/features/discover/top10_screen.dart` |
 | **S18** | Chi tiết phim & Tương tự | `/movie/:id` | P0 | `lib/features/watch/detail_screen.dart` |
-| **S19** | Rạp chiếu Fullscreen (Player) | `/watch/:id` | P0 | `lib/screens/player_screen.dart` |
-| **S20** | Tùy chọn Âm thanh & Phụ đề | `/movie/:id/audio` | P2 | `lib/features/watch/audio_subtitle_screen.dart` |
+| **S19** | Trình phát Trailer chính thức | `/movie/:id/trailer` | P2 | `lib/features/watch/trailer_screen.dart` |
+| **S20** | Rạp chiếu Fullscreen (Player) | `/watch/:id` | P0 | `lib/screens/player_screen.dart` |
 | **S21** | Danh sách mùa & Tập phim | `/movie/:id/episodes` | P3 | `lib/features/watch/episodes_screen.dart` |
-| **S22** | Danh sách phim tương tự mở rộng | `/movie/:id/similar` | P2 | `lib/features/discover/movie_grid_screen.dart` |
+| **S22** | Danh sách phim tương tự mở rộng | `/movie/:id/similar` | P2 | `lib/features/watch/similar_movies_screen.dart` |
 | **S23** | Đánh giá & Bình luận người xem | `/movie/:id/reviews` | P2 | `lib/features/watch/reviews_screen.dart` |
 | **S24** | Viết đánh giá & Chấm sao | `/movie/:id/reviews/new` | P2 | `lib/features/watch/write_review_screen.dart` |
 | **S25** | Danh sách của tôi (My List) | `/me/list` | P1 | `lib/features/library/my_list_screen.dart` |
@@ -416,12 +416,20 @@ Hệ thống OpenFlix đã được nâng cấp toàn diện từ kiến trúc c
 | **S34** | Cài đặt phát lại & Chất lượng | `/settings/playback` | P1 | `lib/features/account/playback_settings_screen.dart` |
 | **S35** | Tùy chỉnh ngôn ngữ hiển thị | `/settings/language` | P3 | `lib/features/account/language_screen.dart` |
 | **S36** | Trung tâm Trợ giúp & FAQ | `/help` | P3 | `lib/features/system/help_screen.dart` |
-| **S37** | Biểu mẫu liên hệ & Góp ý | `/contact` | P3 | `lib/features/system/contact_screen.dart` |
+| **S37** | Biểu mẫu liên hệ & Hỗ trợ | `/contact` | P3 | `lib/features/system/contact_screen.dart` |
 | **S38** | Thông tin bản quyền & FOSS MIT | `/about` | P0 | `lib/features/account/about_screen.dart` |
 | **S39** | Trạng thái mất mạng ngoại tuyến | `/offline` | P0 | `lib/features/system/system_status_screen.dart` |
-| **S40** | Báo lỗi hệ thống & 404 Route | `/error`, ErrorBuilder | P0 | `lib/features/system/system_status_screen.dart` |
-| **S41** | Quản lý tải xuống & Bộ nhớ | `/me/downloads` | P3 | `lib/features/library/downloads_screen.dart` |
+| **S40** | Báo lỗi hệ thống & Thử lại | `/error` | P0 | `lib/features/system/system_status_screen.dart` |
+| **S41** | Trang 404 (Không tìm thấy) | `/404`, `errorBuilder` | P3 | `lib/features/system/system_status_screen.dart` |
 | **S42** | Gói thành viên & Nâng cấp VIP | `/plans` | P3 | `lib/features/account/plans_screen.dart` |
+
+### Các màn hình chức năng mở rộng (Advanced Extensions):
+
+| Mã | Tên màn hình | Tuyến đường (Route) | Độ ưu tiên | File mã nguồn |
+| :--- | :--- | :--- | :---: | :--- |
+| **E01** | Quản lý tải xuống & Ngoại tuyến | `/me/downloads` | P3 | `lib/features/library/downloads_screen.dart` |
+| **E02** | Tùy chọn Âm thanh & Phụ đề | `/movie/:id/audio` | P2 | `lib/features/watch/audio_subtitle_screen.dart` |
+| **E03** | Báo lỗi phát phim & Góp ý chuyên sâu | `/feedback` | P3 | `lib/features/account/feedback_screen.dart` |
 
 ---
 

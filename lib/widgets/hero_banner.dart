@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../models/movie_model.dart';
 import '../services/library_service.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
+import '../presentation/widgets/glass/openflix_morph_icon.dart';
 
 /// Carousel hero-banner cho trang chủ (S09).
 ///
@@ -339,7 +341,7 @@ class _HeroSlide extends StatelessWidget {
                             ? Icons.bookmark
                             : Icons.bookmark_outline,
                         label: isInList ? 'Đã thêm' : 'Thêm vào DS',
-                        iconColor: isInList ? AppColors.red : Colors.white,
+                        iconColor: isInList ? ThemeService.instance.primaryColor : Colors.white,
                         onTap: () {
                           HapticFeedback.lightImpact();
                           LibraryService.instance.toggleMyList(movie.id);
@@ -464,7 +466,11 @@ class _ActionColumnButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: iconColor, size: 24),
+            OpenFlixMorphIcon.snappy(
+              icon: icon,
+              color: iconColor,
+              size: 24,
+            ),
             const SizedBox(height: 3),
             Text(
               label,
@@ -493,7 +499,7 @@ class _MetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTrailer = movie.comingSoon || movie.durationMinutes <= 5;
-    final vipTag = isTrailer ? 'TRAILER' : 'Galaxy VIP';
+    final vipTag = isTrailer ? 'TRAILER' : 'Cinema VIP';
     final category = movie.category.isNotEmpty ? movie.category : 'Phim';
     final rating = movie.ageRating.isNotEmpty ? movie.ageRating : 'T13';
 

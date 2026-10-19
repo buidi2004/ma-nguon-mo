@@ -3,17 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:transit_kit/transit_kit.dart';
 
 import 'core/router/app_router.dart';
+import 'services/theme_service.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ThemeService.instance.init();
 
   // Đặt thanh trạng thái trong suốt phù hợp giao diện Dark Mode Netflix
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppColors.background,
+      systemNavigationBarColor: AppColors.darkBackground,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -66,11 +68,19 @@ class OpenFlixApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'OpenFlix',
-      debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
-      routerConfig: AppRouter.router,
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, _) {
+        return MaterialApp.router(
+          title: 'OpenFlix',
+          debugShowCheckedModeBanner: false,
+          theme: buildAppTheme(
+            ThemeService.instance.primaryColor,
+            ThemeService.instance.isLight,
+          ),
+          routerConfig: AppRouter.router,
+        );
+      },
     );
   }
 }

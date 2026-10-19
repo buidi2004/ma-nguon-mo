@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
+import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class DownloadsScreen extends StatefulWidget {
@@ -87,16 +89,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/me');
-            }
-          },
-        ),
+        leading: const GlassBackButton(fallbackRoute: '/me'),
         title: const Text(
           'Tệp tải xuống & Bộ nhớ',
           style: TextStyle(
@@ -118,7 +111,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.red))
+          ? Center(
+              child: CircularProgressIndicator(
+                color: ThemeService.instance.primaryColor,
+              ),
+            )
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -165,7 +162,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                           children: [
                             Expanded(
                               flex: 14,
-                              child: Container(height: 8, color: AppColors.red),
+                              child: Container(
+                                height: 8,
+                                color: ThemeService.instance.primaryColor,
+                              ),
                             ),
                             const SizedBox(width: 2),
                             Expanded(
@@ -197,8 +197,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.red,
+                                decoration: BoxDecoration(
+                                  color: ThemeService.instance.primaryColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -263,13 +263,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'VIDEO ĐÃ TẢI XUỐNG',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: AppColors.red,
+                          color: ThemeService.instance.primaryColor,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
@@ -335,7 +335,18 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: InkWell(
-                        onTap: () => context.push('/watch/${movie.id}'),
+                        onTap: () {
+                          AuthGuard.runWithAuth(
+                            context,
+                            movieId: movie.id,
+                            movieTitle: movie.title,
+                            hasTrailer: true,
+                            onWatchTrailer: () =>
+                                context.push('/movie/${movie.id}/trailer'),
+                            onAuthorized: () =>
+                                context.push('/watch/${movie.id}'),
+                          );
+                        },
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
                           padding: const EdgeInsets.all(10),
@@ -426,7 +437,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                   ),
                   trailing: Switch(
                     value: true,
-                    activeThumbColor: AppColors.red,
+                    activeThumbColor: ThemeService.instance.primaryColor,
                     onChanged: (val) {},
                   ),
                 ),
