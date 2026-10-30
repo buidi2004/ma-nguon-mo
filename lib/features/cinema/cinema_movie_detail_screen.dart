@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/widgets/cinema/cinema_location_picker_sheet.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S44: Chi Tiết Phim Rạp & Lịch Chiếu (Cinema Movie Detail & Showtimes Screen)
 /// Giao diện nền trắng, chuẩn phong cách CineFlix Cinema.
@@ -20,7 +23,8 @@ class CinemaMovieDetailScreen extends StatefulWidget {
 
 class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
   int _selectedDateIndex = 0;
-  String _selectedChainFilter = 'all'; // 'all', 'CineFlix Cinema', 'CGV Cinemas'
+  String _selectedChainFilter =
+      'all'; // 'all', 'CineFlix Cinema', 'CGV Cinemas'
   bool _isExpandedSynopsis = false;
 
   late final List<DateTime> _dates;
@@ -61,17 +65,22 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final cinemaService = CinemaService.instance;
-    const blueColor = Color(0xFF0284C7); // CineFlix Blue
+    const blueColor = Color(
+      0xFF0369A1,
+    ); // CineFlix Blue, tương phản trên nền sáng
 
     final movie = cinemaService.movies.firstWhere(
       (m) => m.id == widget.movieId,
       orElse: () => cinemaService.movies.first,
     );
 
-    final theaters = cinemaService.getTheatersByCity(cinemaService.selectedCityId);
+    final theaters = cinemaService.getTheatersByCity(
+      cinemaService.selectedCityId,
+    );
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -85,7 +94,11 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: blueColor, width: 1.5),
               ),
-              child: const Icon(Icons.theaters_rounded, color: blueColor, size: 16),
+              child: const Icon(
+                Icons.theaters_rounded,
+                color: blueColor,
+                size: 16,
+              ),
             ),
             const SizedBox(width: 6),
             RichText(
@@ -114,7 +127,11 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close_rounded, color: Color(0xFF0284C7), size: 24),
+            icon: const Icon(
+              Icons.close_rounded,
+              color: Color(0xFF0284C7),
+              size: 24,
+            ),
             tooltip: 'Đóng',
             onPressed: () => context.pop(),
           ),
@@ -130,14 +147,22 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
               children: [
                 AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Image.network(
-                    movie.backdropUrl,
+                  child: CachedNetworkImage(
+                    imageUrl: movie.backdropUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => Container(
+                    memCacheWidth: 720,
+                    maxWidthDiskCache: 1080,
+                    placeholder: (ctx, url) => Container(
+                      color: const Color(0xFF1E293B),
+                    ),
+                    errorWidget: (ctx, url, err) => Container(
                       color: const Color(0xFF1E293B),
                       child: const Center(
-                        child: Icon(Icons.videocam_rounded,
-                            color: Colors.white30, size: 48),
+                        child: Icon(
+                          Icons.videocam_rounded,
+                          color: Colors.white30,
+                          size: 48,
+                        ),
                       ),
                     ),
                   ),
@@ -146,10 +171,13 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                 InkWell(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    context.push('/trailer', extra: {
-                      'title': movie.title,
-                      'videoUrl': movie.trailerUrl,
-                    });
+                    context.push(
+                      '/trailer',
+                      extra: {
+                        'title': movie.title,
+                        'videoUrl': movie.trailerUrl,
+                      },
+                    );
                   },
                   child: Container(
                     width: 56,
@@ -189,9 +217,25 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                     child: SizedBox(
                       width: 105,
                       height: 150,
-                      child: Image.network(
-                        movie.posterUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: movie.posterUrl,
                         fit: BoxFit.cover,
+                        memCacheWidth: 240,
+                        memCacheHeight: 360,
+                        maxWidthDiskCache: 600,
+                        placeholder: (ctx, url) => Container(
+                          color: const Color(0xFF1E293B),
+                        ),
+                        errorWidget: (ctx, url, err) => Container(
+                          color: const Color(0xFF1E293B),
+                          child: const Center(
+                            child: Icon(
+                              Icons.movie_rounded,
+                              color: Colors.white38,
+                              size: 32,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -210,9 +254,11 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                             Expanded(
                               child: Text(
                                 movie.title,
-                                style: const TextStyle(
-                                  color: Color(0xFF0F172A),
-                                  fontSize: 18,
+                                style: TextStyle(
+                                  color: ThemeService.instance.isWindowsBlue
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -0.3,
                                 ),
@@ -221,9 +267,11 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 3),
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF97316),
+                                color: const Color(0xFFC2410C),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -243,24 +291,34 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         // Thời lượng & Khởi chiếu
                         Row(
                           children: [
-                            const Icon(Icons.access_time_rounded,
-                                color: Color(0xFFEA580C), size: 15),
+                            const Icon(
+                              Icons.access_time_rounded,
+                              color: Color(0xFFC2410C),
+                              size: 15,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${movie.durationMinutes} Phút',
-                              style: const TextStyle(
-                                color: Color(0xFF334155),
+                              style: TextStyle(
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? const Color(0xFFE2F1FF)
+                                    : const Color(0xFF334155),
                                 fontSize: 13,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Icon(Icons.calendar_today_rounded,
-                                color: Color(0xFFEA580C), size: 14),
+                            const Icon(
+                              Icons.calendar_today_rounded,
+                              color: Color(0xFFC2410C),
+                              size: 14,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               movie.releaseDate,
-                              style: const TextStyle(
-                                color: Color(0xFF334155),
+                              style: TextStyle(
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? const Color(0xFFE2F1FF)
+                                    : const Color(0xFF334155),
                                 fontSize: 13,
                               ),
                             ),
@@ -272,22 +330,29 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         // Đánh giá sao vàng (Khớp Screenshot 2: ⭐ 8.3 (122 votes))
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded,
-                                color: Color(0xFFF59E0B), size: 18),
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 18,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               movie.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Color(0xFF0F172A),
-                                fontSize: 14,
+                              style: TextStyle(
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '(${movie.voteCount} votes)',
-                              style: const TextStyle(
-                                color: Color(0xFF64748B),
+                              style: TextStyle(
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? const Color(0xFFD6EBFC)
+                                    : const Color(0xFF64748B),
                                 fontSize: 12,
                               ),
                             ),
@@ -299,17 +364,21 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         // Quốc gia
                         Row(
                           children: [
-                            const Text(
+                            Text(
                               'Quốc gia:   ',
                               style: TextStyle(
-                                color: Color(0xFF64748B),
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? const Color(0xFFD6EBFC)
+                                    : const Color(0xFF64748B),
                                 fontSize: 13,
                               ),
                             ),
                             Text(
                               movie.country,
-                              style: const TextStyle(
-                                color: Color(0xFF0F172A),
+                              style: TextStyle(
+                                color: ThemeService.instance.isWindowsBlue
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -330,14 +399,21 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Nhà sản xuất:  ',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFD6EBFC)
+                          : const Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
                   ),
                   Text(
                     movie.productionStudio,
-                    style: const TextStyle(
-                      color: Color(0xFF0F172A),
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? Colors.white
+                          : const Color(0xFF0F172A),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -353,9 +429,14 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Thể loại:          ',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFD6EBFC)
+                          : const Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
                   ),
                   Wrap(
                     spacing: 8,
@@ -363,7 +444,9 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         .map(
                           (genre) => Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 5),
+                              horizontal: 14,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
@@ -373,7 +456,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                               genre,
                               style: const TextStyle(
                                 color: Color(0xFF334155),
-                                fontSize: 12.5,
+                                fontSize: 13,
                               ),
                             ),
                           ),
@@ -391,13 +474,20 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Đạo diễn:        ',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFD6EBFC)
+                          : const Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -407,7 +497,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                       movie.director,
                       style: const TextStyle(
                         color: Color(0xFF334155),
-                        fontSize: 12.5,
+                        fontSize: 13,
                       ),
                     ),
                   ),
@@ -423,11 +513,16 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       'Diễn viên:       ',
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      style: TextStyle(
+                        color: ThemeService.instance.isWindowsBlue
+                            ? const Color(0xFFD6EBFC)
+                            : const Color(0xFF64748B),
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -438,7 +533,9 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                           .map(
                             (actor) => Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
+                                horizontal: 12,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
@@ -470,9 +567,11 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                 children: [
                   Text(
                     movie.synopsis,
-                    style: const TextStyle(
-                      color: Color(0xFF334155),
-                      fontSize: 13.5,
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFE2F1FF)
+                          : const Color(0xFF334155),
+                      fontSize: 13,
                       height: 1.5,
                     ),
                     maxLines: _isExpandedSynopsis ? null : 4,
@@ -483,11 +582,14 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                   const SizedBox(height: 4),
                   InkWell(
                     onTap: () => setState(
-                        () => _isExpandedSynopsis = !_isExpandedSynopsis),
+                      () => _isExpandedSynopsis = !_isExpandedSynopsis,
+                    ),
                     child: Text(
                       _isExpandedSynopsis ? 'Thu gọn' : 'Xem thêm >',
-                      style: const TextStyle(
-                        color: Color(0xFF0284C7),
+                      style: TextStyle(
+                        color: ThemeService.instance.isWindowsBlue
+                            ? const Color(0xFF5AD2F4)
+                            : const Color(0xFF0369A1),
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
@@ -508,16 +610,20 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                     width: 4,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0284C7),
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFF5AD2F4)
+                          : const Color(0xFF0284C7),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Lịch Chiếu',
                     style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 18,
+                      color: ThemeService.instance.isWindowsBlue
+                          ? Colors.white
+                          : const Color(0xFF0F172A),
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -557,8 +663,10 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                                 ),
                               ),
                             ),
-                            const Icon(Icons.arrow_drop_down_rounded,
-                                color: Color(0xFF64748B)),
+                            const Icon(
+                              Icons.arrow_drop_down_rounded,
+                              color: Color(0xFF64748B),
+                            ),
                           ],
                         ),
                       ),
@@ -581,23 +689,31 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         child: DropdownButton<String>(
                           value: _selectedChainFilter,
                           isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down_rounded,
-                              color: Color(0xFF64748B)),
+                          icon: const Icon(
+                            Icons.arrow_drop_down_rounded,
+                            color: Color(0xFF64748B),
+                          ),
                           style: const TextStyle(
                             color: Color(0xFF334155),
                             fontSize: 13,
                           ),
                           items: const [
                             DropdownMenuItem(
-                                value: 'all', child: Text('Tất cả rạp')),
+                              value: 'all',
+                              child: Text('Tất cả rạp'),
+                            ),
                             DropdownMenuItem(
-                                value: 'CineFlix Cinema',
-                                child: Text('CineFlix Cinema')),
+                              value: 'CineFlix Cinema',
+                              child: Text('CineFlix Cinema'),
+                            ),
                             DropdownMenuItem(
-                                value: 'CGV Cinemas',
-                                child: Text('CGV Cinemas')),
+                              value: 'CGV Cinemas',
+                              child: Text('CGV Cinemas'),
+                            ),
                             DropdownMenuItem(
-                                value: 'BHD Star', child: Text('BHD Star')),
+                              value: 'BHD Star',
+                              child: Text('BHD Star'),
+                            ),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -667,7 +783,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                               color: isSelected
                                   ? Colors.white
                                   : const Color(0xFF0F172A),
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -735,7 +851,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         theater.address,
                         style: const TextStyle(
                           color: Color(0xFF64748B),
-                          fontSize: 11.5,
+                          fontSize: 12,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -745,7 +861,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                         '${showtimes.first.hallName} ${showtimes.first.format}',
                         style: const TextStyle(
                           color: Color(0xFF475569),
-                          fontSize: 12.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -786,7 +902,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
                                   st.time,
                                   style: const TextStyle(
                                     color: Color(0xFF0F172A),
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -805,6 +921,7 @@ class _CinemaMovieDetailScreenState extends State<CinemaMovieDetailScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

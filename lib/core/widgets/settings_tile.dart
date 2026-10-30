@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
 
 class SettingsTile extends StatelessWidget {
@@ -50,7 +51,7 @@ class SettingsTile extends StatelessWidget {
                     iconColor ?? (isDestructive ? AppColors.red : Colors.white),
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,10 +65,10 @@ class SettingsTile extends StatelessWidget {
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -79,11 +80,7 @@ class SettingsTile extends StatelessWidget {
             if (trailing != null)
               trailing!
             else
-              const Icon(
-                Icons.chevron_right,
-                color: AppColors.textMuted,
-                size: 20,
-              ),
+              Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
           ],
         ),
       ),
@@ -95,20 +92,21 @@ class SettingsSection extends StatelessWidget {
   final String? title;
   final List<Widget> children;
 
-  const SettingsSection({super.key, this.title, required this.children});
+  SettingsSection({super.key, this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null) ...[
           Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 8, top: 16),
+            padding: EdgeInsets.only(left: 16, bottom: 8, top: 16),
             child: Text(
               title!.toUpperCase(),
-              style: const TextStyle(
-                color: AppColors.textMuted,
+              style: TextStyle(
+                color: isBlue ? const Color(0xFFD6EBFC) : AppColors.textMuted,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
@@ -121,7 +119,10 @@ class SettingsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white10, width: 0.8),
+            border: Border.all(
+              color: isBlue ? const Color(0x4D5AD2F4) : Colors.white10,
+              width: 0.8,
+            ),
           ),
           child: Column(
             children: [

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,6 +8,7 @@ import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class AdminMovieFormScreen extends StatefulWidget {
   final MovieModel? movie;
@@ -231,7 +233,7 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                   const SizedBox(width: 8),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -251,16 +253,16 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(fallbackRoute: '/admin/movies'),
         title: Text(
           _isEditing ? 'Chỉnh sửa phim' : 'Thêm phim mới',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
       ),
@@ -292,8 +294,8 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 14),
-                          const Text(
+                          SizedBox(height: 14),
+                          Text(
                             'Thể loại phim',
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -396,8 +398,8 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          const Text(
+                          SizedBox(height: 14),
+                          Text(
                             'Phân loại độ tuổi',
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -512,19 +514,19 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                                   keyboardType: TextInputType.url,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               // KHUNG LIVE PREVIEW POSTER 2:3
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Xem trước',
                                     style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 12,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  SizedBox(height: 4),
                                   Container(
                                     width: 72,
                                     height: 108,
@@ -535,11 +537,27 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                                     ),
                                     clipBehavior: Clip.antiAlias,
                                     child: _previewPosterUrl.isNotEmpty
-                                        ? Image.network(
-                                            _previewPosterUrl,
+                                        ? CachedNetworkImage(
+                                            imageUrl: _previewPosterUrl,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (ctx, err, stack) {
-                                              return const Center(
+                                            memCacheWidth: 200,
+                                            memCacheHeight: 300,
+                                            maxWidthDiskCache: 400,
+                                            placeholder: (ctx, url) => Center(
+                                              child: SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(AppColors.red),
+                                                ),
+                                              ),
+                                            ),
+                                            errorWidget: (ctx, url, err) {
+                                              return Center(
                                                 child: Icon(
                                                   Icons.broken_image_outlined,
                                                   color: AppColors.textMuted,
@@ -547,26 +565,8 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                                                 ),
                                               );
                                             },
-                                            loadingBuilder: (ctx, child, progress) {
-                                              if (progress == null) {
-                                                return child;
-                                              }
-                                              return const Center(
-                                                child: SizedBox(
-                                                  width: 18,
-                                                  height: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                          Color
-                                                        >(AppColors.red),
-                                                  ),
-                                                ),
-                                              );
-                                            },
                                           )
-                                        : const Center(
+                                        : Center(
                                             child: Icon(
                                               Icons.image_outlined,
                                               color: AppColors.textMuted,
@@ -589,15 +589,15 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             activeThumbColor: AppColors.red,
-                            title: const Text(
+                            title: Text(
                               'Phim nổi bật (Hero Banner)',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            subtitle: const Text(
+                            subtitle: Text(
                               'Hiển thị phim trên banner lớn đầu trang chủ S09',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -608,19 +608,19 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                             onChanged: (val) =>
                                 setState(() => _isFeatured = val),
                           ),
-                          const Divider(color: Colors.white10),
+                          Divider(color: Colors.white10),
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             activeThumbColor: AppColors.red,
-                            title: const Text(
+                            title: Text(
                               'Phim Mới & Hot',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            subtitle: const Text(
+                            subtitle: Text(
                               'Gắn nhãn mới và đưa vào tab Mới & Hot S16',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -630,19 +630,19 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                             value: _isNew,
                             onChanged: (val) => setState(() => _isNew = val),
                           ),
-                          const Divider(color: Colors.white10),
+                          Divider(color: Colors.white10),
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
                             activeThumbColor: AppColors.red,
-                            title: const Text(
+                            title: Text(
                               'Sắp chiếu (Coming Soon)',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            subtitle: const Text(
+                            subtitle: Text(
                               'Đánh dấu phim sắp phát hành, chưa mở xem ngay',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -681,8 +681,8 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
 
             // THANH NÚT HÀNH ĐỘNG DƯỚI ĐÁY (STICKY ACTION BAR)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
                 color: AppColors.surface,
                 border: Border(top: BorderSide(color: Colors.white10)),
               ),
@@ -693,13 +693,13 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
                     child: OutlinedButton(
                       onPressed: _isLoading ? null : () => context.pop(),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white24),
+                        side: BorderSide(color: Colors.white24),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Hủy bỏ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -723,6 +723,6 @@ class _AdminMovieFormScreenState extends State<AdminMovieFormScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

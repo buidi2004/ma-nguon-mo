@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../services/theme_service.dart';
+import 'app_typography.dart';
 
 class AppColors {
   static const darkBackground = Color(0xFF141414);
-  static Color get background => ThemeService.instance.backgroundColor;
-  static const surface = Color(0xFF2A2A2A);
-  static const surfaceLight = Color(0xFF333333);
+  static Color get background => ThemeService.instance.scaffoldBackgroundColor;
+  static Color get scaffoldBackground =>
+      ThemeService.instance.scaffoldBackgroundColor;
+  static Color get surface => ThemeService.instance.surfaceColor;
+  static Color get surfaceLight => ThemeService.instance.surfaceLightColor;
 
   /// Màu đỏ cố định Netflix nguyên bản
   static const red = Color(0xFFE50914);
@@ -18,20 +21,26 @@ class AppColors {
   static const win11LightBlue = Color(0xFF66C7F4);
   static const win11Navy = Color(0xFF010D1A);
 
+  /// Màu vàng hoàng gia Dark Luxury (#D4AF37)
+  static const gold = Color(0xFFD4AF37);
+  static const luxuryGold = Color(0xFFD4AF37);
+  static const goldLight = Color(0xFFF1D48B);
+  static const goldDark = Color(0xFF6D4A18);
+
   static const success = Color(0xFF2E7D32);
   static const warning = Color(0xFFFFAB00);
   static const info = Color(0xFF2196F3);
   static const blue = Color(0xFF2196F3);
-  static const textPrimary = Color(0xFFFFFFFF);
-  static const textSecondary = Color(0xFFB3B3B3);
-  static const textMuted = Color(0xFF808080);
-  static const divider = Color(0xFF2A2A2A);
-  static const cardDark = Color(0xFF1E1E1E);
+  static Color get textPrimary => ThemeService.instance.textPrimary;
+  static Color get textSecondary => ThemeService.instance.textSecondary;
+  static Color get textMuted => ThemeService.instance.textMuted;
+  static Color get divider => ThemeService.instance.dividerColor;
+  static Color get cardDark => ThemeService.instance.cardColor;
 
   /// Nền tối sâu khi chọn theme xanh đen (Đen nhiều hơn xanh)
-  static const darkBlueBackground = Color(0xFF0B0F17);
-  static const darkBlueSurface = Color(0xFF161F2E);
-  static const darkBlueCard = Color(0xFF111827);
+  static Color get darkBlueBackground => ThemeService.instance.backgroundColor;
+  static Color get darkBlueSurface => ThemeService.instance.surfaceColor;
+  static Color get darkBlueCard => ThemeService.instance.cardColor;
 
   /// Getter động theo ThemeService khi dùng ngữ cảnh động
   static Color get primary => ThemeService.instance.primaryColor;
@@ -44,6 +53,51 @@ class AppColors {
   static Color get dynamicTextMuted => ThemeService.instance.textMuted;
 }
 
+/// Light palette scoped to the phone home screen in the blue theme.
+class HomeScreenPalette extends ThemeExtension<HomeScreenPalette> {
+  final Color background;
+  final Color surface;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color divider;
+  final Color action;
+
+  const HomeScreenPalette({
+    this.background = Colors.transparent,
+    this.surface = const Color(0xE608202E),
+    this.textPrimary = Colors.white,
+    this.textSecondary = const Color(0xFFE2F1FF),
+    this.textMuted = const Color(0xFFB8D4E8),
+    this.divider = const Color(0x4D5AD2F4),
+    this.action = const Color(0xFF5AD2F4),
+  });
+
+  static const lightBlue = HomeScreenPalette();
+
+  @override
+  HomeScreenPalette copyWith({
+    Color? background,
+    Color? surface,
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? textMuted,
+    Color? divider,
+    Color? action,
+  }) => HomeScreenPalette(
+    background: background ?? this.background,
+    surface: surface ?? this.surface,
+    textPrimary: textPrimary ?? this.textPrimary,
+    textSecondary: textSecondary ?? this.textSecondary,
+    textMuted: textMuted ?? this.textMuted,
+    divider: divider ?? this.divider,
+    action: action ?? this.action,
+  );
+
+  @override
+  HomeScreenPalette lerp(covariant HomeScreenPalette? other, double t) => this;
+}
+
 class AppTheme {
   static Color get background => AppColors.background;
   static Color get surface => AppColors.surface;
@@ -53,6 +107,8 @@ class AppTheme {
   static const red = AppColors.red;
   static const win11Blue = AppColors.win11Blue;
   static const win11LightBlue = AppColors.win11LightBlue;
+  static const gold = AppColors.gold;
+  static const luxuryGold = AppColors.luxuryGold;
   static const info = AppColors.info;
   static const blue = AppColors.blue;
   static Color get textPrimary => AppColors.textPrimary;
@@ -67,20 +123,32 @@ ThemeData buildAppTheme([Color? primaryOverride, bool isLight = false]) {
   final bg = ThemeService.instance.backgroundColor;
   final surface = ThemeService.instance.surfaceColor;
 
+  final onSurfaceText = isLight ? const Color(0xFF14212B) : Colors.white;
+
   return ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
+    brightness: isLight ? Brightness.light : Brightness.dark,
     scaffoldBackgroundColor: bg,
-    colorScheme: ColorScheme.dark(
-      primary: primary,
-      surface: surface,
-      onSurface: Colors.white,
-    ),
-    appBarTheme: const AppBarTheme(
+    // Thang chữ chuẩn Apple iOS (HIG Typography) thay cho fontSize rời rạc.
+    textTheme: AppTypography.applyTo(ThemeData.dark().textTheme, onSurfaceText),
+    colorScheme: isLight
+        ? ColorScheme.light(
+            primary: const Color(0xFF006B9F),
+            surface: surface,
+            onSurface: const Color(0xFF14212B),
+          )
+        : ColorScheme.dark(
+            primary: primary,
+            surface: surface,
+            onSurface: Colors.white,
+          ),
+    appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      iconTheme: IconThemeData(color: Colors.white),
+      iconTheme: IconThemeData(
+        color: isLight ? const Color(0xFF14212B) : Colors.white,
+      ),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: bg,
@@ -88,16 +156,15 @@ ThemeData buildAppTheme([Color? primaryOverride, bool isLight = false]) {
       iconTheme: WidgetStateProperty.resolveWith(
         (s) => IconThemeData(
           color: s.contains(WidgetState.selected)
-              ? primary
-              : const Color(0xFF808080),
+              ? (isLight ? const Color(0xFF006B9F) : primary)
+              : (isLight ? const Color(0xFF526575) : const Color(0xFF808080)),
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
-        (s) => TextStyle(
-          fontSize: 11,
+        (s) => AppTypography.caption2.copyWith(
           color: s.contains(WidgetState.selected)
-              ? primary
-              : const Color(0xFF808080),
+              ? (isLight ? const Color(0xFF006B9F) : primary)
+              : (isLight ? const Color(0xFF526575) : const Color(0xFF808080)),
         ),
       ),
     ),

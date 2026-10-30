@@ -65,9 +65,24 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
     if (items.length > 1) {
       final next = items[(index + 1) % items.length];
       if (next.posterUrl.isNotEmpty) {
-        precacheImage(CachedNetworkImageProvider(next.posterUrl), context);
+        // Pre-cache đúng kích thước render. Provider không có giới hạn sẽ giải
+        // mã ảnh gốc ngay lúc carousel đổi slide, dễ tạo một khung hình dài
+        // trên máy tầm trung dù slide chỉ hiển thị tối đa 1080px.
+        precacheImage(
+          CachedNetworkImageProvider(
+            next.posterUrl,
+            maxWidth: _cacheWidthFor(context),
+          ),
+          context,
+        );
       }
     }
+  }
+
+  int _cacheWidthFor(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    return (width * dpr).toInt().clamp(720, 1080);
   }
 
   List<MovieModel> get _effectiveMovies {
@@ -84,13 +99,10 @@ class _HeroBannerCarouselState extends State<HeroBannerCarousel> {
     final heroHeight = (screenSize.height * 0.58)
         .clamp(420.0, 660.0)
         .toDouble();
-    final cacheWidth =
-        (screenSize.width * MediaQuery.devicePixelRatioOf(context))
-            .toInt()
-            // Trần 1080px: đủ nét trên điện thoại, nhẹ ~40% RAM decode/GPU
-            // so với 1440px mà mắt thường không phân biệt được.
-            .clamp(720, 1080)
-            .toInt();
+    // Trần 1080px: đủ nét trên điện thoại, nhẹ hơn ảnh gốc rất lớn mà mắt
+    // thường không phân biệt được. Dùng chung với provider preload để cache
+    // được tái sử dụng ngay khi slide xuất hiện.
+    final cacheWidth = _cacheWidthFor(context);
     final isSingle = items.length == 1;
 
     return Semantics(
@@ -216,44 +228,63 @@ class _HeroSlide extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Ảnh nền (chạm vào ảnh để mở trailer phim)
-        if (movie.posterUrl.isEmpty)
-          const ColoredBox(
-            color: AppColors.surface,
-            child: Center(
-              child: Icon(
-                Icons.movie_filter_outlined,
-                size: 64,
-                color: Colors.white24,
-                semanticLabel: 'Không có ảnh phim',
-              ),
-            ),
-          )
-        else
-          GestureDetector(
-            onTap: onImageTap ?? () => context.push('/movie/${movie.id}/trailer'),
-            behavior: HitTestBehavior.opaque,
-            child: CachedNetworkImage(
-              imageUrl: movie.posterUrl,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              memCacheWidth: cacheWidth,
-              fadeInDuration: const Duration(milliseconds: 180),
-              fadeOutDuration: const Duration(milliseconds: 150),
-              placeholder: (_, _) => const ColoredBox(color: AppColors.surface),
-              errorWidget: (_, _, _) => const ColoredBox(
-                color: AppColors.surface,
-                child: Center(
-                  child: Icon(
-                    Icons.movie_filter_outlined,
-                    size: 64,
-                    color: Colors.white24,
-                    semanticLabel: 'Tải ảnh thất bại',
+        // 1. Ảnh nền (chạm vào ảnh để mở trailer phim) với hiệu ứng hòa tan quang học (Alpha Dissolve Feathering)
+        ShaderMask(
+          shaderCallback: (bounds) {
+            return const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: [0.0, 0.45, 0.70, 0.88, 1.0],
+              colors: [
+                Colors.white,
+                Colors.white,
+                Color(0xCCFFFFFF),
+                Color(0x33FFFFFF),
+                Colors.transparent,
+              ],
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.dstIn,
+          child: movie.posterUrl.isEmpty
+              ? ColoredBox(
+                  color: AppColors.surface,
+                  child: const Center(
+                    child: Icon(
+                      Icons.movie_filter_outlined,
+                      size: 64,
+                      color: Colors.white24,
+                      semanticLabel: 'Không có ảnh phim',
+                    ),
+                  ),
+                )
+              : GestureDetector(
+                  onTap:
+                      onImageTap ??
+                      () => context.push('/movie/${movie.id}/trailer'),
+                  behavior: HitTestBehavior.opaque,
+                  child: CachedNetworkImage(
+                    imageUrl: movie.posterUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    memCacheWidth: cacheWidth,
+                    maxWidthDiskCache: cacheWidth,
+                    fadeInDuration: const Duration(milliseconds: 180),
+                    fadeOutDuration: const Duration(milliseconds: 150),
+                    placeholder: (_, _) => ColoredBox(color: AppColors.surface),
+                    errorWidget: (_, _, _) => ColoredBox(
+                      color: AppColors.surface,
+                      child: const Center(
+                        child: Icon(
+                          Icons.movie_filter_outlined,
+                          size: 64,
+                          color: Colors.white24,
+                          semanticLabel: 'Tải ảnh thất bại',
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
+        ),
 
         // 2. Gradient đỉnh: hòa vào status bar / app bar trong suốt.
         const Positioned(
@@ -281,7 +312,9 @@ class _HeroSlide extends StatelessWidget {
           ),
         ),
 
-        // 3. Gradient đáy: mờ dần xuống nền #141414, không cắt cứng.
+        // 3. Gradient đáy: hòa trộn quang học đa tầng (Multi-stop Oceanic Blend)
+        // Trong chế độ Windows Blue, dải gradient kết thúc ở Colors.transparent tại 1.0
+        // để hòa tan triệt để 100% vào nền sóng động mà không để lại bất kỳ đường gờ nào.
         Positioned.fill(
           child: IgnorePointer(
             child: DecoratedBox(
@@ -289,17 +322,63 @@ class _HeroSlide extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.35, 0.72, 1.0],
-                  colors: [
-                    Colors.transparent,
-                    AppColors.background.withValues(alpha: 0.75),
-                    AppColors.background,
-                  ],
+                  stops: const [0.20, 0.45, 0.68, 0.82, 0.92, 1.0],
+                  colors: ThemeService.instance.isWindowsBlue
+                      ? const [
+                          Colors.transparent,
+                          Color(0x2E011420),
+                          Color(0x7A021826),
+                          Color(0xB8031C26),
+                          Color(0x55031C26),
+                          Colors.transparent,
+                        ]
+                      : (ThemeService.instance.isLuxuryGold
+                          ? const [
+                              Colors.transparent,
+                              Color(0x2E060504),
+                              Color(0x7A060504),
+                              Color(0xB8060504),
+                              Color(0x55060504),
+                              Colors.transparent,
+                            ]
+                          : [
+                              Colors.transparent,
+                              AppColors.background.withValues(alpha: 0.20),
+                              AppColors.background.withValues(alpha: 0.55),
+                              AppColors.background.withValues(alpha: 0.82),
+                              AppColors.background.withValues(alpha: 0.96),
+                              AppColors.background,
+                            ]),
                 ),
               ),
             ),
           ),
         ),
+
+        // Lớp ánh sáng xanh lơ lan tỏa nhẹ (Cyan Ambient Luminescence) ở vùng chân banner
+        if (ThemeService.instance.isWindowsBlue)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+            child: const IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.5, 1.0],
+                    colors: [
+                      Colors.transparent,
+                      Color(0x1400A2ED),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
 
         // 4. Nội dung đáy: title + meta + cụm 3 nút hành động.
         Positioned(
@@ -314,7 +393,7 @@ class _HeroSlide extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -341,7 +420,9 @@ class _HeroSlide extends StatelessWidget {
                             ? Icons.bookmark
                             : Icons.bookmark_outline,
                         label: isInList ? 'Đã thêm' : 'Thêm vào DS',
-                        iconColor: isInList ? ThemeService.instance.primaryColor : Colors.white,
+                        iconColor: isInList
+                            ? ThemeService.instance.primaryColor
+                            : Colors.white,
                         onTap: () {
                           HapticFeedback.lightImpact();
                           LibraryService.instance.toggleMyList(movie.id);
@@ -400,7 +481,7 @@ class _HeroSlide extends StatelessWidget {
                                     'HD',
                                     style: TextStyle(
                                       color: Colors.black,
-                                      fontSize: 10.5,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: -0.2,
                                     ),
@@ -429,7 +510,9 @@ class _HeroSlide extends StatelessWidget {
                     icon: Icons.info_outline,
                     label: 'Chi tiết',
                     iconColor: Colors.white,
-                    onTap: onInfo ?? () => context.push('/movie/${movie.id}'),
+                    onTap:
+                        onInfo ??
+                        () => context.push('/movie/${movie.id}', extra: movie),
                   ),
                 ],
               ),
@@ -466,11 +549,7 @@ class _ActionColumnButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            OpenFlixMorphIcon.snappy(
-              icon: icon,
-              color: iconColor,
-              size: 24,
-            ),
+            OpenFlixMorphIcon.snappy(icon: icon, color: iconColor, size: 24),
             const SizedBox(height: 3),
             Text(
               label,
@@ -479,7 +558,7 @@ class _ActionColumnButton extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 10.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w500,
                 letterSpacing: -0.2,
               ),
@@ -514,14 +593,14 @@ class _MetaRow extends StatelessWidget {
               vipTag,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 6),
             child: Text(
               '•',
@@ -533,14 +612,14 @@ class _MetaRow extends StatelessWidget {
               category,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 6),
             child: Text(
               '•',
@@ -549,7 +628,7 @@ class _MetaRow extends StatelessWidget {
           ),
           Text(
             rating,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -623,7 +702,8 @@ class HeroBanner extends StatelessWidget {
           reserveIndicatorSpace: false,
           onPlay: onPlay,
           onInfo: onInfo,
-          onImageTap: onImageTap ?? () => context.push('/movie/${movie.id}/trailer'),
+          onImageTap:
+              onImageTap ?? () => context.push('/movie/${movie.id}/trailer'),
         ),
       ),
     );

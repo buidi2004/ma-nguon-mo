@@ -5,6 +5,7 @@ import '../../core/widgets/primary_button.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 import 'services/admin_auth_service.dart';
+import '../../waves_background.dart';
 
 class AdminAuthGateScreen extends StatefulWidget {
   final VoidCallback? onAuthenticated;
@@ -68,16 +69,16 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Bảo mật Quản trị',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
       ),
@@ -121,8 +122,8 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                       size: 40,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: 20),
+                  Text(
                     'Xác thực Quản trị viên',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -132,8 +133,8 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                       letterSpacing: 0.3,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Khu vực kiểm soát kho phim và giám sát máy chủ. Vui lòng nhập mật khẩu để mở khóa.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -142,13 +143,13 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Ô nhập mật khẩu
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Mật khẩu quản trị *',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -156,13 +157,13 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscureText,
                         keyboardType: TextInputType.visiblePassword,
                         autofocus: true,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           letterSpacing: 1.5,
@@ -172,12 +173,12 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                           filled: true,
                           fillColor: AppColors.cardDark,
                           hintText: 'Nhập mật khẩu (ví dụ: 123)...',
-                          hintStyle: const TextStyle(
+                          hintStyle: TextStyle(
                             color: AppColors.textMuted,
-                            fontSize: 14,
+                            fontSize: 15,
                             letterSpacing: 0,
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.lock_outline_rounded,
                             color: AppColors.textMuted,
                             size: 20,
@@ -274,17 +275,17 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   PrimaryButton(
                     text: 'Mở khóa hệ thống',
                     isLoading: _isLoading,
                     icon: Icons.lock_open_rounded,
                     onPressed: _handleUnlock,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   TextButton(
                     onPressed: () => context.pop(),
-                    child: const Text(
+                    child: Text(
                       'Quay lại màn hình cá nhân',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -298,6 +299,6 @@ class _AdminAuthGateScreenState extends State<AdminAuthGateScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

@@ -60,8 +60,8 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                   memCacheWidth: (width * 3).toInt().clamp(200, 720),
                   memCacheHeight: (height * 3).toInt().clamp(150, 480),
                   placeholder: (_, _) =>
-                      const ColoredBox(color: AppColors.surfaceLight),
-                  errorWidget: (_, _, _) => const ColoredBox(
+                      ColoredBox(color: AppColors.surfaceLight),
+                  errorWidget: (_, _, _) => ColoredBox(
                     color: AppColors.surface,
                     child: Center(
                       child: Icon(
@@ -73,7 +73,7 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                   ),
                 )
               else
-                const ColoredBox(
+                ColoredBox(
                   color: AppColors.surface,
                   child: Center(
                     child: Icon(
@@ -90,10 +90,7 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x33000000),
-                      Color(0x66000000),
-                    ],
+                    colors: [Color(0x33000000), Color(0x66000000)],
                   ),
                 ),
               ),
@@ -124,9 +121,7 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                   child: Stack(
                     children: [
                       // Rãnh kính mờ phía sau
-                      Container(
-                        color: Colors.black.withValues(alpha: 0.5),
-                      ),
+                      Container(color: Colors.black.withValues(alpha: 0.5)),
                       // Dải đỏ tiến trình phát quang
                       FractionallySizedBox(
                         widthFactor: effectiveRatio,
@@ -135,7 +130,8 @@ class GlassPlayThumbnailOverlay extends StatelessWidget {
                             color: ThemeService.instance.primaryColor,
                             boxShadow: [
                               BoxShadow(
-                                color: ThemeService.instance.primaryColor.withValues(alpha: 0.6),
+                                color: ThemeService.instance.primaryColor
+                                    .withValues(alpha: 0.6),
                                 blurRadius: 4,
                                 offset: const Offset(0, -0.5),
                               ),

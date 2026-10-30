@@ -12,6 +12,7 @@ import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class TrailerScreen extends StatefulWidget {
   final String movieId;
@@ -235,31 +236,42 @@ class _TrailerScreenState extends State<TrailerScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(
-            color: ThemeService.instance.primaryColor,
+      return WavesBackground.wrapIfBlue(
+        Scaffold(
+          backgroundColor: ThemeService.instance.isWindowsBlue
+              ? Colors.transparent
+              : Colors.black,
+          body: Center(
+            child: CircularProgressIndicator(
+              color: ThemeService.instance.primaryColor,
+            ),
           ),
         ),
       );
     }
 
     if (_movie == null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(backgroundColor: Colors.transparent),
-        body: const Center(
-          child: Text(
-            'Không tìm thấy trailer của phim',
-            style: TextStyle(color: Colors.white),
+      return WavesBackground.wrapIfBlue(
+        Scaffold(
+          backgroundColor: ThemeService.instance.isWindowsBlue
+              ? Colors.transparent
+              : Colors.black,
+          appBar: AppBar(backgroundColor: Colors.transparent),
+          body: Center(
+            child: Text(
+              'Không tìm thấy trailer của phim',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+        backgroundColor: ThemeService.instance.isWindowsBlue
+            ? Colors.transparent
+            : Colors.black,
       body: SafeArea(
         child: Column(
           children: [
@@ -267,14 +279,12 @@ class _TrailerScreenState extends State<TrailerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
-                  GlassBackButton(
-                    fallbackRoute: '/movie/${widget.movieId}',
-                  ),
+                  GlassBackButton(fallbackRoute: '/movie/${widget.movieId}'),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Trailer chính thức: ${_movie!.title}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -283,14 +293,14 @@ class _TrailerScreenState extends State<TrailerScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   GlassIconButton.circle(
                     size: 38,
                     iconSize: 20,
                     icon: Icons.share_outlined,
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Đã sao chép liên kết trailer'),
                           backgroundColor: AppColors.surface,
                         ),
@@ -306,7 +316,9 @@ class _TrailerScreenState extends State<TrailerScreen> {
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Container(
-                    color: Colors.black,
+                    color: ThemeService.instance.isLight
+                        ? AppColors.surfaceLight
+                        : Colors.black,
                     child: _isVideoLoading
                         ? Center(
                             child: CircularProgressIndicator(
@@ -444,7 +456,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
             ),
             // Thông tin mô tả bên dưới
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               color: AppColors.background,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -453,33 +465,34 @@ class _TrailerScreenState extends State<TrailerScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GlassSpecBadge.tag(label: 'TRAILER', isCapsule: true),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '${_movie!.releaseYear} • ${_movie!.category}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       GlassButton.primary(
                         text: 'Xem chi tiết',
                         icon: Icons.info_outline,
                         height: 38,
                         borderRadius: 19,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        onPressed: () => context.push('/movie/${widget.movieId}'),
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        onPressed: () =>
+                            context.push('/movie/${widget.movieId}'),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Text(
                     _movie!.description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                       height: 1.4,
@@ -492,6 +505,7 @@ class _TrailerScreenState extends State<TrailerScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

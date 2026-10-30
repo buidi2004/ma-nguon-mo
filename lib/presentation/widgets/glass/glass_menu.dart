@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../services/theme_service.dart';
 import 'glass_optical_tokens.dart';
+import 'glass_perf.dart';
 import 'glass_surface.dart';
 
 /// Thẻ Menu nổi bề mặt kính quang học bo cong mềm mại (Curved Optical Glass Menu Card).
@@ -32,17 +34,22 @@ class GlassMenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final defaultTint = ThemeService.instance.isWindowsBlue
+        ? const Color(0xCC082233)
+        : const Color(0xB31E1E1E);
     return GlassSurface(
       width: width,
       height: height,
       borderRadius: borderRadius,
       margin: margin,
       padding: padding,
-      tintColor: tintColor ?? GlassOpticalTokens.menuTint,
+      tintColor: tintColor ?? defaultTint,
       blur: blur ?? GlassOpticalTokens.menuBlur,
       refractiveIndex: GlassOpticalTokens.menuRefractiveIndex,
       thickness: GlassOpticalTokens.menuThickness,
       useBackdropFilter: useBackdropFilter,
+      // Menu/dialog là bề mặt tiêu điểm: giữ hạng premium trên mọi thiết bị.
+      quality: GlassPerf.focal,
       shadows: const [
         BoxShadow(
           color: Color(0x66000000),
@@ -104,9 +111,7 @@ class GlassMenuItem extends StatelessWidget {
             children: [
               if (icon != null) ...[
                 Padding(
-                  padding: EdgeInsets.only(
-                    top: subtitle != null ? 1.5 : 0.0,
-                  ),
+                  padding: EdgeInsets.only(top: subtitle != null ? 1.5 : 0.0),
                   child: Icon(icon, size: 22, color: activeColor),
                 ),
                 const SizedBox(width: 14),
@@ -171,10 +176,14 @@ Future<T?> showGlassBottomSheet<T>({
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: GlassSurface(
             borderRadius: topRadius,
-            tintColor: const Color(0x381E1E1E),
+            tintColor: ThemeService.instance.isWindowsBlue
+                ? const Color(0xE6082233)
+                : const Color(0xD91E1E1E),
             blur: 14.0,
             refractiveIndex: 1.68,
             thickness: 38.0,
+            // Bề mặt tiêu điểm: giữ premium trên mọi thiết bị.
+            quality: GlassPerf.focal,
             padding: const EdgeInsets.all(20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -196,7 +205,7 @@ Future<T?> showGlassBottomSheet<T>({
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -236,10 +245,14 @@ Future<T?> showGlassDialog<T>({
             color: Colors.transparent,
             child: GlassSurface(
               borderRadius: borderRadius,
-              tintColor: const Color(0x381E1E1E),
+              tintColor: ThemeService.instance.isWindowsBlue
+                  ? const Color(0xE6082233)
+                  : const Color(0xD91E1E1E),
               blur: 16.0,
               refractiveIndex: 1.68,
               thickness: 40.0,
+              // Bề mặt tiêu điểm: giữ premium trên mọi thiết bị.
+              quality: GlassPerf.focal,
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -249,7 +262,7 @@ Future<T?> showGlassDialog<T>({
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 19,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),

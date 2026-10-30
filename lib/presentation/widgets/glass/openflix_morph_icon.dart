@@ -78,12 +78,7 @@ class _OpenFlixMorphIconState extends State<OpenFlixMorphIcon>
     if (!mounted) return;
     final controller = _effectiveController;
     controller.reset();
-    final simulation = SpringSimulation(
-      widget.spring,
-      0.0,
-      1.0,
-      0.0,
-    );
+    final simulation = SpringSimulation(widget.spring, 0.0, 1.0, 0.0);
     controller.animateWith(simulation);
   }
 
@@ -99,8 +94,7 @@ class _OpenFlixMorphIconState extends State<OpenFlixMorphIcon>
     final controller = _effectiveController;
     final effectiveColor =
         widget.color ?? IconTheme.of(context).color ?? Colors.white;
-    final effectiveSize =
-        widget.size ?? IconTheme.of(context).size ?? 24.0;
+    final effectiveSize = widget.size ?? IconTheme.of(context).size ?? 24.0;
 
     return AnimatedBuilder(
       animation: controller,
@@ -110,7 +104,11 @@ class _OpenFlixMorphIconState extends State<OpenFlixMorphIcon>
         final rotation = (1.0 - progress) * 0.32; // ~18 độ đàn hồi
         // 2. Độ nảy lò xo (Spring Scale Bounce)
         final scale = widget.enableScalePulse
-            ? (0.86 + 0.14 * progress + (progress > 0.6 && progress < 1.1 ? 0.06 * (1.1 - progress) : 0.0))
+            ? (0.86 +
+                  0.14 * progress +
+                  (progress > 0.6 && progress < 1.1
+                      ? 0.06 * (1.1 - progress)
+                      : 0.0))
             : 1.0;
 
         return Transform.rotate(

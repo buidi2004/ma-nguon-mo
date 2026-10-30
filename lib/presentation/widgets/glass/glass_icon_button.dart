@@ -136,52 +136,64 @@ class _GlassIconButtonState extends State<GlassIconButton>
           onTapCancel: _handleTapCancel,
           onTap: _isEnabled ? widget.onPressed : null,
           behavior: HitTestBehavior.opaque,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Ánh sáng tỏa hào quang nếu bật hasGlow
-              if (widget.hasGlow)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: widget.isCircle
-                          ? BoxShape.circle
-                          : BoxShape.rectangle,
-                      borderRadius: widget.isCircle
-                          ? null
-                          : BorderRadius.circular(widget.borderRadius),
-                      gradient: RadialGradient(
-                        colors: [
-                          (widget.glowColor ?? ThemeService.instance.primaryColor)
-                              .withValues(alpha: 0.35),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 1.0],
+          // HIG › Accessibility: vùng chạm tối thiểu 44x44pt kể cả khi
+          // nút hiển thị nhỏ hơn (28pt, 38pt...).
+          child: Padding(
+            padding: EdgeInsets.all(
+              widget.size < 44.0 ? (44.0 - widget.size) / 2 : 0.0,
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Ánh sáng tỏa hào quang nếu bật hasGlow
+                if (widget.hasGlow)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: widget.isCircle
+                            ? BoxShape.circle
+                            : BoxShape.rectangle,
+                        borderRadius: widget.isCircle
+                            ? null
+                            : BorderRadius.circular(widget.borderRadius),
+                        gradient: RadialGradient(
+                          colors: [
+                            (widget.glowColor ??
+                                    ThemeService.instance.primaryColor)
+                                .withValues(alpha: 0.35),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 1.0],
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-              // Bề mặt kính quang học
-              GlassSurface(
-                width: widget.size,
-                height: widget.size,
-                isCircle: widget.isCircle,
-                borderRadius: widget.borderRadius,
-                tintColor: widget.tintColor ?? const Color(0x2E2A2A2A),
-                blur: 8.5,
-                refractiveIndex: 1.82,
-                thickness: 52.0,
-                useBackdropFilter: widget.useBackdropFilter,
-                child: Center(
-                  child: OpenFlixMorphIcon.snappy(
-                    icon: widget.icon,
-                    size: widget.iconSize,
-                    color: widget.iconColor,
+                // Bề mặt kính quang học
+                GlassSurface(
+                  width: widget.size,
+                  height: widget.size,
+                  isCircle: widget.isCircle,
+                  borderRadius: widget.borderRadius,
+                  tintColor:
+                      widget.tintColor ??
+                      (ThemeService.instance.isWindowsBlue
+                          ? const Color(0xCC082233)
+                          : const Color(0x991E293B)),
+                  blur: 8.5,
+                  refractiveIndex: 1.82,
+                  thickness: 52.0,
+                  useBackdropFilter: widget.useBackdropFilter,
+                  child: Center(
+                    child: OpenFlixMorphIcon.snappy(
+                      icon: widget.icon,
+                      size: widget.iconSize,
+                      color: widget.iconColor,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -231,7 +243,8 @@ class GlassBackButton extends StatelessWidget {
           iconColor: iconColor,
           tintColor: tintColor,
           tooltip: null, // Tuyệt đối không dùng Tooltip để tránh lỗi đè nhãn chữ "Back"
-          onPressed: onPressed ??
+          onPressed:
+              onPressed ??
               () {
                 try {
                   if (context.canPop()) {
@@ -241,17 +254,22 @@ class GlassBackButton extends StatelessWidget {
                 } catch (_) {
                   // Fallback an toàn khi context nằm ngoài GoRouter
                 }
-                if (fallbackRoute != null) {
-                  try {
-                    context.go(fallbackRoute!);
-                    return;
-                  } catch (_) {}
+
+                final navigator = Navigator.maybeOf(context);
+                if (navigator != null && navigator.canPop()) {
+                  navigator.pop();
+                  return;
                 }
-                Navigator.of(context).maybePop();
+
+                final target = fallbackRoute ?? '/';
+                try {
+                  context.go(target);
+                } catch (_) {
+                  navigator?.maybePop();
+                }
               },
         ),
       ),
     );
   }
 }
-

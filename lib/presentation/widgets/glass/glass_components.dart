@@ -1,3 +1,5 @@
+export 'border_beam.dart';
+export 'border_beam_search_bar.dart';
 export 'glass_action_button.dart';
 export 'glass_button.dart';
 export 'glass_chip_button.dart';
@@ -8,6 +10,7 @@ export 'glass_icon_button.dart';
 export 'glass_media_toolbar.dart';
 export 'glass_menu.dart';
 export 'glass_optical_tokens.dart';
+export 'glass_perf.dart';
 export 'glass_play_thumbnail_overlay.dart';
 export 'glass_player_play_button.dart';
 export 'glass_radio_tile_group.dart';

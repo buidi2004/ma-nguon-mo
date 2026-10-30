@@ -6,6 +6,7 @@ import '../../core/widgets/primary_button.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -66,18 +67,18 @@ class _ContactScreenState extends State<ContactScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: const GlassBackButton(fallbackRoute: '/help'),
-        title: const Text(
+        title: Text(
           'Liên hệ & Góp ý',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -109,8 +110,8 @@ class _ContactScreenState extends State<ContactScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Cảm ơn đóng góp của bạn!',
                       style: TextStyle(
                         color: Colors.white,
@@ -119,12 +120,12 @@ class _ContactScreenState extends State<ContactScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'Ý kiến của bạn đã được gửi đến đội ngũ phát triển OpenFlix. Chúng tôi sẽ phản hồi qua email nếu cần thêm thông tin.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
+                        fontSize: 15,
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -181,7 +182,7 @@ class _ContactScreenState extends State<ContactScreen> {
                           ),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
                           onChanged: (val) {
@@ -221,7 +222,7 @@ class _ContactScreenState extends State<ContactScreen> {
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
                         color: AppColors.surface,
@@ -232,11 +233,8 @@ class _ContactScreenState extends State<ContactScreen> {
                         controller: _contentController,
                         maxLines: 5,
                         maxLength: 500,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                        decoration: InputDecoration(
                           hintText: 'Mô tả chi tiết vấn đề hoặc ý tưởng của bạn để chúng tôi hỗ trợ tốt nhất...',
                           hintStyle: TextStyle(
                             color: AppColors.textMuted,
@@ -261,6 +259,6 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
         ),
       ),
-    );
+    ));
   }
 }

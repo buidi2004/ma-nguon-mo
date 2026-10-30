@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S46: Chọn Bắp Nước & Combo (Cinema Concessions Screen) — Nền Trắng Rạp
 class CinemaConcessionsScreen extends StatefulWidget {
@@ -59,15 +62,16 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFFF97316);
+    const primaryColor = Color(0xFFC2410C);
     final concessions = CinemaService.instance.concessions;
 
     final filteredList = _activeCategory == 'all'
         ? concessions
         : concessions.where((c) => c.category == _activeCategory).toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -85,10 +89,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
             ),
             Text(
               'Tiết kiệm tới 25% khi đặt trước cùng vé',
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 11.5,
-              ),
+              style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
             ),
           ],
         ),
@@ -146,13 +147,20 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                         child: SizedBox(
                           width: 80,
                           height: 80,
-                          child: Image.network(
-                            item.imageUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: item.imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) => Container(
+                            memCacheWidth: 240,
+                            memCacheHeight: 240,
+                            maxWidthDiskCache: 480,
+                            placeholder: (ctx, url) => Container(color: const Color(0xFFFEF3C7)),
+                            errorWidget: (ctx, url, err) => Container(
                               color: const Color(0xFFFEF3C7),
-                              child: const Icon(Icons.fastfood_rounded,
-                                  color: Colors.orange, size: 32),
+                              child: const Icon(
+                                Icons.fastfood_rounded,
+                                color: Colors.orange,
+                                size: 32,
+                              ),
                             ),
                           ),
                         ),
@@ -169,7 +177,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                               item.name,
                               style: const TextStyle(
                                 color: Color(0xFF0F172A),
-                                fontSize: 14.5,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -178,7 +186,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                               item.description,
                               style: const TextStyle(
                                 color: Color(0xFF64748B),
-                                fontSize: 11.5,
+                                fontSize: 12,
                                 height: 1.3,
                               ),
                               maxLines: 2,
@@ -188,8 +196,8 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                             Text(
                               '${_formatCurrency(item.price)} đ',
                               style: const TextStyle(
-                                color: Color(0xFFEA580C),
-                                fontSize: 14,
+                                color: Color(0xFFC2410C),
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -202,14 +210,19 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                         children: [
                           if (qty > 0) ...[
                             IconButton(
-                              icon: const Icon(Icons.remove_circle_outline_rounded,
-                                  color: Color(0xFF64748B), size: 26),
+                              icon: const Icon(
+                                Icons.remove_circle_outline_rounded,
+                                color: Color(0xFF64748B),
+                                size: 26,
+                              ),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                               onPressed: () => _changeQuantity(item.id, -1),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
                               child: Text(
                                 '$qty',
                                 style: const TextStyle(
@@ -221,8 +234,11 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                             ),
                           ],
                           IconButton(
-                            icon: const Icon(Icons.add_circle_rounded,
-                                color: primaryColor, size: 28),
+                            icon: const Icon(
+                              Icons.add_circle_rounded,
+                              color: primaryColor,
+                              size: 28,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () => _changeQuantity(item.id, 1),
@@ -261,15 +277,15 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                         'Ghế: ${widget.seatLabels.join(", ")}',
                         style: const TextStyle(
                           color: Color(0xFF475569),
-                          fontSize: 12.5,
+                          fontSize: 13,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '${_formatCurrency(_totalPrice)} đ',
                         style: const TextStyle(
-                          color: Color(0xFFF97316),
-                          fontSize: 19,
+                          color: Color(0xFFC2410C),
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -293,9 +309,11 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
+                    backgroundColor: const Color(0xFFC2410C),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 26, vertical: 13),
+                      horizontal: 26,
+                      vertical: 13,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -305,7 +323,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
                     'Thanh toán >',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14.5,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -315,6 +333,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -329,7 +348,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0284C7) : Colors.grey.shade100,
+          color: isSelected ? const Color(0xFF0369A1) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -337,7 +356,7 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : const Color(0xFF475569),
-              fontSize: 12.5,
+              fontSize: 13,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
@@ -348,8 +367,8 @@ class _CinemaConcessionsScreenState extends State<CinemaConcessionsScreen> {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

@@ -54,11 +54,7 @@ class _CinemaLocationPickerSheetState extends State<CinemaLocationPickerSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 30,
-            spreadRadius: 8,
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 30, spreadRadius: 8),
         ],
       ),
       child: SafeArea(
@@ -89,7 +85,7 @@ class _CinemaLocationPickerSheetState extends State<CinemaLocationPickerSheet> {
                     'Tỉnh / Thành phố',
                     style: TextStyle(
                       color: Color(0xFF1E293B),
-                      fontSize: 19,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.3,
                     ),
@@ -145,13 +141,13 @@ class _CinemaLocationPickerSheetState extends State<CinemaLocationPickerSheet> {
                         onChanged: (val) => setState(() => _searchQuery = val),
                         style: const TextStyle(
                           color: Color(0xFF1E293B),
-                          fontSize: 14,
+                          fontSize: 15,
                         ),
                         decoration: const InputDecoration(
                           hintText: 'Tìm kiếm tỉnh, thành phố...',
                           hintStyle: TextStyle(
                             color: Color(0xFF94A3B8),
-                            fontSize: 14,
+                            fontSize: 15,
                           ),
                           border: InputBorder.none,
                           isDense: true,

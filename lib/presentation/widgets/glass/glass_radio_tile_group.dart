@@ -59,7 +59,9 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
   }) {
     return GlassRadioTileGroup<String>(
       key: key,
-      items: options.map((s) => GlassRadioItem<String>(value: s, label: s)).toList(),
+      items: options
+          .map((s) => GlassRadioItem<String>(value: s, label: s))
+          .toList(),
       selectedValue: selectedOption,
       onChanged: onChanged,
       isWrap: isWrap,
@@ -80,7 +82,14 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     final effectiveActive = activeColor ?? ThemeService.instance.primaryColor;
+    final unselectedTint = isBlue
+        ? const Color(0xCC0A2433)
+        : const Color(0x80262626);
+    final selectedTint = isBlue
+        ? const Color(0xE6006BA6)
+        : effectiveActive.withValues(alpha: 0.32);
 
     if (isWrap) {
       return Wrap(
@@ -100,13 +109,15 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
                   horizontal: 14,
                   vertical: 9,
                 ),
-                tintColor: isSelected
-                    ? effectiveActive.withValues(alpha: 0.22)
-                    : const Color(0x222A2A2A),
+                tintColor: isSelected ? selectedTint : unselectedTint,
                 customBorder: Border.all(
                   color: isSelected
-                      ? effectiveActive.withValues(alpha: 0.65)
-                      : Colors.white.withValues(alpha: 0.12),
+                      ? (isBlue
+                            ? const Color(0xFF66C7F4)
+                            : effectiveActive.withValues(alpha: 0.75))
+                      : (isBlue
+                            ? const Color(0x4D5AD2F4)
+                            : Colors.white.withValues(alpha: 0.18)),
                   width: isSelected ? 1.2 : 0.8,
                 ),
                 blur: 8.5,
@@ -117,7 +128,11 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
                       isSelected
                           ? Icons.check_circle_rounded
                           : Icons.circle_outlined,
-                      color: isSelected ? Colors.white : AppColors.textMuted,
+                      color: isSelected
+                          ? Colors.white
+                          : (isBlue
+                                ? const Color(0xFFB8D4E8)
+                                : AppColors.textSecondary),
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -129,11 +144,13 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
                         style: TextStyle(
                           color: isSelected
                               ? Colors.white
-                              : AppColors.textSecondary,
+                              : (isBlue
+                                    ? const Color(0xFFE2F1FF)
+                                    : AppColors.textPrimary),
                           fontSize: 13,
                           fontWeight: isSelected
                               ? FontWeight.bold
-                              : FontWeight.normal,
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -159,13 +176,13 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
             child: GlassSurface(
               borderRadius: 8.0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              tintColor: isSelected
-                  ? effectiveActive.withValues(alpha: 0.20)
-                  : const Color(0x222A2A2A),
+              tintColor: isSelected ? selectedTint : unselectedTint,
               customBorder: Border.all(
                 color: isSelected
-                    ? effectiveActive.withValues(alpha: 0.60)
-                    : Colors.white12,
+                    ? (isBlue
+                          ? const Color(0xFF66C7F4)
+                          : effectiveActive.withValues(alpha: 0.70))
+                    : (isBlue ? const Color(0x4D5AD2F4) : Colors.white24),
               ),
               blur: 10.0,
               child: Row(
@@ -181,11 +198,15 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
                       isSelected
                           ? Icons.check_circle_rounded
                           : Icons.circle_outlined,
-                      color: isSelected ? effectiveActive : AppColors.textMuted,
+                      color: isSelected
+                          ? (isBlue ? Colors.white : effectiveActive)
+                          : (isBlue
+                                ? const Color(0xFFB8D4E8)
+                                : AppColors.textSecondary),
                       size: 20,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,17 +214,23 @@ class GlassRadioTileGroup<T> extends StatelessWidget {
                         Text(
                           item.label,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
                         ),
                         if (item.subtitle != null) ...[
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             item.subtitle!,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: isBlue
+                                  ? const Color(0xFFD6EBFC)
+                                  : AppColors.textSecondary,
                               fontSize: 12,
                             ),
                           ),

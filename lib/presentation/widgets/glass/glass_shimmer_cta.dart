@@ -117,7 +117,7 @@ class GlassShimmerCTA extends StatefulWidget {
                 qualityTag,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10.5,
+                  fontSize: 11,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.2,
                 ),
@@ -216,12 +216,23 @@ class _GlassShimmerCTAState extends State<GlassShimmerCTA>
         : widget.borderRadius;
     final isEnabled = widget.onPressed != null;
 
-    final effectiveGlow = widget.glowColor ?? ThemeService.instance.primaryColor;
+    final isBlue = ThemeService.instance.isWindowsBlue;
+    final effectiveGlow =
+        widget.glowColor ?? ThemeService.instance.primaryColor;
 
-    final Color bgColor = widget.backgroundColor ??
-        (_isPressed
-            ? const Color(0x66333333)
-            : (_isHovered ? const Color(0x552A2A2A) : const Color(0x381E1E1E)));
+    final Color bgColor =
+        widget.backgroundColor ??
+        (isBlue
+            ? (_isPressed
+                  ? const Color(0xE60D354C)
+                  : (_isHovered
+                        ? const Color(0xD90A2B3E)
+                        : const Color(0xCC072030)))
+            : (_isPressed
+                  ? const Color(0xB3333333)
+                  : (_isHovered
+                        ? const Color(0x992A2A2A)
+                        : const Color(0x881E1E1E))));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),

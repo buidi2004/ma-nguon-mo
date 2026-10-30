@@ -59,7 +59,54 @@ import '../../features/cinema/cinema_news_screen.dart';
 import '../../features/cinema/cinema_seat_selection_screen.dart';
 import '../../features/cinema/cinema_ticket_screen.dart';
 import '../../features/cinema/my_cinema_tickets_screen.dart';
+import '../../dark_luxury_background.dart';
 import '../../models/cinema/cinema_models.dart';
+
+TransitPage<T> _wavesTransitPage<T>({
+  required LocalKey key,
+  required Widget child,
+  required TransitType type,
+  required Duration duration,
+  required Curve curve,
+  bool fullscreenDialog = false,
+}) {
+  return TransitPage<T>(
+    key: key,
+    type: type,
+    duration: duration,
+    curve: curve,
+    fullscreenDialog: fullscreenDialog,
+    // KHÔNG bọc thêm nền động ở đây: nền đã có duy nhất một bản ở cấp app
+    // (`ThemedBackdrop` trong `MaterialApp.builder`). Trước đây mỗi route tự
+    // dựng thêm một shader nền + một `ListenableBuilder` theo theme, nên lúc
+    // chuyển màn có 2–3 shader toàn màn hình cùng chạy và mỗi lần đổi theme
+    // toàn bộ nội dung route bị remount.
+    child: child,
+  );
+}
+
+/// Trang chuyển tab của bottom navigation: hiển thị **tức thì**, không chạy
+/// transition.
+///
+/// `StatefulShellRoute.indexedStack` vốn đã đổi tab bằng cách bật index của
+/// stack, nên transition chỉ phát sinh ở lần đầu mở mỗi tab. Ở lần đầu đó, một
+/// [FadeTransition] phủ lên toàn trang sẽ buộc engine dựng một `saveLayer` cho
+/// cả màn hình, và mọi widget kính mờ bên trong (chip thể loại, hero, bottom
+/// bar) phải chạy lại lớp BackdropFilter mỗi frame — nguyên nhân chính của
+/// hiện tượng giật khi bấm 5 nút bottom bar. Đổi tab tức thì vừa đúng chuẩn
+/// điều hướng tab, vừa bỏ được toàn bộ chi phí đó.
+TransitPage<T> _instantBranchPage<T>({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return TransitPage<T>(
+    key: key,
+    duration: Duration.zero,
+    reverseDuration: Duration.zero,
+    transitionBuilder: (context, animation, secondaryAnimation, child) => child,
+    child: child,
+  );
+}
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -161,7 +208,7 @@ class AppRouter {
       // S01: Splash Screen — Mở đầu mượt mà, nhẹ nhàng
       GoRoute(
         path: '/splash',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fade,
           duration: const Duration(milliseconds: 300),
@@ -181,11 +228,8 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/',
-                pageBuilder: (context, state) => TransitPage(
+                pageBuilder: (context, state) => _instantBranchPage(
                   key: state.pageKey,
-                  type: TransitType.fadeThrough,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOutCubic,
                   child: const HomeScreen(),
                 ),
               ),
@@ -193,14 +237,12 @@ class AppRouter {
           ),
           // Tab 2: Tìm kiếm (S10)
           StatefulShellBranch(
+            preload: true,
             routes: [
               GoRoute(
                 path: '/search',
-                pageBuilder: (context, state) => TransitPage(
+                pageBuilder: (context, state) => _instantBranchPage(
                   key: state.pageKey,
-                  type: TransitType.fadeThrough,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOutCubic,
                   child: const SearchScreen(),
                 ),
               ),
@@ -208,14 +250,12 @@ class AppRouter {
           ),
           // Tab 3: Mới & Hot (S16)
           StatefulShellBranch(
+            preload: true,
             routes: [
               GoRoute(
                 path: '/hot',
-                pageBuilder: (context, state) => TransitPage(
+                pageBuilder: (context, state) => _instantBranchPage(
                   key: state.pageKey,
-                  type: TransitType.fadeThrough,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOutCubic,
                   child: const HotScreen(),
                 ),
               ),
@@ -223,14 +263,12 @@ class AppRouter {
           ),
           // Tab 4: Đặt vé rạp toàn quốc (S43)
           StatefulShellBranch(
+            preload: true,
             routes: [
               GoRoute(
                 path: '/cinema',
-                pageBuilder: (context, state) => TransitPage(
+                pageBuilder: (context, state) => _instantBranchPage(
                   key: state.pageKey,
-                  type: TransitType.fadeThrough,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOutCubic,
                   child: const CinemaHubScreen(),
                 ),
               ),
@@ -242,7 +280,7 @@ class AppRouter {
       // ==================== NHÓM A. KHỞI ĐỘNG & TÀI KHOẢN (S02 - S08) ====================
       GoRoute(
         path: '/onboarding',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -252,7 +290,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/welcome',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -264,7 +302,7 @@ class AppRouter {
         path: '/login',
         pageBuilder: (context, state) {
           final redirect = state.uri.queryParameters['redirect'];
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -277,7 +315,7 @@ class AppRouter {
         path: '/register',
         pageBuilder: (context, state) {
           final redirect = state.uri.queryParameters['redirect'];
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.sharedAxisX,
             duration: const Duration(milliseconds: 240),
@@ -288,7 +326,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/forgot-password',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -298,7 +336,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/profiles',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -310,7 +348,7 @@ class AppRouter {
         path: '/profiles/edit/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? 'new';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -326,7 +364,7 @@ class AppRouter {
         path: '/search/results',
         pageBuilder: (context, state) {
           final query = state.uri.queryParameters['q'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeThrough,
             duration: const Duration(milliseconds: 220),
@@ -337,18 +375,27 @@ class AppRouter {
       ),
       GoRoute(
         path: '/search/filter',
-        pageBuilder: (context, state) => TransitPage(
-          key: state.pageKey,
-          type: TransitType.fadeSlideUp,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          fullscreenDialog: true,
-          child: const FilterScreen(), // S12
-        ),
+        pageBuilder: (context, state) {
+          final cat = state.uri.queryParameters['category'];
+          final year = state.uri.queryParameters['year'];
+          final sort = state.uri.queryParameters['sort'];
+          return _wavesTransitPage(
+            key: state.pageKey,
+            type: TransitType.fadeSlideUp,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            fullscreenDialog: true,
+            child: FilterScreen(
+              initialCategory: cat,
+              initialYear: year,
+              initialSort: sort,
+            ), // S12
+          );
+        },
       ),
       GoRoute(
         path: '/genres',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -360,14 +407,34 @@ class AppRouter {
         path: '/genre/:name',
         pageBuilder: (context, state) {
           final name = state.pathParameters['name'] ?? 'Tất cả';
-          return TransitPage(
+          final year = state.uri.queryParameters['year'];
+          final sort = state.uri.queryParameters['sort'];
+
+          String title;
+          if (name == 'Tất cả' || name == 'all') {
+            if (year != null && year != 'Tất cả') {
+              title = 'Phim năm $year';
+            } else {
+              title = 'Tất cả phim';
+            }
+          } else {
+            if (year != null && year != 'Tất cả') {
+              title = '$name ($year)';
+            } else {
+              title = 'Phim thể loại $name';
+            }
+          }
+
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
             child: MovieGridScreen(
-              title: 'Phim thể loại $name',
+              title: title,
               category: name,
+              year: year,
+              sort: sort,
             ),
           );
         },
@@ -376,7 +443,7 @@ class AppRouter {
         path: '/see-all/:rowKey',
         pageBuilder: (context, state) {
           final key = state.pathParameters['rowKey'] ?? 'danh-sach';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -387,7 +454,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/top10',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -401,12 +468,21 @@ class AppRouter {
         path: '/movie/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          // Truyền sẵn MovieModel khi mở từ danh sách: màn chi tiết dựng được
+          // nội dung ngay frame đầu tiên, không phải hiện spinner rồi dựng lại
+          // toàn bộ cây widget giữa lúc transition đang chạy.
+          final preloaded = state.extra is MovieModel
+              ? state.extra as MovieModel
+              : null;
+          return _wavesTransitPage(
             key: state.pageKey,
-            type: TransitType.slideRightFade,
+            // Chỉ trượt ngang, không phủ FadeTransition lên toàn trang: màn
+            // chi tiết có ~10 bề mặt kính mờ, mỗi frame fade sẽ kéo theo một
+            // saveLayer cho cả trang + 10 lượt BackdropFilter.
+            type: TransitType.slideRight,
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
-            child: DetailScreen(movieId: id), // S18
+            child: DetailScreen(movieId: id, initialMovie: preloaded), // S18
           );
         },
       ),
@@ -414,7 +490,7 @@ class AppRouter {
         path: '/movie/:id/trailer',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -427,7 +503,7 @@ class AppRouter {
         path: '/trailer/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -440,7 +516,7 @@ class AppRouter {
         path: '/movie/:id/audio',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -454,9 +530,12 @@ class AppRouter {
         path: '/watch/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
-            type: TransitType.fadeSlideUp,
+            // Trượt lên thuần tuý (không fade): màn phát chứa platform view
+            // của video_player + các nút kính, fade toàn trang vừa đắt vừa
+            // dễ lộ viền platform view.
+            type: TransitType.slideUp,
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
             child: PlayerScreen(movieId: id), // S20 Cinema Player
@@ -467,7 +546,7 @@ class AppRouter {
         path: '/movie/:id/episodes',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -481,7 +560,7 @@ class AppRouter {
         path: '/movie/:id/similar',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -494,7 +573,7 @@ class AppRouter {
         path: '/movie/:id/reviews',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -507,7 +586,7 @@ class AppRouter {
         path: '/movie/:id/reviews/new',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
@@ -521,7 +600,7 @@ class AppRouter {
       // ==================== NHÓM D. CÁ NHÂN & THƯ VIỆN (S25 - S30) ====================
       GoRoute(
         path: '/me',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -531,7 +610,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/list',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -541,7 +620,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/continue',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -551,7 +630,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/history',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -561,7 +640,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/liked',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -571,7 +650,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/notifications',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -581,7 +660,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/downloads',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -593,7 +672,7 @@ class AppRouter {
       // ==================== NHÓM E. TÀI KHOẢN & CÀI ĐẶT (S31 - S38, S42) ====================
       GoRoute(
         path: '/me/account',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.cupertinoFade,
           duration: const Duration(milliseconds: 240),
@@ -603,7 +682,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/me/password',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -613,7 +692,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/settings',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -623,7 +702,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/settings/playback',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -633,7 +712,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/settings/language',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -643,7 +722,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/help',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -653,7 +732,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/contact',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeSlideUp,
           duration: const Duration(milliseconds: 240),
@@ -664,7 +743,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/feedback',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeSlideUp,
           duration: const Duration(milliseconds: 240),
@@ -675,7 +754,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/about',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -685,7 +764,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/plans',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeSlideUp,
           duration: const Duration(milliseconds: 240),
@@ -697,7 +776,7 @@ class AppRouter {
       // ==================== NHÓM F. TRẠNG THÁI TOÀN TRANG (S39 - S41) ====================
       GoRoute(
         path: '/offline',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -707,7 +786,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/error',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -717,7 +796,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/404',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -727,7 +806,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/not-found',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeThrough,
           duration: const Duration(milliseconds: 240),
@@ -739,7 +818,7 @@ class AppRouter {
       // Admin Security Gate: Khóa xác thực quản trị viên (mật khẩu 123)
       GoRoute(
         path: '/admin/auth',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.fadeSlideUp,
           duration: const Duration(milliseconds: 240),
@@ -756,7 +835,7 @@ class AppRouter {
       // Admin Server Telemetry: Giám sát máy chủ thời gian thực
       GoRoute(
         path: '/admin/server',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -768,7 +847,7 @@ class AppRouter {
       // Admin Routes: Quản lý kho phim & Form tạo/sửa phim
       GoRoute(
         path: '/admin/movies',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -778,7 +857,7 @@ class AppRouter {
         routes: [
           GoRoute(
             path: 'create',
-            pageBuilder: (context, state) => TransitPage(
+            pageBuilder: (context, state) => _wavesTransitPage(
               key: state.pageKey,
               type: TransitType.fadeSlideUp,
               duration: const Duration(milliseconds: 240),
@@ -790,7 +869,7 @@ class AppRouter {
             path: ':id/edit',
             pageBuilder: (context, state) {
               final movie = state.extra as MovieModel?;
-              return TransitPage(
+              return _wavesTransitPage(
                 key: state.pageKey,
                 type: TransitType.fadeSlideUp,
                 duration: const Duration(milliseconds: 240),
@@ -811,7 +890,7 @@ class AppRouter {
         path: '/cinema/movie/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -826,7 +905,7 @@ class AppRouter {
         path: '/cinema/seat-selection',
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -845,7 +924,7 @@ class AppRouter {
         path: '/cinema/concessions',
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -866,7 +945,7 @@ class AppRouter {
         path: '/cinema/checkout',
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -889,15 +968,12 @@ class AppRouter {
         pageBuilder: (context, state) {
           final bookingId = state.pathParameters['bookingId'] ?? '';
           final booking = state.extra as CinemaBookingModel?;
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.fadeSlideUp,
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,
-            child: CinemaTicketScreen(
-              bookingId: bookingId,
-              booking: booking,
-            ),
+            child: CinemaTicketScreen(bookingId: bookingId, booking: booking),
           );
         },
       ),
@@ -905,7 +981,7 @@ class AppRouter {
       // S49: Vé của tôi
       GoRoute(
         path: '/cinema/my-tickets',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -917,7 +993,7 @@ class AppRouter {
       // S50: Tin tức & Blog điện ảnh rạp
       GoRoute(
         path: '/cinema/news',
-        pageBuilder: (context, state) => TransitPage(
+        pageBuilder: (context, state) => _wavesTransitPage(
           key: state.pageKey,
           type: TransitType.slideRightFade,
           duration: const Duration(milliseconds: 240),
@@ -932,7 +1008,7 @@ class AppRouter {
         pageBuilder: (context, state) {
           final articleId = state.pathParameters['articleId'] ?? '';
           final article = state.extra as CinemaArticleModel?;
-          return TransitPage(
+          return _wavesTransitPage(
             key: state.pageKey,
             type: TransitType.slideRightFade,
             duration: const Duration(milliseconds: 240),
@@ -944,9 +1020,31 @@ class AppRouter {
           );
         },
       ),
+
+      // Dark Luxury Wallpaper preview
+      GoRoute(
+        path: '/wallpaper',
+        pageBuilder: (context, state) => _wavesTransitPage(
+          key: state.pageKey,
+          type: TransitType.fade,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: const DarkLuxuryWallpaper(),
+        ),
+      ),
+      GoRoute(
+        path: '/dark-luxury',
+        pageBuilder: (context, state) => _wavesTransitPage(
+          key: state.pageKey,
+          type: TransitType.fade,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: const DarkLuxuryWallpaper(),
+        ),
+      ),
     ],
 
-    // Trang 404 Route Not Found
+    // Trang 404 Route Not Found (nền dùng chung đã nằm ở cấp app)
     errorBuilder: (context, state) =>
         SystemStatusScreen.notFound(attemptedPath: state.uri.toString()),
   );

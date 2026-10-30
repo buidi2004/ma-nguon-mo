@@ -28,29 +28,34 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = ThemeService.instance.primaryColor;
+    final homePalette = Theme.of(context).extension<HomeScreenPalette>();
+    final primaryColor =
+        homePalette?.action ?? ThemeService.instance.primaryColor;
 
-    return GestureDetector(
-      onTap: onTap ?? () => context.push('/movie/${movie.id}'),
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(128),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
+    return RepaintBoundary(
+      child: GestureDetector(
+        // Truyền sẵn model đã có trong RAM sang màn chi tiết để trang dựng
+        // ngay ở frame đầu, không phải chờ mạng rồi dựng lại toàn bộ.
+        onTap: onTap ?? () => context.push('/movie/${movie.id}', extra: movie),
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: homePalette?.surface ?? AppColors.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(128),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
               // Poster Image
               CachedNetworkImage(
                 imageUrl: movie.posterUrl,
@@ -59,29 +64,24 @@ class MovieCard extends StatelessWidget {
                 memCacheHeight: 525,
                 maxHeightDiskCache: 600,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFF222222),
+                  color: homePalette?.surface ?? const Color(0xFF222222),
                   child: Center(
-                    child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          primaryColor,
-                        ),
-                      ),
+                    child: Icon(
+                      Icons.movie_outlined,
+                      color: homePalette?.textMuted ?? Colors.white24,
+                      size: 24,
                     ),
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFF1E1E1E),
+                  color: homePalette?.surface ?? const Color(0xFF1E1E1E),
                   padding: const EdgeInsets.all(8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.movie_outlined,
-                        color: Colors.white54,
+                        color: homePalette?.textMuted ?? Colors.white54,
                         size: 32,
                       ),
                       const SizedBox(height: 6),
@@ -90,8 +90,8 @@ class MovieCard extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: homePalette?.textSecondary ?? Colors.white70,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
@@ -126,7 +126,7 @@ class MovieCard extends StatelessWidget {
                   child: Text(
                     '$rank',
                     style: TextStyle(
-                      fontSize: 56,
+                      fontSize: 34,
                       fontWeight: FontWeight.w900,
                       color: Colors.white.withAlpha(220),
                       shadows: [
@@ -149,8 +149,8 @@ class MovieCard extends StatelessWidget {
                   left: 6,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                      horizontal: 7,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
                       color: primaryColor,
@@ -160,7 +160,7 @@ class MovieCard extends StatelessWidget {
                       'MỚI',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
                       ),
@@ -203,7 +203,7 @@ class MovieCard extends StatelessWidget {
                           '${movie.releaseYear}',
                           style: TextStyle(
                             color: Colors.white.withAlpha(180),
-                            fontSize: 10,
+                            fontSize: 11,
                           ),
                         ),
                         if (showCategory) ...[
@@ -215,7 +215,7 @@ class MovieCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: primaryColor,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -236,9 +236,7 @@ class MovieCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progressRatio,
                     backgroundColor: Colors.white24,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      primaryColor,
-                    ),
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     minHeight: 3.5,
                   ),
                 ),
@@ -247,6 +245,7 @@ class MovieCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

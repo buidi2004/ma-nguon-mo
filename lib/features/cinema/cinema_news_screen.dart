@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S50: Tin Tức & Blog Điện Ảnh Rạp (Cinema News & Blog Screen)
 /// Nền trắng chuẩn điện ảnh phong cách CineFlix Cinema
@@ -33,7 +36,7 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
 
   @override
   Widget build(BuildContext context) {
-    const blueColor = Color(0xFF0284C7);
+    const blueColor = Color(0xFF0369A1);
     final cinemaService = CinemaService.instance;
 
     final reviewArticles = cinemaService.articles
@@ -44,8 +47,9 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
         .where((a) => a.category == 'blog')
         .toList();
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -64,8 +68,10 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
           indicatorWeight: 3,
           labelColor: blueColor,
           unselectedLabelColor: const Color(0xFF64748B),
-          labelStyle:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
           tabs: const [
             Tab(text: 'Bình luận phim'),
             Tab(text: 'Blog điện ảnh'),
@@ -80,7 +86,8 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
 
           // Tab 2: Blog điện ảnh
           _buildArticleList(
-              blogArticles.isNotEmpty ? blogArticles : reviewArticles),
+            blogArticles.isNotEmpty ? blogArticles : reviewArticles,
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -91,17 +98,21 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
           HapticFeedback.lightImpact();
           setState(() {});
         },
-        child: const Icon(Icons.sync_rounded, color: Color(0xFF0284C7)),
+        child: const Icon(Icons.sync_rounded, color: Color(0xFF0369A1)),
       ),
+    ),
     );
   }
 
   Widget _buildArticleList(List<CinemaArticleModel> articles) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     if (articles.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Chưa có bài viết trong mục này',
-          style: TextStyle(color: Color(0xFF64748B)),
+          style: TextStyle(
+            color: isBlue ? Colors.white : const Color(0xFF64748B),
+          ),
         ),
       );
     }
@@ -118,10 +129,7 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
           InkWell(
             onTap: () {
               HapticFeedback.lightImpact();
-              context.push(
-                '/cinema/news/${featured.id}',
-                extra: featured,
-              );
+              context.push('/cinema/news/${featured.id}', extra: featured);
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,17 +138,30 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                   borderRadius: BorderRadius.circular(10),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Image.network(
-                      featured.imageUrl,
+                    child: CachedNetworkImage(
+                      imageUrl: featured.imageUrl,
                       fit: BoxFit.cover,
+                      memCacheWidth: 720,
+                      maxWidthDiskCache: 1080,
+                      placeholder: (ctx, url) => Container(color: const Color(0xFF1E293B)),
+                      errorWidget: (ctx, url, err) => Container(
+                        color: const Color(0xFF1E293B),
+                        child: const Center(
+                          child: Icon(
+                            Icons.article_rounded,
+                            color: Colors.white38,
+                            size: 40,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   featured.title,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
+                  style: TextStyle(
+                    color: isBlue ? Colors.white : const Color(0xFF0F172A),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     height: 1.35,
@@ -153,7 +174,9 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1877F2),
                         borderRadius: BorderRadius.circular(4),
@@ -161,8 +184,11 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.thumb_up_rounded,
-                              color: Colors.white, size: 12),
+                          Icon(
+                            Icons.thumb_up_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Thích',
@@ -178,7 +204,9 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(4),
@@ -187,8 +215,11 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.remove_red_eye_rounded,
-                              color: Color(0xFF64748B), size: 13),
+                          const Icon(
+                            Icons.remove_red_eye_rounded,
+                            color: Color(0xFF64748B),
+                            size: 13,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${featured.likesCount}',
@@ -208,7 +239,10 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
           ),
 
           const SizedBox(height: 16),
-          Divider(color: Colors.grey.shade200, height: 1),
+          Divider(
+            color: isBlue ? Colors.white24 : Colors.grey.shade200,
+            height: 1,
+          ),
           const SizedBox(height: 16),
 
           // 2. DANH SÁCH BÀI VIẾT BÊN DƯỚI (Khớp Screenshot 5)
@@ -223,10 +257,7 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
               return InkWell(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  context.push(
-                    '/cinema/news/${art.id}',
-                    extra: art,
-                  );
+                  context.push('/cinema/news/${art.id}', extra: art);
                 },
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,9 +268,23 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                       child: SizedBox(
                         width: 120,
                         height: 75,
-                        child: Image.network(
-                          art.imageUrl,
+                        child: CachedNetworkImage(
+                          imageUrl: art.imageUrl,
                           fit: BoxFit.cover,
+                          memCacheWidth: 360,
+                          memCacheHeight: 225,
+                          maxWidthDiskCache: 600,
+                          placeholder: (ctx, url) => Container(color: const Color(0xFF1E293B)),
+                          errorWidget: (ctx, url, err) => Container(
+                            color: const Color(0xFF1E293B),
+                            child: const Center(
+                              child: Icon(
+                                Icons.article_rounded,
+                                color: Colors.white38,
+                                size: 24,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -253,9 +298,11 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                         children: [
                           Text(
                             art.title,
-                            style: const TextStyle(
-                              color: Color(0xFF0F172A),
-                              fontSize: 13.5,
+                            style: TextStyle(
+                              color: isBlue
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                               height: 1.3,
                             ),
@@ -267,7 +314,9 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 3),
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1877F2),
                                   borderRadius: BorderRadius.circular(4),
@@ -275,14 +324,17 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.thumb_up_rounded,
-                                        color: Colors.white, size: 10),
+                                    Icon(
+                                      Icons.thumb_up_rounded,
+                                      color: Colors.white,
+                                      size: 10,
+                                    ),
                                     SizedBox(width: 3),
                                     Text(
                                       'Thích',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 10,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -292,24 +344,30 @@ class _CinemaNewsScreenState extends State<CinemaNewsScreen>
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 3),
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF1F5F9),
                                   borderRadius: BorderRadius.circular(4),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.remove_red_eye_rounded,
-                                        color: Color(0xFF64748B), size: 11),
+                                    const Icon(
+                                      Icons.remove_red_eye_rounded,
+                                      color: Color(0xFF64748B),
+                                      size: 11,
+                                    ),
                                     const SizedBox(width: 3),
                                     Text(
                                       '${art.likesCount}',
                                       style: const TextStyle(
                                         color: Color(0xFF475569),
-                                        fontSize: 10.5,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

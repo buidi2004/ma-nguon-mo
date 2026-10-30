@@ -83,7 +83,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     ThemeService.instance.addListener(_onThemeChanged);
     _effectiveConfig = widget.config ?? _buildDefaultConfig();
     final brandColor = ThemeService.instance.primaryColor;
-    _effectiveTheme = widget.theme ??
+    _effectiveTheme =
+        widget.theme ??
         SplashTheme.custom(
           backgroundColor: ThemeService.instance.backgroundColor,
           loaderColor: brandColor,
@@ -95,10 +96,7 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
       milliseconds: anim.durationMs > 0 ? anim.durationMs : 700,
     );
 
-    _animController = AnimationController(
-      vsync: this,
-      duration: animDuration,
-    );
+    _animController = AnimationController(vsync: this, duration: animDuration);
 
     _setupAnimations(anim);
 
@@ -158,7 +156,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
               width: 104,
               height: 104,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox(width: 104, height: 104),
+              errorBuilder: (_, _, _) =>
+                  const SizedBox(width: 104, height: 104),
             ),
           ),
         ),
@@ -167,10 +166,7 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
   }
 
   void _setupAnimations(SplashAnimation anim) {
-    final curved = CurvedAnimation(
-      parent: _animController,
-      curve: anim.curve,
-    );
+    final curved = CurvedAnimation(parent: _animController, curve: anim.curve);
 
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(curved);
     _scaleAnim = Tween<double>(begin: 0.78, end: 1.0).animate(curved);
@@ -193,14 +189,19 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
       default:
         slideBegin = Offset.zero;
     }
-    _slideAnim = Tween<Offset>(begin: slideBegin, end: Offset.zero).animate(curved);
+    _slideAnim = Tween<Offset>(
+      begin: slideBegin,
+      end: Offset.zero,
+    ).animate(curved);
   }
 
   Future<void> _runStartupFlow() async {
     _minDisplayTimer?.cancel();
     _maxTimer?.cancel();
 
-    final stopwatch = _effectiveConfig.enablePerformanceMonitoring ? (Stopwatch()..start()) : null;
+    final stopwatch = _effectiveConfig.enablePerformanceMonitoring
+        ? (Stopwatch()..start())
+        : null;
     final minMs = _effectiveConfig.durationMs;
 
     // Timer trần tối đa dự phòng (luôn lớn hơn thời gian loang tối thiểu)
@@ -227,7 +228,10 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
           ? widget.onInit!()
           : Future.value(SplashRoute.home());
 
-      final results = await Future.wait([onInitFuture, minDisplayCompleter.future]);
+      final results = await Future.wait([
+        onInitFuture,
+        minDisplayCompleter.future,
+      ]);
       stopwatch?.stop();
       _loadTimeMs = stopwatch?.elapsedMilliseconds;
 
@@ -273,7 +277,6 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     }
   }
 
-
   void _triggerNavigation() {
     if (!mounted || _navigationTriggered) return;
     _navigationTriggered = true;
@@ -312,7 +315,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     if (!mounted) return;
     setState(() {
       final brandColor = ThemeService.instance.primaryColor;
-      _effectiveTheme = widget.theme ??
+      _effectiveTheme =
+          widget.theme ??
           SplashTheme.custom(
             backgroundColor: ThemeService.instance.backgroundColor,
             loaderColor: brandColor,
@@ -354,7 +358,9 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
     Widget animatedContent = _applyAnimation(content, cfg.animation.type);
 
     Widget bodyContent = GestureDetector(
-      onTap: (_tapContinueReady && cfg.tapToContinue) ? _triggerNavigation : null,
+      onTap: (_tapContinueReady && cfg.tapToContinue)
+          ? _triggerNavigation
+          : null,
       behavior: HitTestBehavior.opaque,
       child: SizedBox.expand(
         child: SafeArea(
@@ -392,7 +398,9 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
                     ),
                   ),
                 ),
-              if (cfg.enablePerformanceMonitoring && kDebugMode && _loadTimeMs != null)
+              if (cfg.enablePerformanceMonitoring &&
+                  kDebugMode &&
+                  _loadTimeMs != null)
                 Positioned(
                   bottom: 16,
                   left: 0,
@@ -433,7 +441,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
   }
 
   Widget _buildLayoutContent(SplashConfig cfg) {
-    if (cfg.layoutType == SplashLayoutType.custom && cfg.customContent != null) {
+    if (cfg.layoutType == SplashLayoutType.custom &&
+        cfg.customContent != null) {
       return cfg.customContent!;
     }
 
@@ -462,7 +471,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
         if (cfg.appName != null)
           Text(
             cfg.appName!,
-            style: cfg.appNameStyle ??
+            style:
+                cfg.appNameStyle ??
                 TextStyle(
                   color: brandColor,
                   fontWeight: FontWeight.w900,
@@ -475,7 +485,8 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
           const SizedBox(height: 8),
           Text(
             cfg.tagline!,
-            style: cfg.taglineStyle ??
+            style:
+                cfg.taglineStyle ??
                 TextStyle(
                   color: _effectiveTheme.textColor.withAlpha(190),
                   fontSize: 13,
@@ -539,23 +550,20 @@ class _GlassSmartSplashState extends State<GlassSmartSplash>
                 size: 52,
                 color: ThemeService.instance.primaryColor,
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16),
+              Text(
                 'Không thể tải dữ liệu khởi động',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 '${_errorObject ?? "Vui lòng kiểm tra kết nối mạng và thử lại."}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

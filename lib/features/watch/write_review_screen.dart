@@ -5,6 +5,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import 'reviews_screen.dart';
+import '../../waves_background.dart';
 
 class WriteReviewScreen extends StatefulWidget {
   final String movieId;
@@ -58,31 +59,34 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Viết đánh giá',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Bạn cảm thấy bộ phim này thế nào?',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+                color: AppColors.textPrimary,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Chạm vào ngôi sao để chấm điểm mức độ yêu thích',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
@@ -128,7 +132,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
             // Ô nhập nhận xét
             Container(
@@ -136,12 +140,12 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(6),
               ),
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               child: TextField(
                 controller: _commentController,
                 maxLines: 5,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                decoration: InputDecoration(
                   hintText: 'Chia sẻ cảm nhận chi tiết của bạn về kỹ xảo, diễn xuất, âm nhạc...',
                   hintStyle: TextStyle(
                     color: AppColors.textMuted,
@@ -165,6 +169,6 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

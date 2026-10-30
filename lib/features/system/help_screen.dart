@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class HelpScreen extends StatefulWidget {
   const HelpScreen({super.key});
@@ -58,18 +59,18 @@ class _HelpScreenState extends State<HelpScreen> {
             return q.contains(k) || a.contains(k);
           }).toList();
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: const GlassBackButton(fallbackRoute: '/me'),
-        title: const Text(
+        title: Text(
           'Trung tâm trợ giúp',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -115,10 +116,10 @@ class _HelpScreenState extends State<HelpScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: AppColors.dynamicBackground,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
@@ -128,17 +129,17 @@ class _HelpScreenState extends State<HelpScreen> {
                         _searchKeyword = val.trim();
                       });
                     },
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: Colors.white, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Tìm kiếm câu hỏi trợ giúp...',
-                      hintStyle: const TextStyle(color: AppColors.textMuted),
-                      prefixIcon: const Icon(
+                      hintStyle: TextStyle(color: AppColors.textMuted),
+                      prefixIcon: Icon(
                         Icons.search,
                         color: AppColors.textSecondary,
                       ),
                       suffixIcon: _searchKeyword.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.clear,
                                 color: AppColors.textMuted,
                                 size: 18,
@@ -236,7 +237,7 @@ class _HelpScreenState extends State<HelpScreen> {
                             ),
                           ],
                         ),
-                        content: const Column(
+                        content: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -244,7 +245,7 @@ class _HelpScreenState extends State<HelpScreen> {
                               '1800 6868',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 24,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 1.5,
                               ),
@@ -301,7 +302,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white12),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
                         Icon(
                           Icons.headset_mic_outlined,
@@ -313,7 +314,7 @@ class _HelpScreenState extends State<HelpScreen> {
                           'Tổng đài 24/7',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -334,7 +335,7 @@ class _HelpScreenState extends State<HelpScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: 28),
           Text(
             'CÂU HỎI THƯỜNG GẶP (FAQ)',
             style: TextStyle(
@@ -344,14 +345,14 @@ class _HelpScreenState extends State<HelpScreen> {
               letterSpacing: 1.1,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           if (filteredFaqs.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: Text(
                   'Không tìm thấy câu hỏi phù hợp với "$_searchKeyword"',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             )
@@ -370,15 +371,15 @@ class _HelpScreenState extends State<HelpScreen> {
                         faq['question']!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       iconColor: ThemeService.instance.primaryColor,
                       collapsedIconColor: Colors.white70,
-                      childrenPadding: const EdgeInsets.only(
+                      childrenPadding: EdgeInsets.only(
                         left: 16,
                         right: 16,
                         bottom: 16,
@@ -386,7 +387,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       children: [
                         Text(
                           faq['answer']!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                             height: 1.5,
@@ -401,6 +402,6 @@ class _HelpScreenState extends State<HelpScreen> {
           const SizedBox(height: 32),
         ],
       ),
-    );
+    ));
   }
 }

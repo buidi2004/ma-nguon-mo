@@ -6,6 +6,7 @@ import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class SimilarMoviesScreen extends StatefulWidget {
   final String movieId;
@@ -53,7 +54,7 @@ class _SimilarMoviesScreenState extends State<SimilarMoviesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
@@ -63,8 +64,8 @@ class _SimilarMoviesScreenState extends State<SimilarMoviesScreen> {
               : 'Phim tương tự',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
@@ -79,6 +80,6 @@ class _SimilarMoviesScreenState extends State<SimilarMoviesScreen> {
               emptyMessage:
                   'Hệ thống đang cập nhật thêm các tựa phim cùng thể loại.',
             ),
-    );
+    ));
   }
 }

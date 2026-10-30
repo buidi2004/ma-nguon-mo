@@ -6,6 +6,7 @@ import '../../core/widgets/app_text_field.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? redirect;
@@ -119,7 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16),
             const Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.amber,
+                  size: 28,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -133,27 +138,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'Nguyên nhân: Google Play Services từ chối vì chứng chỉ SHA-1 của thiết bị này chưa được khai báo trên Google Cloud Console.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.dynamicBackground,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.white12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Package Name:', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                  const SelectableText(pkg, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  const Text(
+                    'Package Name:',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                  const SelectableText(
+                    pkg,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  const Text('SHA-1 Fingerprint của máy:', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                  const SelectableText(sha1, style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const Text(
+                    'SHA-1 Fingerprint của máy:',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                  const SelectableText(
+                    sha1,
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
@@ -162,12 +191,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Clipboard.setData(const ClipboardData(text: sha1));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Đã sao chép SHA-1 vào clipboard!'), duration: Duration(seconds: 2)),
+                          const SnackBar(
+                            content: Text('Đã sao chép SHA-1 vào clipboard!'),
+                            duration: Duration(seconds: 2),
+                          ),
                         );
                       },
-                      icon: const Icon(Icons.copy, size: 16, color: Colors.white),
-                      label: const Text('Sao chép mã SHA-1', style: TextStyle(color: Colors.white, fontSize: 13)),
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.white24)),
+                      icon: const Icon(
+                        Icons.copy,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Sao chép mã SHA-1',
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white24),
+                      ),
                     ),
                   ),
                 ],
@@ -184,14 +225,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Đăng nhập Google Demo thành công! Chào ${AuthService.instance.userName}'),
+                      content: Text(
+                        'Đăng nhập Google Demo thành công! Chào ${AuthService.instance.userName}',
+                      ),
                       backgroundColor: AppColors.success,
                     ),
                   );
                   _enterApp();
                 },
                 icon: const Icon(Icons.account_circle, color: Colors.white),
-                label: const Text('Đăng nhập bằng Google Demo (Vào ngay)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                label: Text(
+                  'Đăng nhập bằng Google Demo (Vào ngay)',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
               ),
             ),
@@ -213,13 +262,13 @@ class _LoginScreenState extends State<LoginScreen> {
               'Đăng nhập Google thành công! Chào ${AuthService.instance.userName}',
             ),
             backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
         _enterApp();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Đã hủy đăng nhập Google.'),
             backgroundColor: AppColors.surfaceLight,
             duration: Duration(seconds: 2),
@@ -228,12 +277,15 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      if (e.toString().contains('10') || e.toString().contains('DEVELOPER_ERROR')) {
+      if (e.toString().contains('10') ||
+          e.toString().contains('DEVELOPER_ERROR')) {
         _showGoogleError10Dialog();
       } else if (e.toString().contains('12500')) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Lỗi OAuth (12500): Cần thêm email vào mục Test Users trên Google Cloud Console.'),
+            content: Text(
+              'Lỗi OAuth (12500): Cần thêm email vào mục Test Users trên Google Cloud Console.',
+            ),
             backgroundColor: AppColors.red,
             duration: Duration(seconds: 5),
           ),
@@ -254,37 +306,40 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(fallbackRoute: '/'),
-        title: const Text(
+        title: Text(
           'Đăng nhập',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Chào mừng trở lại',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
+                SizedBox(height: 6),
+                Text(
                   'Đăng nhập để tiếp tục xem phim và quản lý danh sách',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 13.5,
+                    fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -359,13 +414,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
 
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
 
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push('/forgot-password'),
-                    child: const Text(
+                    child: Text(
                       'Quên mật khẩu?',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -455,23 +510,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                SizedBox(height: 28),
 
                 Center(
                   child: Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Chưa có tài khoản? ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 13.5,
+                          fontSize: 13,
                         ),
                       ),
                       GestureDetector(
                         onTap: () {
-                          final registerUrl = (widget.redirect != null &&
+                          final registerUrl =
+                              (widget.redirect != null &&
                                   widget.redirect!.isNotEmpty)
                               ? '/register?redirect=${Uri.encodeComponent(widget.redirect!)}'
                               : '/register';
@@ -481,7 +537,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Đăng ký ngay',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 13.5,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                           ),
@@ -495,6 +551,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

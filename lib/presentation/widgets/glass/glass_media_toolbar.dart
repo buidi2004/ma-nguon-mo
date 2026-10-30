@@ -85,7 +85,8 @@ class GlassMediaToolbar extends StatelessWidget {
           // 3. Nút Tốc độ phát (Speed)
           if (onSpeedToggle != null)
             _ToolbarBadgeButton(
-              label: '${currentSpeed.toStringAsFixed(currentSpeed % 1 == 0 ? 0 : 2)}x',
+              label:
+                  '${currentSpeed.toStringAsFixed(currentSpeed % 1 == 0 ? 0 : 2)}x',
               tooltip: 'Tốc độ: ${currentSpeed}x',
               onPressed: onSpeedToggle,
             ),
@@ -93,7 +94,9 @@ class GlassMediaToolbar extends StatelessWidget {
           // 4. Nút Âm lượng / Tắt tiếng (Mute)
           if (onMuteToggle != null)
             _ToolbarIconButton(
-              icon: isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+              icon: isMuted
+                  ? Icons.volume_off_rounded
+                  : Icons.volume_up_rounded,
               tooltip: isMuted ? 'Bật âm thanh' : 'Tắt tiếng',
               activeColor: isMuted ? ThemeService.instance.primaryColor : null,
               onPressed: onMuteToggle,
@@ -110,7 +113,9 @@ class GlassMediaToolbar extends StatelessWidget {
           // 6. Nút Toàn màn hình (Fullscreen)
           if (onFullscreenToggle != null)
             _ToolbarIconButton(
-              icon: isFullscreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+              icon: isFullscreen
+                  ? Icons.fullscreen_exit_rounded
+                  : Icons.fullscreen_rounded,
               tooltip: isFullscreen ? 'Thu nhỏ màn hình' : 'Toàn màn hình',
               onPressed: onFullscreenToggle,
             ),
@@ -169,11 +174,15 @@ class _ToolbarIconButtonState extends State<_ToolbarIconButton> {
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeOutCubic,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+              constraints: const BoxConstraints(
+                minWidth: 44.0,
+                minHeight: 44.0,
+              ),
               alignment: Alignment.center,
               child: OpenFlixMorphIcon.smooth(
                 icon: widget.icon,
-                color: widget.activeColor ?? Colors.white.withValues(alpha: 0.90),
+                color:
+                    widget.activeColor ?? Colors.white.withValues(alpha: 0.90),
                 size: 22.0,
               ),
             ),
@@ -233,7 +242,10 @@ class _ToolbarTextIconButtonState extends State<_ToolbarTextIconButton> {
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeOutCubic,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 46.0, minHeight: 44.0),
+              constraints: const BoxConstraints(
+                minWidth: 46.0,
+                minHeight: 44.0,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 6.0),
               alignment: Alignment.center,
               child: Row(
@@ -249,7 +261,7 @@ class _ToolbarTextIconButtonState extends State<_ToolbarTextIconButton> {
                     widget.label,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 11.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.2,
                     ),
@@ -311,10 +323,16 @@ class _ToolbarBadgeButtonState extends State<_ToolbarBadgeButton> {
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeOutCubic,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 44.0, minHeight: 44.0),
+              constraints: const BoxConstraints(
+                minWidth: 44.0,
+                minHeight: 44.0,
+              ),
               alignment: Alignment.center,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 3.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6.0,
+                  vertical: 3.0,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10.0),
@@ -327,7 +345,7 @@ class _ToolbarBadgeButtonState extends State<_ToolbarBadgeButton> {
                   widget.label,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11.0,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

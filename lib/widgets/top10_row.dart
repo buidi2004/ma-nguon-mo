@@ -30,6 +30,7 @@ class Top10Row extends StatelessWidget {
     if (movies.isEmpty) return const SizedBox.shrink();
 
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final homePalette = Theme.of(context).extension<HomeScreenPalette>();
     // Item Top 10 rộng hơn poster thường (số + poster), nên poster nhỏ hơn
     // một chút để vẫn lộ item kế tiếp gợi ý vuốt.
     final posterWidth = (screenWidth / 4.2).clamp(96.0, 140.0).toDouble();
@@ -46,10 +47,10 @@ class Top10Row extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: homePalette?.textPrimary ?? AppColors.textPrimary,
                     letterSpacing: -0.2,
                   ),
                   maxLines: 1,
@@ -63,7 +64,11 @@ class Top10Row extends StatelessWidget {
                   child: Text(
                     'Xem tất cả >',
                     style: TextStyle(
-                      color: ThemeService.instance.primaryColor,
+                      color:
+                          Theme.of(context)
+                              .extension<HomeScreenPalette>()
+                              ?.action ??
+                          ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -78,6 +83,7 @@ class Top10Row extends StatelessWidget {
           child: RepaintBoundary(
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              cacheExtent: 450.0,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: movies.length > 10 ? 10 : movies.length,
@@ -133,6 +139,7 @@ class RankedMovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fs = numberFontSize;
+    final homePalette = Theme.of(context).extension<HomeScreenPalette>();
 
     return Semantics(
       button: true,
@@ -158,7 +165,7 @@ class RankedMovieCard extends StatelessWidget {
                       height: 1,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -fs * 0.04,
-                      color: AppColors.textMuted,
+                      color: homePalette?.textMuted ?? AppColors.textMuted,
                     ),
                   ),
                 ),
@@ -170,7 +177,7 @@ class RankedMovieCard extends StatelessWidget {
                 top: 0,
                 width: posterWidth,
                 height: posterHeight,
-                child: _Top10Poster(movie: movie),
+                child: _Top10Poster(movie: movie, posterWidth: posterWidth),
               ),
             ],
           ),
@@ -182,13 +189,21 @@ class RankedMovieCard extends StatelessWidget {
 
 class _Top10Poster extends StatelessWidget {
   final MovieModel movie;
+  final double posterWidth;
 
-  const _Top10Poster({required this.movie});
+  const _Top10Poster({required this.movie, required this.posterWidth});
 
   @override
   Widget build(BuildContext context) {
     // Chỉ hiện badge khi có dữ liệu thật (isNew). Không bịa ĐỘC QUYỀN/PHỤ ĐỀ.
     final bottomBadge = movie.isNew ? 'MỚI' : null;
+
+    // Giải mã ảnh theo đúng số điểm ảnh vật lý của poster (2:3), có chặn trên
+    // để không giữ bitmap quá lớn trong bộ nhớ đệm khi cuộn.
+    final cacheWidth = (posterWidth * MediaQuery.devicePixelRatioOf(context))
+        .round()
+        .clamp(200, 420);
+    final cacheHeight = (cacheWidth * 1.5).round().clamp(300, 630);
 
     return Stack(
       clipBehavior: Clip.none, // để badge dưới tràn ra ngoài mép poster
@@ -201,12 +216,11 @@ class _Top10Poster extends StatelessWidget {
               : CachedNetworkImage(
                   imageUrl: movie.posterUrl,
                   fit: BoxFit.cover,
-                  memCacheWidth: 350,
-                  memCacheHeight: 525,
+                  memCacheWidth: cacheWidth,
+                  memCacheHeight: cacheHeight,
                   maxHeightDiskCache: 600,
-                  fadeInDuration: const Duration(milliseconds: 180),
-                  placeholder: (_, _) =>
-                      const ColoredBox(color: AppColors.surface),
+                  fadeInDuration: Duration(milliseconds: 180),
+                  placeholder: (_, _) => ColoredBox(color: AppColors.surface),
                   errorWidget: (_, _, _) => _placeholder(),
                 ),
         ),
@@ -241,9 +255,9 @@ class _Top10Poster extends StatelessWidget {
                 ),
                 child: Text(
                   bottomBadge,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -255,21 +269,21 @@ class _Top10Poster extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [AppColors.surfaceLight, AppColors.surface],
       ),
     ),
-    padding: const EdgeInsets.all(8),
+    padding: EdgeInsets.all(8),
     alignment: Alignment.bottomCenter,
     child: Text(
       movie.title,
       maxLines: 2,
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.textSecondary,
         fontSize: 11,
         fontWeight: FontWeight.w600,

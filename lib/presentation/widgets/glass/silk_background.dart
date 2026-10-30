@@ -4,7 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../../dark_luxury_background.dart';
 import '../../../services/theme_service.dart';
+import '../../../waves_background.dart';
 
 /// Nền shader "Silk" uốn lượn phong cách điện ảnh cao cấp:
 /// - Mặc định: Đỏ điện ảnh Netflix (#02010A ➔ #E50914).
@@ -40,8 +42,7 @@ class _SilkBackgroundState extends State<SilkBackground>
   // Nạp shader một lần cho cả app
   static Future<ui.FragmentProgram>? _programFuture;
   static Future<ui.FragmentProgram> get _program {
-    return _programFuture ??=
-        ui.FragmentProgram.fromAsset('shaders/silk.frag');
+    return _programFuture ??= ui.FragmentProgram.fromAsset('shaders/silk.frag');
   }
 
   // Chu kỳ chung chính xác của các số hạng cos(t*0.8) và cos(t*0.6) => lặp liền mạch,
@@ -102,10 +103,20 @@ class _SilkBackgroundState extends State<SilkBackground>
 
   @override
   Widget build(BuildContext context) {
+    // Nếu trong cây widget đã có ThemedBackdrop cấp app, không nhân đôi shader
+    if (WavesBackground.isActiveIn(context)) {
+      return widget.child ?? const SizedBox.expand();
+    }
+
     final shader = _shader;
     final effectiveMode = widget.themeMode ?? ThemeService.instance.mode;
-    final isWin11 = effectiveMode == AppThemeMode.windowsBlue;
-    final themeValue = isWin11 ? 1.0 : 0.0;
+    if (effectiveMode == AppThemeMode.windowsBlue) {
+      return WavesBackground(child: widget.child);
+    }
+    if (effectiveMode == AppThemeMode.luxuryGold) {
+      return DarkLuxuryBackground(child: widget.child);
+    }
+    final themeValue = 0.0;
 
     return Stack(
       fit: StackFit.expand,
@@ -114,7 +125,10 @@ class _SilkBackgroundState extends State<SilkBackground>
         IgnorePointer(
           child: RepaintBoundary(
             child: shader == null
-                ? _Fallback(isWindowsBlue: isWin11)
+                ? _Fallback(
+                    isWindowsBlue: effectiveMode == AppThemeMode.windowsBlue,
+                    isLuxuryGold: effectiveMode == AppThemeMode.luxuryGold,
+                  )
                 : LayoutBuilder(
                     builder: (context, c) {
                       final s = widget.renderScale.clamp(0.25, 1.0).toDouble();
@@ -179,22 +193,30 @@ class _SilkPainter extends CustomPainter {
 }
 
 class _Fallback extends StatelessWidget {
-  const _Fallback({this.isWindowsBlue = false});
+  const _Fallback({this.isWindowsBlue = false, this.isLuxuryGold = false});
 
   final bool isWindowsBlue;
+  final bool isLuxuryGold;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isWindowsBlue
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isWindowsBlue
+            ? const [
+                Color(0xFFF0F4F8), // Trắng mờ sương tuyết ngọc trai
+                Color(0xFFD6EBFC), // Xanh lam mây sương
+                Color(0xFF00A2ED), // Sắc xanh #00A2ED chủ đạo
+                Color(0xFFFFFFFF), // Trắng sáng tinh khiết
+              ]
+            : isLuxuryGold
                 ? const [
-                    Color(0xFFF0F4F8), // Trắng mờ sương tuyết ngọc trai
-                    Color(0xFFD6EBFC), // Xanh lam mây sương
-                    Color(0xFF00A2ED), // Sắc xanh #00A2ED chủ đạo
-                    Color(0xFFFFFFFF), // Trắng sáng tinh khiết
+                    Color(0xFF060504), // Đen tuyền Luxury
+                    Color(0xFF34250F), // Nâu sẫm hoàng gia
+                    Color(0xFFB98A3A), // Vàng kim cổ điển
+                    Color(0xFFF1D48B), // Vàng kim sáng rực
                   ]
                 : const [
                     Color(0xFF02010A),
@@ -202,8 +224,8 @@ class _Fallback extends StatelessWidget {
                     Color(0xFFB20710),
                     Color(0xFFE50914),
                   ],
-            stops: const [0, 0.45, 0.85, 1],
-          ),
-        ),
-      );
+        stops: const [0, 0.45, 0.85, 1],
+      ),
+    ),
+  );
 }

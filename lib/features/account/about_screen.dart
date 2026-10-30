@@ -5,6 +5,7 @@ import '../../core/config.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 /// S38 — Giới thiệu & giấy phép (P0). Route: /about
 /// Hiện phiên bản, MIT, thư viện, link GitHub (copy, không cần url_launcher).
@@ -25,21 +26,21 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Giới thiệu & Giấy phép',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         children: [
           Center(
             child: Column(
@@ -53,16 +54,16 @@ class AboutScreen extends StatelessWidget {
                     letterSpacing: 3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Phiên bản ${AppConfig.appVersion}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                SizedBox(height: 4),
+                Text(
                   'Ứng dụng xem phim trực tuyến mã nguồn mở',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 12),
@@ -121,7 +122,7 @@ class AboutScreen extends StatelessWidget {
                             size: 16,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +131,7 @@ class AboutScreen extends StatelessWidget {
                                 l[0],
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -138,7 +139,7 @@ class AboutScreen extends StatelessWidget {
                               ),
                               Text(
                                 l[1],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 12,
                                 ),
@@ -168,8 +169,8 @@ class AboutScreen extends StatelessWidget {
                   padding: EdgeInsets.only(top: 2.0),
                   child: Icon(Icons.code, color: Colors.white, size: 20),
                 ),
-                const SizedBox(width: 10),
-                const Expanded(
+                SizedBox(width: 10),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -177,7 +178,7 @@ class AboutScreen extends StatelessWidget {
                         'Mã nguồn GitHub',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -195,11 +196,7 @@ class AboutScreen extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Sao chép link',
-                  icon: const Icon(
-                    Icons.copy,
-                    color: AppColors.textMuted,
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.copy, color: AppColors.textMuted, size: 20),
                   onPressed: () {
                     Clipboard.setData(
                       const ClipboardData(
@@ -223,7 +220,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 32),
         ],
       ),
-    );
+    ));
   }
 
   Widget _card({required String title, required String content}) {
@@ -238,16 +235,16 @@ class AboutScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,
               height: 1.45,

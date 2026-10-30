@@ -10,6 +10,7 @@ class PrimaryButton extends StatelessWidget {
   final Color textColor;
   final IconData? icon;
   final double height;
+  final double borderRadius;
 
   const PrimaryButton({
     super.key,
@@ -20,6 +21,7 @@ class PrimaryButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.icon,
     this.height = 48,
+    this.borderRadius = 24,
   });
 
   /// §AGENTS-2 — Primary (white): hành động chính của màn hình
@@ -31,6 +33,7 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.height = 48,
+    this.borderRadius = 24,
   }) : backgroundColor = Colors.white,
        textColor = Colors.black;
 
@@ -48,7 +51,9 @@ class PrimaryButton extends StatelessWidget {
           foregroundColor: textColor,
           disabledBackgroundColor: effectiveBg.withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: isLoading

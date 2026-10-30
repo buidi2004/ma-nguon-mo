@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -59,7 +60,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isSubmitted) {
-      return Scaffold(
+      return WavesBackground.wrapIfBlue(Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: const GlassBackButton(),
@@ -84,8 +85,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     size: 64,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                SizedBox(height: 24),
+                Text(
                   'Cảm ơn bạn đã đóng góp!',
                   style: TextStyle(
                     color: Colors.white,
@@ -94,8 +95,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 10),
-                const Text(
+                SizedBox(height: 10),
+                Text(
                   'Phản hồi của bạn đã được ghi nhận vào hệ thống OpenFlix. Đội ngũ phát triển sẽ xem xét và phản hồi sớm nhất.',
                   softWrap: true,
                   style: TextStyle(
@@ -117,29 +118,29 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             ),
           ),
         ),
-      );
+      ));
     }
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Liên hệ & Góp ý',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.all(16),
+        physics: BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Chúng tôi luôn lắng nghe trải nghiệm của bạn',
               style: TextStyle(
                 color: Colors.white,
@@ -147,15 +148,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
+            SizedBox(height: 6),
+            Text(
               'Hãy gửi phản hồi để giúp OpenFlix hoàn thiện hơn mỗi ngày.',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // Category Selector
-            const Text(
+            Text(
               'CHỦ ĐỀ PHẢN HỒI',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -179,7 +180,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   dropdownColor: AppColors.surface,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                   items: _categories.map((c) {
@@ -191,10 +192,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
 
             // Email Field
-            const Text(
+            Text(
               'EMAIL LIÊN HỆ',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -203,11 +204,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 letterSpacing: 0.8,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: Colors.white, fontSize: 15),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppColors.surface,
@@ -215,21 +216,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.email_outlined,
                   color: AppColors.textMuted,
                   size: 20,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
+                contentPadding: EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
 
             // Content Textarea
-            const Text(
+            Text(
               'NỘI DUNG CHI TIẾT',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -238,19 +239,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 letterSpacing: 0.8,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             TextField(
               controller: _contentController,
               maxLines: 6,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: Colors.white, fontSize: 15),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppColors.surface,
                 hintText: 'Mô tả chi tiết sự cố bạn gặp phải hoặc gợi ý tính năng mới...',
-                hintStyle: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
-                ),
+                hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
@@ -270,6 +268,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

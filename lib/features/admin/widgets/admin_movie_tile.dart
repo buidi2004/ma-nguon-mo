@@ -117,7 +117,7 @@ class AdminMovieTile extends StatelessWidget {
       width: 60,
       height: 90,
       color: AppColors.surfaceLight,
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -128,7 +128,7 @@ class AdminMovieTile extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 8,
+                fontSize: 11,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -148,19 +148,19 @@ class AdminMovieTile extends StatelessWidget {
           movie.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
             height: 1.25,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           _buildSubtitleText(),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 6),
         Wrap(
@@ -228,7 +228,7 @@ class AdminMovieTile extends StatelessWidget {
         label,
         style: TextStyle(
           color: isActive ? activeColor : AppColors.textMuted,
-          fontSize: 10.5,
+          fontSize: 11,
           fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
@@ -241,14 +241,14 @@ class AdminMovieTile extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.edit_outlined,
             color: AppColors.textSecondary,
             size: 20,
           ),
           onPressed: onEdit,
           tooltip: 'Sửa phim',
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           padding: EdgeInsets.zero,
         ),
         IconButton(
@@ -259,7 +259,7 @@ class AdminMovieTile extends StatelessWidget {
           ),
           onPressed: onDelete,
           tooltip: 'Xóa phim',
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           padding: EdgeInsets.zero,
         ),
       ],
@@ -269,8 +269,8 @@ class AdminMovieTile extends StatelessWidget {
   /// Hàng công tắc nhanh (Quick Switch Toggles)
   Widget _buildQuickSwitchRow() {
     return Container(
-      padding: const EdgeInsets.only(top: 8),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.divider, width: 0.8)),
       ),
       child: Row(
@@ -322,7 +322,7 @@ class AdminMovieTile extends StatelessWidget {
                     color: value
                         ? AppColors.textPrimary
                         : AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: value ? FontWeight.w600 : FontWeight.normal,
                   ),
                   maxLines: 1,

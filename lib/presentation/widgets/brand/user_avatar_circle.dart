@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +63,8 @@ class UserAvatarCircle extends StatelessWidget {
                     ),
                   ]
                 : null,
-            border: border ??
+            border:
+                border ??
                 Border.all(
                   color: Colors.white.withValues(alpha: 0.35),
                   width: (size * 0.04).clamp(1.0, 2.0),
@@ -84,16 +86,14 @@ class UserAvatarCircle extends StatelessWidget {
         height: dimension,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => Center(
-          child: Text(
-            '🐼',
-            style: TextStyle(fontSize: dimension * 0.55),
-          ),
+          child: Text('🐼', style: TextStyle(fontSize: dimension * 0.55)),
         ),
       );
     }
 
     // 2. Ảnh từ thiết bị hoặc chuỗi Base64
-    final isBase64 = (type == 'file' ||
+    final isBase64 =
+        (type == 'file' ||
             type == 'base64' ||
             type == 'device' ||
             value.startsWith('data:image') ||
@@ -103,8 +103,9 @@ class UserAvatarCircle extends StatelessWidget {
 
     if (isBase64) {
       try {
-        final cleanBase64 =
-            value.contains(',') ? value.split(',').last.trim() : value.trim();
+        final cleanBase64 = value.contains(',')
+            ? value.split(',').last.trim()
+            : value.trim();
         final bytes = base64Decode(cleanBase64);
         return Image.memory(
           bytes,
@@ -112,19 +113,13 @@ class UserAvatarCircle extends StatelessWidget {
           height: dimension,
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => Center(
-            child: Text(
-              '🐼',
-              style: TextStyle(fontSize: dimension * 0.55),
-            ),
+            child: Text('🐼', style: TextStyle(fontSize: dimension * 0.55)),
           ),
         );
       } catch (e) {
         debugPrint('Lỗi giải mã ảnh đại diện Base64: $e');
         return Center(
-          child: Text(
-            '🐼',
-            style: TextStyle(fontSize: dimension * 0.55),
-          ),
+          child: Text('🐼', style: TextStyle(fontSize: dimension * 0.55)),
         );
       }
     }
@@ -147,10 +142,7 @@ class UserAvatarCircle extends StatelessWidget {
           ),
         ),
         errorWidget: (_, _, _) => Center(
-          child: Text(
-            '🐼',
-            style: TextStyle(fontSize: dimension * 0.55),
-          ),
+          child: Text('🐼', style: TextStyle(fontSize: dimension * 0.55)),
         ),
       );
     }
@@ -160,10 +152,7 @@ class UserAvatarCircle extends StatelessWidget {
     return Center(
       child: Text(
         displayChar,
-        style: TextStyle(
-          fontSize: dimension * 0.56,
-          height: 1.05,
-        ),
+        style: TextStyle(fontSize: dimension * 0.56, height: 1.05),
       ),
     );
   }

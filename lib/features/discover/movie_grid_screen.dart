@@ -5,18 +5,24 @@ import '../../core/widgets/movie_grid.dart';
 import '../../models/movie_model.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
+import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class MovieGridScreen extends StatefulWidget {
   final String title;
   final String? category;
   final String? rowKey;
+  final String? year;
+  final String? sort;
 
   const MovieGridScreen({
     super.key,
     required this.title,
     this.category,
     this.rowKey,
+    this.year,
+    this.sort,
   });
 
   @override
@@ -35,6 +41,39 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
   void initState() {
     super.initState();
     _loadMovies();
+  }
+
+  String? _buildFilter() {
+    final filters = <String>[];
+    if (widget.rowKey == 'new') {
+      filters.add('is_new = true');
+    }
+    if (widget.year != null && widget.year != 'Tất cả') {
+      if (widget.year == 'Trước 2020') {
+        filters.add('release_year < 2020');
+      } else {
+        final yr = int.tryParse(widget.year!);
+        if (yr != null) {
+          filters.add('release_year = $yr');
+        }
+      }
+    }
+    if (filters.isEmpty) return null;
+    return filters.join(' && ');
+  }
+
+  String _mapSort(String? sort) {
+    switch (sort) {
+      case 'Xem nhiều nhất':
+        return '-rank,-created';
+      case 'Thời lượng ngắn đến dài':
+        return 'duration_minutes';
+      case 'Tên phim A-Z':
+        return 'title';
+      case 'Mới nhất':
+      default:
+        return '-created';
+    }
   }
 
   Future<void> _loadMovies() async {
@@ -58,8 +97,11 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
     final pagedResult = await _pbService.getMoviesPaged(
       page: 1,
       perPage: 20,
-      category: (widget.category != null && widget.category != 'Tất cả') ? widget.category : null,
-      filter: widget.rowKey == 'new' ? 'is_new = true' : null,
+      category: (widget.category != null && widget.category != 'Tất cả')
+          ? widget.category
+          : null,
+      filter: _buildFilter(),
+      sort: _mapSort(widget.sort),
     );
 
     if (!mounted) return;
@@ -79,8 +121,11 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
     final pagedResult = await _pbService.getMoviesPaged(
       page: nextPage,
       perPage: 20,
-      category: (widget.category != null && widget.category != 'Tất cả') ? widget.category : null,
-      filter: widget.rowKey == 'new' ? 'is_new = true' : null,
+      category: (widget.category != null && widget.category != 'Tất cả')
+          ? widget.category
+          : null,
+      filter: _buildFilter(),
+      sort: _mapSort(widget.sort),
     );
 
     if (!mounted) return;
@@ -94,16 +139,17 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    final isBlue = ThemeService.instance.isWindowsBlue;
+    return WavesBackground.wrapIfBlue(Scaffold(
+      backgroundColor: isBlue ? Colors.transparent : AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
         title: Text(
           widget.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
@@ -124,6 +170,6 @@ class _MovieGridScreenState extends State<MovieGridScreen> {
         emptyTitle: 'Chưa có phim trong "${widget.title}"',
         emptyMessage: 'Nội dung đang được tuyển chọn và cập nhật thường xuyên.',
       ),
-    );
+    ));
   }
 }

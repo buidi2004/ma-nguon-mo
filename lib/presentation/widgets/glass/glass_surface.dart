@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'glass_optical_tokens.dart';
+import 'glass_perf.dart';
 
 /// Widget bề mặt kính quang học nền tảng (Foundation Glass Surface).
 /// Sử dụng kiến trúc 2-Layer Sibling trong Stack:
@@ -26,6 +27,10 @@ class GlassSurface extends StatelessWidget {
   final double? thickness;
   final LiquidGlassSettings? customSettings;
   final bool? useBackdropFilter;
+  /// Hạng chất lượng shader kính. Mặc định lấy theo [GlassPerf.surface]
+  /// (mobile: `standard`, desktop/web: `premium`). Bề mặt tiêu điểm truyền
+  /// [GlassPerf.focal] để luôn giữ `premium`.
+  final GlassQuality? quality;
   final BoxBorder? customBorder;
   final List<BoxShadow>? shadows;
   final VoidCallback? onTap;
@@ -49,6 +54,7 @@ class GlassSurface extends StatelessWidget {
     this.thickness,
     this.customSettings,
     this.useBackdropFilter,
+    this.quality,
     this.customBorder,
     this.shadows,
     this.onTap,
@@ -71,6 +77,7 @@ class GlassSurface extends StatelessWidget {
     double? thickness,
     LiquidGlassSettings? customSettings,
     bool? useBackdropFilter,
+    GlassQuality? quality,
     BoxBorder? customBorder,
     List<BoxShadow>? shadows,
     VoidCallback? onTap,
@@ -90,6 +97,7 @@ class GlassSurface extends StatelessWidget {
       thickness: thickness,
       customSettings: customSettings,
       useBackdropFilter: useBackdropFilter,
+      quality: quality,
       customBorder: customBorder,
       shadows: shadows,
       onTap: onTap,
@@ -112,6 +120,7 @@ class GlassSurface extends StatelessWidget {
     double? thickness,
     LiquidGlassSettings? customSettings,
     bool? useBackdropFilter,
+    GlassQuality? quality,
     BoxBorder? customBorder,
     List<BoxShadow>? shadows,
     VoidCallback? onTap,
@@ -131,6 +140,7 @@ class GlassSurface extends StatelessWidget {
       thickness: thickness,
       customSettings: customSettings,
       useBackdropFilter: useBackdropFilter,
+      quality: quality,
       customBorder: customBorder,
       shadows: shadows,
       onTap: onTap,
@@ -159,13 +169,15 @@ class GlassSurface extends StatelessWidget {
         fit: StackFit.passthrough,
         children: [
           // ==========================================
-          // LAYER 1: NỀN KÍNH QUANG HỌC & VIỀN VÁT
+          // LAYER 1: NỀN KÍNH QUANG HỌC & VIỀN VÁT (IgnorePointer để không chặn cử chỉ)
           // ==========================================
           Positioned.fill(
-            child: _buildOpticalBackground(
-              context: context,
-              effectiveRadius: effectiveRadius,
-              effectiveBorderRadius: effectiveBorderRadius,
+            child: IgnorePointer(
+              child: _buildOpticalBackground(
+                context: context,
+                effectiveRadius: effectiveRadius,
+                effectiveBorderRadius: effectiveBorderRadius,
+              ),
             ),
           ),
 
@@ -231,7 +243,9 @@ class GlassSurface extends StatelessWidget {
             // Thấu kính quang học LiquidGlass
             GlassContainer(
               useOwnLayer: true,
-              quality: GlassQuality.premium,
+              // Hạng chất lượng theo năng lực thiết bị: mobile dùng shader
+              // nhẹ, desktop giữ premium. Xem [GlassPerf].
+              quality: quality ?? GlassPerf.surface,
               shape: liquidShape,
               settings: settings,
             ),

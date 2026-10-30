@@ -5,6 +5,7 @@ import '../../core/widgets/app_text_field.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String? redirect;
@@ -95,37 +96,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(fallbackRoute: '/'),
-        title: const Text(
+        title: Text(
           'Đăng ký tài khoản',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Tạo tài khoản OpenFlix',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
+                SizedBox(height: 6),
+                Text(
                   'Chỉ mất 30 giây để bắt đầu trải nghiệm xem phim hoàn toàn miễn phí',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 13.5,
+                    fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -241,27 +245,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _handleRegister,
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 Center(
                   child: Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Đã có tài khoản? ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 13.5,
+                          fontSize: 13,
                         ),
                       ),
                       GestureDetector(
                         onTap: () => context.pushReplacement('/login'),
-                        child: const Text(
+                        child: Text(
                           'Đăng nhập ngay',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13.5,
+                            color: AppColors.primary,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                           ),
@@ -275,6 +279,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

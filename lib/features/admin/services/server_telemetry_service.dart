@@ -62,6 +62,7 @@ class ServerTelemetryData {
   // --- 1. CẤU HÌNH TĨNH CỦA GÓI VPS ---
   final String vpsHost; // Host:port THẬT của backend đang cấu hình trong app
   final String vpsOs;
+
   /// Kiến trúc CPU do máy chủ báo (`uname -m`); null = chưa đo được.
   final String? vpsArchitecture;
   final String vpsCpu;
@@ -71,6 +72,7 @@ class ServerTelemetryData {
   final String vpsStorageTotal;
   final double vpsDiskTotalGb;
   final String vpsPlan;
+
   /// Thư mục dữ liệu PocketBase do agent xác nhận; null = chưa biết.
   final String? vpsStorageVolume;
   final String serverSoftware; // Header `Server` thật, hoặc 'Không xác định'
@@ -88,8 +90,10 @@ class ServerTelemetryData {
   // --- 2b. NGUỒN SỐ ĐO (/metrics) VÀ THÔNG SỐ VẬN HÀNH ---
   /// `true` khi lần đo gần nhất đọc được số liệu thật từ `/metrics`.
   final bool metricsLive;
+
   /// Lý do không có số liệu (null khi [metricsLive] là true).
   final String? metricsError;
+
   /// Thời điểm agent trên máy chủ ghi số liệu (ISO-8601 UTC).
   final String? metricsGeneratedAt;
   final double? load1;
@@ -188,20 +192,17 @@ class ServerTelemetryData {
   });
 
   // --- Tỷ lệ phần trăm (null khi chưa đo được) ---
-  double? get vpsRamUsagePercent => vpsRamUsedGb == null
-      ? null
-      : (vpsRamUsedGb! / vpsRamTotalGb) * 100.0;
+  double? get vpsRamUsagePercent =>
+      vpsRamUsedGb == null ? null : (vpsRamUsedGb! / vpsRamTotalGb) * 100.0;
 
-  double? get vpsDiskUsagePercent => vpsDiskUsedGb == null
-      ? null
-      : (vpsDiskUsedGb! / vpsDiskTotalGb) * 100.0;
+  double? get vpsDiskUsagePercent =>
+      vpsDiskUsedGb == null ? null : (vpsDiskUsedGb! / vpsDiskTotalGb) * 100.0;
 
   double? get vpsFreeDiskGb =>
       vpsDiskUsedGb == null ? null : vpsDiskTotalGb - vpsDiskUsedGb!;
 
-  double? get vpsFreeDiskPercent => vpsFreeDiskGb == null
-      ? null
-      : (vpsFreeDiskGb! / vpsDiskTotalGb) * 100.0;
+  double? get vpsFreeDiskPercent =>
+      vpsFreeDiskGb == null ? null : (vpsFreeDiskGb! / vpsDiskTotalGb) * 100.0;
 
   /// Có ít nhất một chỉ số tài nguyên đo được từ máy chủ hay không.
   bool get hasMeasuredMetrics =>
@@ -211,9 +212,11 @@ class ServerTelemetryData {
 
   /// Dung lượng đã dùng của các phân vùng (nếu đã đo).
   double? get vpsPartitionsUsedGb {
-    final parts = [vpsOsUsedGb, vpsDbUsedGb, vpsMediaUsedGb]
-        .whereType<double>()
-        .toList();
+    final parts = [
+      vpsOsUsedGb,
+      vpsDbUsedGb,
+      vpsMediaUsedGb,
+    ].whereType<double>().toList();
     if (parts.isEmpty) return null;
     return parts.fold<double>(0, (sum, v) => sum + v);
   }
@@ -269,11 +272,11 @@ class ServerTelemetryService extends ChangeNotifier {
   String? _observedPocketBaseStatus;
 
   /// Web engine thật đã quan sát, hoặc 'Không xác định' nếu chưa từng thấy.
-  String get _serverSoftwareText =>
-      _observedServerSoftware ?? 'Không xác định';
+  String get _serverSoftwareText => _observedServerSoftware ?? 'Không xác định';
 
   /// Trạng thái PocketBase thật đã quan sát (không suy diễn).
-  String get _pocketBaseStatusText => _observedPocketBaseStatus ?? 'Chưa kiểm tra';
+  String get _pocketBaseStatusText =>
+      _observedPocketBaseStatus ?? 'Chưa kiểm tra';
 
   /// Host:port THẬT của backend mà app đang gọi.
   ///
@@ -336,7 +339,8 @@ class ServerTelemetryService extends ChangeNotifier {
       vpsRamTotalGb: VpsPlanSpec.ramTotalGb,
       vpsStorageTotal: '${formatGb(VpsPlanSpec.diskTotalGb)} GB SSD',
       vpsDiskTotalGb: VpsPlanSpec.diskTotalGb,
-      vpsPlan: '${VpsPlanSpec.provider} · ${VpsPlanSpec.priceLabel} '
+      vpsPlan:
+          '${VpsPlanSpec.provider} · ${VpsPlanSpec.priceLabel} '
           '· HH ${VpsPlanSpec.expiresOn}',
       vpsStorageVolume: null,
       serverSoftware: 'Không xác định',
@@ -399,10 +403,7 @@ class ServerTelemetryService extends ChangeNotifier {
     refreshTelemetry();
     _pollingTimer?.cancel();
     if (_isAutoRefresh) {
-      _pollingTimer = Timer.periodic(
-        interval,
-        (_) => refreshTelemetry(),
-      );
+      _pollingTimer = Timer.periodic(interval, (_) => refreshTelemetry());
     }
   }
 
@@ -447,7 +448,9 @@ class ServerTelemetryService extends ChangeNotifier {
     final dbCountUri = Uri.parse(
       '$baseUrl/api/collections/movies/records?page=1&perPage=1&skipTotal=false',
     );
-    final cdnUri = Uri.parse('http://${VpsPlanSpec.host}/posters/big_buck_bunny.jpg?v=4');
+    final cdnUri = Uri.parse(
+      'http://${VpsPlanSpec.host}/posters/big_buck_bunny.jpg?v=4',
+    );
 
     int ping = 0;
     bool healthOk = false;
@@ -546,9 +549,7 @@ class ServerTelemetryService extends ChangeNotifier {
           }
         } else {
           _databaseReachable = false;
-          _scanLogs.add(
-            '[${nowStr()}] ⚠️ SQLite: HTTP ${dbRes.statusCode}',
-          );
+          _scanLogs.add('[${nowStr()}] ⚠️ SQLite: HTTP ${dbRes.statusCode}');
         }
       } catch (e) {
         _databaseReachable = false;
@@ -765,7 +766,8 @@ class ServerTelemetryService extends ChangeNotifier {
       vpsRamTotalGb: ramTotalGb,
       vpsStorageTotal: '${formatGb(diskTotalGb)} GB SSD',
       vpsDiskTotalGb: diskTotalGb,
-      vpsPlan: '${VpsPlanSpec.provider} · ${VpsPlanSpec.priceLabel} '
+      vpsPlan:
+          '${VpsPlanSpec.provider} · ${VpsPlanSpec.priceLabel} '
           '· HH ${VpsPlanSpec.expiresOn}',
       vpsStorageVolume: metrics?.dataDir,
       serverSoftware: _serverSoftwareText,

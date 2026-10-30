@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/language_service.dart';
+import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -48,11 +50,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text(
+        title: Text(
           'Dọn dẹp bộ nhớ đệm',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        content: const Text(
+        content: Text(
           'Xóa bộ nhớ đệm hình ảnh và dữ liệu tạm (khoảng 34 MB)? Ứng dụng sẽ tự tải lại khi bạn xem phim.',
           style: TextStyle(color: AppColors.textSecondary),
         ),
@@ -63,10 +68,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () {
+              // Thực sự giải phóng toàn bộ bộ nhớ đệm bitmap trong RAM & cache PocketBase
+              PaintingBinding.instance.imageCache.clear();
+              PaintingBinding.instance.imageCache.clearLiveImages();
+              PocketBaseService.instance.clearCache();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Đã dọn dẹp 34 MB bộ nhớ đệm ảnh thành công!'),
+                  content: Text('Đã dọn dẹp bộ nhớ đệm RAM và dữ liệu tạm thành công!'),
                   backgroundColor: AppColors.success,
                 ),
               );
@@ -96,10 +105,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           builder: (context, _) {
             final currentMode = ThemeService.instance.mode;
             final isWin11 = currentMode == AppThemeMode.windowsBlue;
+            final isLuxury = currentMode == AppThemeMode.luxuryGold;
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,17 +127,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
+                    SizedBox(height: 16),
+                    Text(
                       'Màu sắc ứng dụng & Sóng lụa Silk',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    SizedBox(height: 4),
+                    Text(
                       'Tùy chỉnh tông màu nhận diện và nền hiệu ứng Silk Shader khi khởi động app',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -139,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: 'Đỏ điện ảnh kinh điển nguyên bản (Đỏ & Đen)',
                       tag: 'MẶC ĐỊNH',
                       tagColor: AppColors.red,
-                      isSelected: !isWin11,
+                      isSelected: !isWin11 && !isLuxury,
                       activeColor: AppColors.red,
                       colors: const [
                         Color(0xFF02010A),
@@ -150,11 +163,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () async {
                         final messenger = ScaffoldMessenger.of(screenContext);
                         final nav = Navigator.of(ctx);
-                        await ThemeService.instance.setThemeMode(AppThemeMode.netflixRed);
                         nav.pop();
+                        // Chờ bottom sheet trượt xuống mượt mà trước khi chuyển shader/theme
+                        await Future.delayed(const Duration(milliseconds: 140));
+                        await ThemeService.instance.setThemeMode(
+                          AppThemeMode.netflixRed,
+                        );
                         messenger.showSnackBar(
                           const SnackBar(
-                            content: Text('Đã chọn phong cách Đỏ Netflix (Mặc định)'),
+                            content: Text(
+                              'Đã chọn phong cách Đỏ Netflix (Mặc định)',
+                            ),
                             backgroundColor: AppColors.red,
                             duration: Duration(milliseconds: 1500),
                           ),
@@ -181,13 +200,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () async {
                         final messenger = ScaffoldMessenger.of(screenContext);
                         final nav = Navigator.of(ctx);
-                        await ThemeService.instance.setThemeMode(AppThemeMode.windowsBlue);
                         nav.pop();
+                        // Chờ bottom sheet trượt xuống mượt mà trước khi chuyển shader/theme
+                        await Future.delayed(const Duration(milliseconds: 140));
+                        await ThemeService.instance.setThemeMode(
+                          AppThemeMode.windowsBlue,
+                        );
                         messenger.showSnackBar(
                           SnackBar(
-                            content: const Text('Đã kích hoạt phong cách Xanh #00A2ED & Nền Trắng Mờ!'),
+                            content: const Text(
+                              'Đã kích hoạt phong cách Xanh #00A2ED & Nền Trắng Mờ!',
+                            ),
                             backgroundColor: AppColors.cyanBlue,
                             duration: const Duration(milliseconds: 1500),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Option 3: Vàng Hoàng Gia Luxury (Chế độ màu vàng)
+                    _buildThemeOptionCard(
+                      title: 'Vàng Hoàng Gia Luxury (Chế độ màu vàng)',
+                      subtitle: 'Lụa đen viền vàng, hoa nghệ thuật và hạt bụi vàng lấp lánh (Dark Luxury)',
+                      tag: 'Gold Luxury',
+                      tagColor: AppColors.gold,
+                      isSelected: isLuxury,
+                      activeColor: AppColors.gold,
+                      colors: const [
+                        Color(0xFF060504),
+                        Color(0xFF6D4A18),
+                        Color(0xFFB98A3A),
+                        Color(0xFFF1D48B),
+                      ],
+                      onTap: () async {
+                        final messenger = ScaffoldMessenger.of(screenContext);
+                        final nav = Navigator.of(ctx);
+                        nav.pop();
+                        // Chờ bottom sheet trượt xuống mượt mà trước khi chuyển shader/theme
+                        await Future.delayed(const Duration(milliseconds: 140));
+                        await ThemeService.instance.setThemeMode(
+                          AppThemeMode.luxuryGold,
+                        );
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Đã kích hoạt phong cách Vàng Hoàng Gia Luxury!',
+                            ),
+                            backgroundColor: Color(0xFFB98A3A),
+                            duration: Duration(milliseconds: 1500),
                           ),
                         );
                       },
@@ -217,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Material(
       color: isSelected
           ? activeColor.withValues(alpha: 0.12)
-          : const Color(0xFF2A2A2A),
+          : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -227,7 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? activeColor : Colors.white12,
+              color: isSelected ? activeColor : AppColors.divider,
               width: isSelected ? 1.5 : 1.0,
             ),
           ),
@@ -240,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? activeColor : Colors.white38,
+                    color: isSelected ? activeColor : AppColors.textMuted,
                     width: 2,
                   ),
                 ),
@@ -268,9 +330,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Flexible(
                           child: Text(
                             title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
@@ -295,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             tag,
                             style: TextStyle(
                               color: tagColor,
-                              fontSize: 10,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
@@ -303,10 +365,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -324,10 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           decoration: BoxDecoration(
                             color: c,
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white24,
-                              width: 1,
-                            ),
+                            border: Border.all(color: Colors.white24, width: 1),
                             boxShadow: [
                               BoxShadow(
                                 color: c.withValues(alpha: 0.3),
@@ -355,19 +414,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, _) {
         final currentPrimary = ThemeService.instance.primaryColor;
 
-        return Scaffold(
-          backgroundColor: AppColors.background,
+        final scaffold = Scaffold(
+          backgroundColor: AppColors.scaffoldBackground,
           appBar: AppBar(
-            leading: const GlassBackButton(),
-            title: const Text(
+            leading: GlassBackButton(),
+            title: Text(
               'Cài đặt ứng dụng',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              const Text(
+              Text(
                 'TRẢI NGHIỆM PHÁT LẠI',
                 style: TextStyle(
                   color: AppColors.textMuted,
@@ -376,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   letterSpacing: 1,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
 
               _buildTile(
                 icon: Icons.tune,
@@ -385,8 +447,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => context.push('/settings/playback'),
               ),
 
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'TÙY CHỈNH HỆ THỐNG',
                 style: TextStyle(
                   color: AppColors.textMuted,
@@ -421,8 +483,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(
+                    SizedBox(width: 8),
+                    Icon(
                       Icons.chevron_right,
                       color: AppColors.textMuted,
                       size: 20,
@@ -448,25 +510,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               Container(
-                margin: const EdgeInsets.only(bottom: 6),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: ThemeService.instance.isWindowsBlue
+                      ? const Color(0xCC0A2433)
+                      : AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: ThemeService.instance.isWindowsBlue
+                        ? const Color(0x265AD2F4)
+                        : Colors.white10,
+                    width: 0.8,
+                  ),
+                ),
                 child: Material(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
                   child: SwitchListTile(
-                    secondary: const Icon(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    secondary: Icon(
                       Icons.notifications_active_outlined,
                       color: Colors.white,
                       size: 22,
                     ),
-                    title: const Text(
+                    title: Text(
                       'Nhận thông báo phim mới',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    subtitle: const Text(
+                    subtitle: Text(
                       'Gợi ý phim thịnh hành và phim mới cập nhật hàng tuần',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -487,8 +564,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: _clearCache,
               ),
 
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'THÔNG TIN & HỖ TRỢ',
                 style: TextStyle(
                   color: AppColors.textMuted,
@@ -520,6 +597,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         );
+        // Nền động thật nằm ở cấp app. Helper chỉ tự tạo nền khi màn này được
+        // dựng độc lập trong preview/test, nên không remount nội dung khi đổi
+        // màu trong ứng dụng.
+        return WavesBackground.wrapIfBlue(scaffold);
       },
     );
   }
@@ -532,20 +613,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Widget? trailingWidget,
     required VoidCallback onTap,
   }) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isBlue ? const Color(0xCC0A2433) : AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isBlue ? const Color(0x265AD2F4) : Colors.white10,
+          width: 0.8,
+        ),
+      ),
       child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(6),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
         child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           leading: Icon(icon, color: iconColor ?? Colors.white, size: 22),
           title: Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -554,18 +647,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 )
               : null,
-          trailing: trailingWidget ??
-              const Icon(
-                Icons.chevron_right,
-                color: AppColors.textMuted,
-                size: 20,
-              ),
+          trailing:
+              trailingWidget ??
+              Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
           onTap: onTap,
         ),
       ),

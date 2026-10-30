@@ -5,6 +5,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/language_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
@@ -29,16 +30,16 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Ngôn ngữ / Language',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
       ),
@@ -112,7 +113,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -151,8 +152,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
-              const Padding(
+              SizedBox(height: 20),
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: Text(
                   'Lưu ý: Thay đổi ngôn ngữ sẽ áp dụng cho toàn bộ các tiêu đề, nút điều hướng và phụ đề ưu tiên trong trình phát.',
@@ -167,7 +168,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
           );
         },
       ),
-    );
+    ));
   }
 
   Widget _buildPreviewBadge(IconData icon, String text) {

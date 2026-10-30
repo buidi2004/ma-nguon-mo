@@ -11,7 +11,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openflix/models/movie_model.dart';
+import 'package:openflix/services/theme_service.dart';
 import 'package:openflix/theme/app_theme.dart';
+import 'package:openflix/waves_background.dart';
 
 import '../support/test_image_mock.dart';
 
@@ -19,7 +21,26 @@ import '../support/test_image_mock.dart';
 Directory? _mockDocsDir;
 
 Future<void> loadFonts() async {
-  final regularFile = File(r'C:\Windows\Fonts\segoeui.ttf');
+  final flutterRoot = File(Platform.resolvedExecutable)
+      .absolute
+      .parent
+      .parent
+      .parent
+      .parent
+      .parent;
+  final regularCandidates = <File>[
+    File(
+      '${flutterRoot.path}${Platform.pathSeparator}bin${Platform.pathSeparator}'
+      'cache${Platform.pathSeparator}artifacts${Platform.pathSeparator}'
+      'material_fonts${Platform.pathSeparator}Roboto-Regular.ttf',
+    ),
+    File(r'C:\Windows\Fonts\segoeui.ttf'),
+    File('/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf'),
+  ];
+  final regularFile = regularCandidates.firstWhere(
+    (file) => file.existsSync(),
+    orElse: () => File(''),
+  );
   if (regularFile.existsSync()) {
     final fontData = regularFile.readAsBytesSync();
     for (final family in ['Outfit', 'Roboto', 'sans-serif', '']) {
@@ -29,8 +50,19 @@ Future<void> loadFonts() async {
     }
   }
 
-  final iconFile = File(
-    r'C:\Users\buidi\flutter\bin\cache\artifacts\material_fonts\MaterialIcons-Regular.otf',
+  final iconCandidates = <File>[
+    File(
+      '${flutterRoot.path}${Platform.pathSeparator}bin${Platform.pathSeparator}'
+      'cache${Platform.pathSeparator}artifacts${Platform.pathSeparator}'
+      'material_fonts${Platform.pathSeparator}MaterialIcons-Regular.otf',
+    ),
+    File(
+      r'C:\Users\buidi\flutter\bin\cache\artifacts\material_fonts\MaterialIcons-Regular.otf',
+    ),
+  ];
+  final iconFile = iconCandidates.firstWhere(
+    (file) => file.existsSync(),
+    orElse: () => File(''),
   );
   if (iconFile.existsSync()) {
     final fontData = iconFile.readAsBytesSync();
@@ -45,7 +77,8 @@ final sampleMovie = MovieModel(
   title: 'Huyết Thống: Ký Ức Đẫm Máu',
   description: 'Bộ phim kinh dị tâm linh giật gân hàng đầu rạp chiếu.',
   category: 'Kinh dị & Tâm linh',
-  posterUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800',
+  posterUrl:
+      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800',
   videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
   releaseYear: 2026,
   isFeatured: true,
@@ -65,12 +98,14 @@ Future<void> captureScreenWidget(
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
+      theme: buildAppTheme(
+        ThemeService.instance.primaryColor,
+        ThemeService.instance.isLight,
+      ),
       home: RepaintBoundary(
         key: boundaryKey,
-        child: Scaffold(
-          backgroundColor: AppColors.background,
-          body: screen,
+        child: WavesBackground.wrapIfBlue(
+          Scaffold(backgroundColor: AppColors.background, body: screen),
         ),
       ),
     ),
@@ -82,7 +117,7 @@ Future<void> captureScreenWidget(
         boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 2.75);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('docs/qa/screenshots/$filename');
+    final file = File('build/qa/light_screenshots/$filename');
     file.parent.createSync(recursive: true);
     file.writeAsBytesSync(byteData!.buffer.asUint8List());
     print('📸 Saved $filename (${image.width}x${image.height})');
@@ -101,6 +136,8 @@ void setUpVisualHarness() {
   setUpAll(() async {
     await loadFonts();
 
+    await ThemeService.instance.setThemeMode(AppThemeMode.windowsBlue);
+
     final mockDir = Directory(
       '${Directory.systemTemp.path}${Platform.pathSeparator}openflix_visual_test',
     );
@@ -109,17 +146,17 @@ void setUpVisualHarness() {
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (MethodCall methodCall) async => _mockDocsDir!.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async => _mockDocsDir!.path,
+        );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/shared_preferences'),
-      (MethodCall methodCall) async {
-        if (methodCall.method == 'getAll') return <String, Object>{};
-        return null;
-      },
-    );
+          const MethodChannel('plugins.flutter.io/shared_preferences'),
+          (MethodCall methodCall) async {
+            if (methodCall.method == 'getAll') return <String, Object>{};
+            return null;
+          },
+        );
   });
 
   tearDownAll(() {

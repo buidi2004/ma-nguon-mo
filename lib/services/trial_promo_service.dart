@@ -33,7 +33,8 @@ class TrialPromoService {
 
       final now = DateTime.now();
       // Nếu đã hiển thị trong cùng ngày thì không hiển thị lại
-      final isSameDay = now.year == lastDate.year &&
+      final isSameDay =
+          now.year == lastDate.year &&
           now.month == lastDate.month &&
           now.day == lastDate.day;
 
@@ -49,7 +50,10 @@ class TrialPromoService {
     _sessionDismissed = true;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_prefKeyLastShown, DateTime.now().toIso8601String());
+      await prefs.setString(
+        _prefKeyLastShown,
+        DateTime.now().toIso8601String(),
+      );
       if (neverShowAgain) {
         await prefs.setBool(_prefKeyNeverShowAgain, true);
       }

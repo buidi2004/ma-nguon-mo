@@ -4,18 +4,36 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class FilterScreen extends StatefulWidget {
-  const FilterScreen({super.key});
+  final String? initialCategory;
+  final String? initialYear;
+  final String? initialSort;
+
+  const FilterScreen({
+    super.key,
+    this.initialCategory,
+    this.initialYear,
+    this.initialSort,
+  });
 
   @override
   State<FilterScreen> createState() => _FilterScreenState();
 }
 
 class _FilterScreenState extends State<FilterScreen> {
-  String _selectedCategory = 'Tất cả';
-  String _selectedYear = 'Tất cả';
-  String _selectedSort = 'Mới nhất';
+  late String _selectedCategory;
+  late String _selectedYear;
+  late String _selectedSort;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialCategory ?? 'Tất cả';
+    _selectedYear = widget.initialYear ?? 'Tất cả';
+    _selectedSort = widget.initialSort ?? 'Mới nhất';
+  }
 
   final List<String> _categories = [
     'Tất cả',
@@ -37,12 +55,25 @@ class _FilterScreenState extends State<FilterScreen> {
   ];
 
   void _applyFilter() {
-    context.pushReplacement('/genre/$_selectedCategory');
+    final queryParams = <String, String>{};
+    if (_selectedYear != 'Tất cả') {
+      queryParams['year'] = _selectedYear;
+    }
+    if (_selectedSort != 'Mới nhất') {
+      queryParams['sort'] = _selectedSort;
+    }
+
+    final categoryPath = _selectedCategory;
+    final uri = Uri(
+      path: '/genre/$categoryPath',
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    );
+    context.pushReplacement(uri.toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
@@ -71,7 +102,7 @@ class _FilterScreenState extends State<FilterScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'THỂ LOẠI PHIM',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -95,7 +126,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
 
             const SizedBox(height: 28),
-            const Text(
+            Text(
               'NĂM PHÁT HÀNH',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -119,7 +150,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
 
             const SizedBox(height: 28),
-            const Text(
+            Text(
               'SẮP XẾP KẾT QUẢ',
               style: TextStyle(
                 color: AppColors.textMuted,
@@ -186,6 +217,6 @@ class _FilterScreenState extends State<FilterScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

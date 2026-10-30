@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -24,10 +25,7 @@ class ImageKitUploadResult {
   });
 
   factory ImageKitUploadResult.failure(String message) {
-    return ImageKitUploadResult(
-      success: false,
-      errorMessage: message,
-    );
+    return ImageKitUploadResult(success: false, errorMessage: message);
   }
 }
 
@@ -49,10 +47,7 @@ class ImageKitService {
   Map<String, String> get _authHeaders {
     final authBytes = utf8.encode('$privateKey:');
     final base64Auth = base64Encode(authBytes);
-    return {
-      'Authorization': 'Basic $base64Auth',
-      'Accept': 'application/json',
-    };
+    return {'Authorization': 'Basic $base64Auth', 'Accept': 'application/json'};
   }
 
   /// Tải lên ảnh từ mảng byte (Uint8List) lên máy chủ ImageKit CDN
@@ -93,7 +88,8 @@ class ImageKitService {
         );
       } else {
         debugPrint(
-            'Lỗi tải ảnh ImageKit: HTTP ${response.statusCode} - ${response.body}');
+          'Lỗi tải ảnh ImageKit: HTTP ${response.statusCode} - ${response.body}',
+        );
         return ImageKitUploadResult.failure(
           'Lỗi tải ảnh ImageKit (${response.statusCode}): ${response.body}',
         );

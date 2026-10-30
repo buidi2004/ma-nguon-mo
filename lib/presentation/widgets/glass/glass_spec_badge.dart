@@ -175,15 +175,12 @@ class GlassSpecBadge extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (icon != null) ...[
-            icon!,
-            const SizedBox(width: 3.5),
-          ],
+          if (icon != null) ...[icon!, const SizedBox(width: 3.5)],
           Text(
             label,
             style: TextStyle(
               color: textColor ?? Colors.white,
-              fontSize: 10.0,
+              fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.3,
             ),

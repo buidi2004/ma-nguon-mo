@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S48: Vé Điện Tử / Thẻ Vào Rạp (Cinema E-Ticket & Digital Pass Screen)
 /// Thiết kế vé đục lỗ điện ảnh (Perforated Ticket) sắc nét trên nền trắng
@@ -12,23 +15,21 @@ class CinemaTicketScreen extends StatelessWidget {
   final CinemaBookingModel? booking;
   final String bookingId;
 
-  const CinemaTicketScreen({
-    super.key,
-    this.booking,
-    required this.bookingId,
-  });
+  const CinemaTicketScreen({super.key, this.booking, required this.bookingId});
 
   @override
   Widget build(BuildContext context) {
     // Tìm booking nếu được truyền qua ID
-    final actualBooking = booking ??
+    final actualBooking =
+        booking ??
         CinemaService.instance.userBookings.firstWhere(
           (b) => b.id == bookingId,
           orElse: () => CinemaService.instance.userBookings.first,
         );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -43,13 +44,15 @@ class CinemaTicketScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_rounded, color: Color(0xFF0284C7)),
+            icon: const Icon(Icons.share_rounded, color: Color(0xFF0369A1)),
             tooltip: 'Chia sẻ vé',
             onPressed: () {
               HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Đã sao chép liên kết vé để chia sẻ cho bạn bè!'),
+                  content: Text(
+                    'Đã sao chép liên kết vé để chia sẻ cho bạn bè!',
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -71,8 +74,11 @@ class CinemaTicketScreen extends StatelessWidget {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.check_circle_rounded,
-                      color: Color(0xFF16A34A), size: 20),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF16A34A),
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -110,7 +116,7 @@ class CinemaTicketScreen extends StatelessWidget {
                     // PHẦN TRÊN VÉ: POSTER & THÔNG TIN PHIM
                     Container(
                       padding: const EdgeInsets.all(18),
-                      color: const Color(0xFF0284C7),
+                      color: const Color(0xFF0369A1),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -119,9 +125,16 @@ class CinemaTicketScreen extends StatelessWidget {
                             child: SizedBox(
                               width: 60,
                               height: 85,
-                              child: Image.network(
-                                actualBooking.posterUrl,
+                              child: CachedNetworkImage(
+                                imageUrl: actualBooking.posterUrl,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 180,
+                                memCacheHeight: 255,
+                                placeholder: (_, _) => Container(color: Colors.grey.shade200),
+                                errorWidget: (_, _, _) => Container(
+                                  color: Colors.grey.shade300,
+                                  child: const Icon(Icons.movie_rounded, size: 20, color: Colors.grey),
+                                ),
                               ),
                             ),
                           ),
@@ -143,13 +156,15 @@ class CinemaTicketScreen extends StatelessWidget {
                                   actualBooking.theaterName,
                                   style: const TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 12.5,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(4),
@@ -182,12 +197,15 @@ class CinemaTicketScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
+                              _buildTicketInfoCol('NGÀY', 'Hôm nay'),
                               _buildTicketInfoCol(
-                                  'NGÀY', 'Hôm nay'),
+                                'GIỜ CHIẾU',
+                                actualBooking.showtime,
+                              ),
                               _buildTicketInfoCol(
-                                  'GIỜ CHIẾU', actualBooking.showtime),
-                              _buildTicketInfoCol('SỐ GHẾ',
-                                  actualBooking.seatLabels.join(', ')),
+                                'SỐ GHẾ',
+                                actualBooking.seatLabels.join(', '),
+                              ),
                             ],
                           ),
 
@@ -216,7 +234,7 @@ class CinemaTicketScreen extends StatelessWidget {
                                   'MÃ ĐẶT CHỖ: ${actualBooking.bookingCode}',
                                   style: const TextStyle(
                                     color: Color(0xFF0F172A),
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 1.2,
                                   ),
@@ -273,10 +291,21 @@ class CinemaTicketScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    icon: const Icon(Icons.download_rounded,
-                        color: Color(0xFF0284C7)),
-                    label: const Text('Lưu ảnh vé',
-                        style: TextStyle(color: Color(0xFF0284C7))),
+                    icon: Icon(
+                      Icons.download_rounded,
+                      color: ThemeService.instance.isWindowsBlue
+                          ? Colors.white
+                          : const Color(0xFF0369A1),
+                    ),
+                    label: Text(
+                      'Lưu ảnh vé',
+                      style: TextStyle(
+                        color: ThemeService.instance.isWindowsBlue
+                            ? Colors.white
+                            : const Color(0xFF0369A1),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -287,8 +316,15 @@ class CinemaTicketScreen extends StatelessWidget {
                       );
                     },
                     style: OutlinedButton.styleFrom(
+                      backgroundColor: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xCC082233)
+                          : Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFF0284C7)),
+                      side: BorderSide(
+                        color: ThemeService.instance.isWindowsBlue
+                            ? const Color(0xFF5AD2F4)
+                            : const Color(0xFF0369A1),
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -300,7 +336,7 @@ class CinemaTicketScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => context.go('/cinema'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF97316),
+                      backgroundColor: const Color(0xFFC2410C),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -311,7 +347,7 @@ class CinemaTicketScreen extends StatelessWidget {
                       'Về trang chủ rạp',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -324,6 +360,7 @@ class CinemaTicketScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -333,7 +370,7 @@ class CinemaTicketScreen extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: Color(0xFF64748B),
             fontSize: 11,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
@@ -364,7 +401,9 @@ class CinemaTicketScreen extends StatelessWidget {
               32,
               (index) => Expanded(
                 child: Container(
-                  color: index.isEven ? Colors.grey.shade300 : Colors.transparent,
+                  color: index.isEven
+                      ? Colors.grey.shade300
+                      : Colors.transparent,
                   height: 1.5,
                 ),
               ),
@@ -376,8 +415,10 @@ class CinemaTicketScreen extends StatelessWidget {
             child: Container(
               width: 24,
               height: 24,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: ThemeService.instance.isWindowsBlue
+                    ? const Color(0xFF052433)
+                    : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
             ),
@@ -387,8 +428,10 @@ class CinemaTicketScreen extends StatelessWidget {
             child: Container(
               width: 24,
               height: 24,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: ThemeService.instance.isWindowsBlue
+                    ? const Color(0xFF052433)
+                    : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
             ),
@@ -400,8 +443,8 @@ class CinemaTicketScreen extends StatelessWidget {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

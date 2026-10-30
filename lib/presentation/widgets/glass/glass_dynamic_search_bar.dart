@@ -159,7 +159,7 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
                       cursorRadius: const Radius.circular(1),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 14.5,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         height: 1.2,
                       ),
@@ -169,7 +169,7 @@ class _GlassDynamicSearchBarState extends State<GlassDynamicSearchBar> {
                         hintText: widget.hintText,
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.45),
-                          fontSize: 13.5,
+                          fontSize: 13,
                           height: 1.2,
                         ),
                         border: InputBorder.none,

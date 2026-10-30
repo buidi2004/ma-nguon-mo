@@ -1,0 +1,26 @@
+[
+  {
+    "uuid": "01a188cf-cc35-70eb-9a45-a4ba409ad731",
+    "slug": "blue-mobile-background",
+    "dirName": "261029-blue-mobile-background",
+    "scope": "express",
+    "repos": [
+      "fe-web"
+    ],
+    "status": "in-flight",
+    "request": "be529990"
+  },
+  {
+    "uuid": "01a188e2-01a8-774d-b809-d3d3ff7617f3",
+    "slug": "sky-blue-mobile-ui",
+    "dirName": "261029-sky-blue-mobile-ui",
+    "scope": "poc",
+    "repos": [
+      "aidlc-workflows",
+      "codegraph",
+      "fe-web"
+    ],
+    "status": "in-flight",
+    "request": "c30647a3"
+  }
+]

@@ -41,7 +41,7 @@ class MovieGrid extends StatelessWidget {
   });
 
   int _calculateCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     if (width < 360) return 2;
     if (width < 600) return 3;
     if (width < 900) return 4;
@@ -68,14 +68,18 @@ class MovieGrid extends StatelessWidget {
       onNotification: (scrollInfo) {
         if (!isLoadingMore &&
             onLoadMore != null &&
-            scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 250) {
+            scrollInfo.metrics.pixels >=
+                scrollInfo.metrics.maxScrollExtent - 250) {
           onLoadMore!();
         }
         return false;
       },
       child: CustomScrollView(
         controller: scrollController,
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        cacheExtent: 650.0,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         slivers: [
           SliverPadding(
             padding: padding,
@@ -86,22 +90,21 @@ class MovieGrid extends StatelessWidget {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 12,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final movie = movies[index];
-                  final rank = showRanks ? index + 1 : null;
-                  final progress = progressGetter != null ? progressGetter!(movie) : null;
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final movie = movies[index];
+                final rank = showRanks ? index + 1 : null;
+                final progress = progressGetter != null
+                    ? progressGetter!(movie)
+                    : null;
 
-                  return MovieCard(
-                    movie: movie,
-                    showCategory: showCategory,
-                    rank: rank,
-                    progressRatio: progress,
-                    onTap: onMovieTap != null ? () => onMovieTap!(movie) : null,
-                  );
-                },
-                childCount: movies.length,
-              ),
+                return MovieCard(
+                  movie: movie,
+                  showCategory: showCategory,
+                  rank: rank,
+                  progressRatio: progress,
+                  onTap: onMovieTap != null ? () => onMovieTap!(movie) : null,
+                );
+              }, childCount: movies.length),
             ),
           ),
           if (isLoadingMore)

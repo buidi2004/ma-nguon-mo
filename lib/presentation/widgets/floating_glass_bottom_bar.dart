@@ -1,47 +1,96 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:morphnext/morphnext.dart';
 
 import '../../services/theme_service.dart';
+import '../../waves_background.dart';
+import 'glass/glass_perf.dart';
 
 /// Icon 4 ô vuông bo góc đa sắc XOAY NGHIÊNG CHÉO 3D với chuyển động nhịp thở thạch (Jelly Pulse)
 /// và lơ lửng bồng bềnh vi mô (Micro-Float), lệch pha 90 độ, tuyệt đối không chạm viền ngoài.
 class FourTileQuickActionIcon extends StatefulWidget {
   final double size;
   final bool? animate;
-  const FourTileQuickActionIcon({
-    super.key,
-    this.size = 32,
-    this.animate,
-  });
+  const FourTileQuickActionIcon({super.key, this.size = 32, this.animate});
 
   @override
-  State<FourTileQuickActionIcon> createState() => _FourTileQuickActionIconState();
+  State<FourTileQuickActionIcon> createState() =>
+      _FourTileQuickActionIconState();
 }
 
 class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  /// Nhịp cập nhật của icon: 30 fps thay vì 60 fps.
+  ///
+  /// Chuyển động là sin tuần hoàn 3.2s nên 30 fps cho cùng một quỹ đạo mắt
+  /// thường không phân biệt được, nhưng cắt đúng một nửa số lần build + raster
+  /// của icon. Icon này chạy vô hạn ở bottom bar, nên đây là chi phí nền mà
+  /// mọi animation khác (chuyển tab, mở màn phim) phải chia sẻ.
+  static const Duration _frameStep = Duration(milliseconds: 33);
+  static const Duration _cycle = Duration(milliseconds: 3200);
+
+  late final Ticker _ticker;
+  final ValueNotifier<double> _phase = ValueNotifier<double>(0.0);
+  Duration _lastTick = Duration.zero;
+  double _accumulatedSeconds = 0.0;
+  bool _reduceMotion = false;
+
+  // Bộ vẽ tĩnh (4 ô màu + gradient) được cache lại: mỗi frame chỉ còn
+  // Transform/Scale thay đổi, không dựng lại Decoration/Gradient/Shadow.
+  double? _artworkSize;
+  List<Widget> _tiles = const [];
 
   bool get _shouldAnimate {
     if (widget.animate != null) return widget.animate!;
-    final isTestEnv =
-        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final isTestEnv = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
     return !isTestEnv;
   }
+
+  bool get _isAllowed =>
+      _shouldAnimate && !_reduceMotion && !WavesBackground.isVideoPlaying;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3200),
-    );
-    if (_shouldAnimate) {
-      _controller.repeat();
+    _ticker = createTicker(_onTick);
+    if (_isAllowed) {
+      _ticker.start();
+    }
+    WavesBackground.addSuspensionListener(_onSuspensionChanged);
+  }
+
+  void _onSuspensionChanged() {
+    if (!mounted) return;
+    _syncTicker();
+  }
+
+  void _onTick(Duration elapsed) {
+    if (_lastTick == Duration.zero) {
+      _lastTick = elapsed;
+      return;
+    }
+    final delta = elapsed - _lastTick;
+    if (delta < _frameStep) return;
+    _lastTick = elapsed;
+    _accumulatedSeconds += delta.inMicroseconds / 1e6;
+    final cycleSec = _cycle.inMicroseconds / 1e6;
+    _phase.value = (_accumulatedSeconds % cycleSec) / cycleSec;
+  }
+
+  void _syncTicker() {
+    if (_isAllowed) {
+      if (!_ticker.isActive) {
+        _lastTick = Duration.zero;
+        _ticker.start();
+      }
+    } else {
+      if (_ticker.isActive) _ticker.stop();
     }
   }
 
@@ -49,42 +98,38 @@ class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
   void didUpdateWidget(FourTileQuickActionIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.animate != oldWidget.animate) {
-      if (_shouldAnimate) {
-        if (!_controller.isAnimating) _controller.repeat();
-      } else {
-        if (_controller.isAnimating) _controller.stop();
-      }
+      _syncTicker();
     }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (reduceMotion || !_shouldAnimate) {
-      if (_controller.isAnimating) _controller.stop();
-    } else {
-      if (!_controller.isAnimating) _controller.repeat();
-    }
+    // Ticker do SingleTickerProviderStateMixin tạo ra đã tự mute theo
+    // TickerMode (tab bị che, route không còn hiển thị) nên ở đây chỉ cần
+    // tôn trọng tuỳ chọn giảm chuyển động của hệ điều hành.
+    _reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    _syncTicker();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    WavesBackground.removeSuspensionListener(_onSuspensionChanged);
+    _ticker.dispose();
+    _phase.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = widget.size;
-    final tileSize = size * 0.42;
-    final borderRadius = BorderRadius.circular(tileSize * 0.38);
+    _ensureArtwork(size);
 
     return RepaintBoundary(
       child: AnimatedBuilder(
-        animation: _controller,
+        animation: _phase,
         builder: (context, _) {
-          final double t = _controller.value * 2.0 * math.pi;
+          final double t = _phase.value * 2.0 * math.pi;
 
           // 1. Độ phồng thạch dẻo lệch pha 90 độ cho từng viên (Scale: 0.95 - 1.05)
           final s1 = 1.0 + 0.05 * math.sin(t);
@@ -115,10 +160,12 @@ class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          ThemeService.instance.primaryColor
-                              .withValues(alpha: glowOpacity),
-                          ThemeService.instance.accentColor
-                              .withValues(alpha: glowOpacity * 0.45),
+                          ThemeService.instance.primaryColor.withValues(
+                            alpha: glowOpacity,
+                          ),
+                          ThemeService.instance.accentColor.withValues(
+                            alpha: glowOpacity * 0.45,
+                          ),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.55, 1.0],
@@ -141,35 +188,10 @@ class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // 1. Ô TRÊN-TRÁI: Cyan phát sáng (thở nhịp 1)
-                              Transform.scale(
-                                scale: s1,
-                                child: _buildTile(
-                                  size: tileSize,
-                                  borderRadius: borderRadius,
-                                  colors: const [
-                                    Color(0xFF2AF598),
-                                    Color(0xFF009EFD),
-                                  ],
-                                  shadowColor: const Color(0xFF00E5FF)
-                                      .withValues(alpha: 0.60),
-                                  hasSpecularHighlight: true,
-                                ),
-                              ),
+                              Transform.scale(scale: s1, child: _tiles[0]),
                               const SizedBox(width: 3),
                               // 2. Ô TRÊN-PHẢI: Royal Blue (thở nhịp 2)
-                              Transform.scale(
-                                scale: s2,
-                                child: _buildTile(
-                                  size: tileSize,
-                                  borderRadius: borderRadius,
-                                  colors: const [
-                                    Color(0xFF5B86E5),
-                                    Color(0xFF363795),
-                                  ],
-                                  shadowColor: const Color(0xFF5B86E5)
-                                      .withValues(alpha: 0.50),
-                                ),
-                              ),
+                              Transform.scale(scale: s2, child: _tiles[1]),
                             ],
                           ),
                           const SizedBox(height: 3),
@@ -177,34 +199,10 @@ class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // 3. Ô DƯỚI-TRÁI: Vàng cam Sunburst (thở nhịp 3)
-                              Transform.scale(
-                                scale: s3,
-                                child: _buildTile(
-                                  size: tileSize,
-                                  borderRadius: borderRadius,
-                                  colors: const [
-                                    Color(0xFFFFB300),
-                                    Color(0xFFFF6F00),
-                                  ],
-                                  shadowColor: const Color(0xFFFF9800)
-                                      .withValues(alpha: 0.55),
-                                ),
-                              ),
+                              Transform.scale(scale: s3, child: _tiles[2]),
                               const SizedBox(width: 3),
                               // 4. Ô DƯỚI-PHẢI: Xanh lá mạ Neon Green (thở nhịp 4)
-                              Transform.scale(
-                                scale: s4,
-                                child: _buildTile(
-                                  size: tileSize,
-                                  borderRadius: borderRadius,
-                                  colors: const [
-                                    Color(0xFFB4EC51),
-                                    Color(0xFF429321),
-                                  ],
-                                  shadowColor: const Color(0xFF7ED321)
-                                      .withValues(alpha: 0.50),
-                                ),
-                              ),
+                              Transform.scale(scale: s4, child: _tiles[3]),
                             ],
                           ),
                         ],
@@ -218,6 +216,43 @@ class _FourTileQuickActionIconState extends State<FourTileQuickActionIcon>
         },
       ),
     );
+  }
+
+  /// Dựng 4 ô màu đúng một lần cho mỗi kích thước (thay vì mỗi frame).
+  void _ensureArtwork(double size) {
+    if (_artworkSize == size && _tiles.length == 4) return;
+    _artworkSize = size;
+
+    final tileSize = size * 0.42;
+    final borderRadius = BorderRadius.circular(tileSize * 0.38);
+
+    _tiles = [
+      _buildTile(
+        size: tileSize,
+        borderRadius: borderRadius,
+        colors: const [Color(0xFF2AF598), Color(0xFF009EFD)],
+        shadowColor: const Color(0xFF00E5FF).withValues(alpha: 0.60),
+        hasSpecularHighlight: true,
+      ),
+      _buildTile(
+        size: tileSize,
+        borderRadius: borderRadius,
+        colors: const [Color(0xFF5B86E5), Color(0xFF363795)],
+        shadowColor: const Color(0xFF5B86E5).withValues(alpha: 0.50),
+      ),
+      _buildTile(
+        size: tileSize,
+        borderRadius: borderRadius,
+        colors: const [Color(0xFFFFB300), Color(0xFFFF6F00)],
+        shadowColor: const Color(0xFFFF9800).withValues(alpha: 0.55),
+      ),
+      _buildTile(
+        size: tileSize,
+        borderRadius: borderRadius,
+        colors: const [Color(0xFFB4EC51), Color(0xFF429321)],
+        shadowColor: const Color(0xFF7ED321).withValues(alpha: 0.50),
+      ),
+    ];
   }
 
   Widget _buildTile({
@@ -302,7 +337,10 @@ class GlassNavBackground extends StatelessWidget {
         width: width,
         height: height,
         useOwnLayer: true,
-        quality: GlassQuality.premium,
+        // Thanh điều hướng luôn nằm trên nội dung cuộn nên lớp kính phải lấy
+        // lại backdrop ở mỗi khung hình cuộn. Mobile dùng hạng shader nhẹ
+        // (vẫn khúc xạ nền, vẫn viền vát + phản quang); desktop giữ premium.
+        quality: GlassPerf.overlayChrome,
         shape: isOval
             ? const LiquidOval()
             : LiquidRoundedRectangle(borderRadius: borderRadius),
@@ -345,9 +383,18 @@ class FloatingGlassBottomBar extends StatelessWidget
   @override
   Size get preferredSize => const Size.fromHeight(88);
 
-  static const List<({IconData active, IconData inactive, String label})> _tabIcons = [
-    (active: Icons.home_rounded, inactive: Icons.home_outlined, label: 'Trang chủ'),
-    (active: Icons.search_rounded, inactive: Icons.search_outlined, label: 'Tìm kiếm'),
+  static const List<({IconData active, IconData inactive, String label})>
+  _tabIcons = [
+    (
+      active: Icons.home_rounded,
+      inactive: Icons.home_outlined,
+      label: 'Trang chủ',
+    ),
+    (
+      active: Icons.search_rounded,
+      inactive: Icons.search_outlined,
+      label: 'Tìm kiếm',
+    ),
     (
       active: Icons.local_fire_department_rounded,
       inactive: Icons.local_fire_department_outlined,
@@ -365,207 +412,281 @@ class FloatingGlassBottomBar extends StatelessWidget
     return ListenableBuilder(
       listenable: ThemeService.instance,
       builder: (context, _) {
+        // HIG › Guides and safe areas: phần tử nổi phải nằm trên home indicator.
+        final double bottomSafeInset = MediaQuery.paddingOf(context).bottom;
         return GlassAdaptiveScope(
-      // Khóa cứng sàn và trần chất lượng ở Premium để ngăn Phase 2 Warm-up Benchmark
-      // (180 frames ≈ 3s) tự động hạ cấp xuống Standard, duy trì vĩnh viễn hiệu ứng
-      // khúc xạ quang học bẻ cong hình ảnh nền (Snell's Law: refractiveIndex 1.28).
-      minQuality: GlassQuality.premium,
-      maxQuality: GlassQuality.premium,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-        child: SizedBox(
-          height: 66,
-          child: Row(
-            children: [
-              // ĐẢO BÊN TRÁI: Thanh capsule kính chứa 4 tabs
-              // Ghép 2 layer SIBLING trong Stack: Nền riêng, Nội dung riêng
-              Expanded(
-                child: SizedBox(
-                  height: 66,
-                  child: Stack(
-                    children: [
-                      // Layer 1: NỀN kính mờ - CHỈ có blur + refraction + tint + hairline rim
-                      const Positioned.fill(
-                        child: GlassNavBackground(borderRadius: 33, height: 66),
-                      ),
-                      // Layer 2: NỘI DUNG - Con trỏ viên thuốc đỏ trượt liên tục (Single Liquid Glider) & Icons
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final tabCount = _tabIcons.length;
-                              final totalWidth = constraints.maxWidth;
-                              final slotWidth = totalWidth / tabCount;
-                              // Viên thuốc cân đối, tỉ lệ đẹp, co giãn tự thích ứng màn hình nhỏ (320px) đến tablet
-                              final pillWidth = (slotWidth * 0.82)
-                                  .clamp(44.0, 56.0)
-                                  .toDouble();
-                              const pillHeight = 42.0;
-                              final pillTop =
-                                  (constraints.maxHeight - pillHeight) / 2;
-                              final safeIndex = selectedIndex.clamp(
-                                0,
-                                tabCount - 1,
-                              );
-                              final pillLeft =
-                                  safeIndex * slotWidth +
-                                  (slotWidth - pillWidth) / 2;
-
-                              return Stack(
-                                children: [
-                                  // 1. VIÊN THUỐC ĐỎ DUY NHẤT TRƯỢT MƯỢT TRÊN MẶT KÍNH (Liquid Glider)
-                                  AnimatedPositioned(
-                                    duration: const Duration(milliseconds: 360),
-                                    curve: Curves.easeOutQuart,
-                                    left: pillLeft,
-                                    top: pillTop,
-                                    width: pillWidth,
-                                    height: pillHeight,
-                                    child: Container(
-                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: ThemeService
-                                                  .instance.isWindowsBlue
-                                              ? const [
-                                                  Color(0xFF66C7F4),
-                                                  Color(0xFF00A2ED),
-                                                ]
-                                              : const [
-                                                  Color(0xFFFF2E3D),
-                                                  Color(0xFFE50914),
-                                                ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          pillHeight / 2,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: ThemeService
-                                                .instance.primaryColor
-                                                .withValues(alpha: 0.42),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-
-                                  // 2. HÀNG 4 TABS CỐ ĐỊNH NẰM TRÊN, CĂN CHÍNH XÁC 100% TỪNG CỘT
-                                  Row(
-                                    children: List.generate(tabCount, (index) {
-                                      final isSelected = selectedIndex == index;
-                                      return Expanded(
-                                        child: _buildTabItem(
-                                          tab: _tabIcons[index],
-                                          isSelected: isSelected,
-                                          onTap: () => onTabSelected(index),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                ],
-                              );
-                            },
+          // Sàn chất lượng cho mọi bề mặt kính không tự khai báo `quality`.
+          // Thanh điều hướng tự chọn hạng qua [GlassPerf.overlayChrome]: mobile
+          // dùng shader nhẹ, desktop giữ premium — vẫn giữ nguyên hiệu ứng
+          // khúc xạ Snell (refractiveIndex 1.28) trên mọi thiết bị.
+          minQuality: GlassQuality.standard,
+          maxQuality: GlassQuality.premium,
+          allowStepUp: true,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(14, 0, 14, 14 + bottomSafeInset),
+            child: SizedBox(
+              height: 66,
+              child: Row(
+                children: [
+                  // ĐẢO BÊN TRÁI: Thanh capsule kính chứa 4 tabs
+                  // Ghép 2 layer SIBLING trong Stack: Nền riêng, Nội dung riêng
+                  Expanded(
+                    child: SizedBox(
+                      height: 66,
+                      child: Stack(
+                        children: [
+                          // Layer 1: NỀN kính mờ - CHỈ có blur + refraction + tint + hairline rim
+                          // Bọc RepaintBoundary để GPU cache toàn bộ shader kính, cách ly triệt để khỏi animation trượt
+                          const Positioned.fill(
+                            child: RepaintBoundary(
+                              child: GlassNavBackground(
+                                borderRadius: 33,
+                                height: 66,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // ĐẢO BÊN PHẢI: Nút tròn tiện ích nhanh
-              // Ghép 2 layer SIBLING trong Stack: Nền riêng, Nội dung riêng
-              SizedBox(
-                width: 66,
-                height: 66,
-                child: Stack(
-                  children: [
-                    // Layer 1: NỀN kính mờ tròn
-                    const Positioned.fill(
-                      child: GlassNavBackground(
-                        isOval: true,
-                        borderRadius: 33,
-                        width: 66,
-                        height: 66,
+                          // Layer 2: NỘI DUNG - Con trỏ viên thuốc đỏ trượt liên tục (Single Liquid Glider) & Icons
+                          Positioned.fill(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final tabCount = _tabIcons.length;
+                                  final totalWidth = constraints.maxWidth;
+                                  final slotWidth = totalWidth / tabCount;
+                                  // Viên thuốc cân đối, tỉ lệ đẹp, co giãn tự thích ứng màn hình nhỏ (320px) đến tablet
+                                  final pillWidth = (slotWidth * 0.82)
+                                      .clamp(44.0, 56.0)
+                                      .toDouble();
+                                  const pillHeight = 42.0;
+                                  final pillTop =
+                                      (constraints.maxHeight - pillHeight) / 2;
+                                  final safeIndex = selectedIndex.clamp(
+                                    0,
+                                    tabCount - 1,
+                                  );
+                                  final pillLeft =
+                                      safeIndex * slotWidth +
+                                      (slotWidth - pillWidth) / 2;
+
+                                  return Stack(
+                                    children: [
+                                      // 1. VIÊN THUỐC ĐỎ DUY NHẤT TRƯỢT MƯỢT TRÊN MẶT KÍNH (Liquid Glider)
+                                      // Chuyển động lướt nhung 400ms Curves.easeInOutCubic, biến pill thành GPU texture
+                                      AnimatedPositioned(
+                                        duration: const Duration(
+                                          milliseconds: 400,
+                                        ),
+                                        curve: Curves.easeInOutCubic,
+                                        left: pillLeft,
+                                        top: pillTop,
+                                        width: pillWidth,
+                                        height: pillHeight,
+                                        child: RepaintBoundary(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors:
+                                                    ThemeService
+                                                        .instance
+                                                        .isWindowsBlue
+                                                    ? const [
+                                                        Color(0xFF66C7F4),
+                                                        Color(0xFF00A2ED),
+                                                      ]
+                                                    : ThemeService
+                                                          .instance
+                                                          .isLuxuryGold
+                                                    ? const [
+                                                        Color(0xFFF6E2A8),
+                                                        Color(0xFFD4AF37),
+                                                        Color(0xFF9E782F),
+                                                      ]
+                                                    : const [
+                                                        Color(0xFFFF2E3D),
+                                                        Color(0xFFE50914),
+                                                      ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    pillHeight / 2,
+                                                  ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: ThemeService
+                                                      .instance
+                                                      .primaryColor
+                                                      .withValues(alpha: 0.45),
+                                                  blurRadius: 12,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // 2. HÀNG 4 TABS CỐ ĐỊNH NẰM TRÊN, CĂN CHÍNH XÁC 100% TỪNG CỘT
+                                      Row(
+                                        children: List.generate(tabCount, (
+                                          index,
+                                        ) {
+                                          final isSelected =
+                                              selectedIndex == index;
+                                          return Expanded(
+                                            child: _InteractiveTabItem(
+                                              tab: _tabIcons[index],
+                                              isSelected: isSelected,
+                                              onTap: () => onTabSelected(index),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    // Layer 2: NỘI DUNG - nút bấm tiện ích 4 ô vuông xoay 3D nằm ĐÈ LÊN TRÊN
-                    Positioned.fill(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            onQuickActionPressed();
-                          },
-                          splashColor: ThemeService.instance.primaryColor
-                              .withValues(alpha: 0.25),
-                          highlightColor: Colors.white.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(33),
-                          child: Center(
-                            child: FourTileQuickActionIcon(
-                              size: 30,
+                  ),
+                  const SizedBox(width: 12),
+                  // ĐẢO BÊN PHẢI: Nút tròn tiện ích nhanh
+                  // Ghép 2 layer SIBLING trong Stack: Nền riêng, Nội dung riêng
+                  SizedBox(
+                    width: 66,
+                    height: 66,
+                    child: Stack(
+                      children: [
+                        // Layer 1: NỀN kính mờ tròn - Bọc RepaintBoundary cách ly shader
+                        const Positioned.fill(
+                          child: RepaintBoundary(
+                            child: GlassNavBackground(
+                              isOval: true,
+                              borderRadius: 33,
+                              width: 66,
+                              height: 66,
+                            ),
+                          ),
+                        ),
+                        // Layer 2: NỘI DUNG - nút bấm tiện ích 4 ô vuông xoay 3D nằm ĐÈ LÊN TRÊN
+                        Positioned.fill(
+                          child: RepaintBoundary(
+                            child: _QuickActionButton(
+                              onPressed: onQuickActionPressed,
                               animate: animateQuickAction,
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
       },
     );
   }
+}
 
-  Widget _buildTabItem({
-    required ({IconData active, IconData inactive, String label}) tab,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
+/// Nút tab tương tác mượt mà với hiệu ứng phóng nhẹ (Scale 1.10) và độ trong suốt (Alpha Blend)
+/// đồng bộ 100% với viên thuốc lướt nhung (Curves.easeInOutCubic, 400ms), cách ly bằng RepaintBoundary
+class _InteractiveTabItem extends StatelessWidget {
+  final ({IconData active, IconData inactive, String label}) tab;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _InteractiveTabItem({
+    required this.tab,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: tab.label,
       selected: isSelected,
       child: Tooltip(
         message: tab.label,
-        child: GestureDetector(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onTap();
-          },
-          behavior: HitTestBehavior.opaque,
-          child: Center(
-            child: SizedBox(
-              width: 56,
-              height: 42,
-              child: Center(
-                child: AnimatedScale(
-                  scale: isSelected ? 1.10 : 1.0,
-                  duration: const Duration(milliseconds: 360),
-                  curve: Curves.easeOutQuart,
-                  child: AnimatedMorphIcon(
-                    icon: isSelected ? tab.active : tab.inactive,
-                    size: 22,
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.65),
-                    spring: MorphSprings.smooth,
+        child: RepaintBoundary(
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onTap();
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Center(
+              child: SizedBox(
+                width: 56,
+                height: 42,
+                child: Center(
+                  child: AnimatedScale(
+                    scale: isSelected ? 1.10 : 1.0,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOutCubic,
+                    // Độ mờ của tab chưa chọn được đưa thẳng vào alpha của icon
+                    // thay vì bọc thêm Opacity: cùng một kết quả hình ảnh nhưng
+                    // không tạo saveLayer mỗi frame trong suốt 400ms chạy pill.
+                    child: AnimatedMorphIcon(
+                      icon: isSelected ? tab.active : tab.inactive,
+                      size: 22,
+                      color: Colors.white.withValues(
+                        alpha: isSelected ? 1.0 : 0.65,
+                      ),
+                      spring: MorphSprings.smooth,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Nút tiện ích nhanh (Quick Action Button) có phản hồi nén nhẹ êm ái khi chạm
+class _QuickActionButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final bool? animate;
+
+  const _QuickActionButton({required this.onPressed, this.animate});
+
+  @override
+  State<_QuickActionButton> createState() => _QuickActionButtonState();
+}
+
+class _QuickActionButtonState extends State<_QuickActionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        widget.onPressed();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Center(
+        child: AnimatedScale(
+          scale: _isPressed ? 0.88 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: FourTileQuickActionIcon(size: 30, animate: widget.animate),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../services/theme_service.dart';
+import '../../../theme/app_theme.dart';
 import 'openflix_morph_icon.dart';
 
 /// Thẻ lọc tương tác bề mặt kính mờ (Optical Frosted Glass Chip Button).
@@ -91,26 +92,57 @@ class _GlassChipButtonState extends State<GlassChipButton> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveActiveColor = widget.activeColor ?? ThemeService.instance.primaryColor;
+    final isBlue = ThemeService.instance.isWindowsBlue;
+    final effectiveActiveColor =
+        widget.activeColor ??
+        (isBlue ? const Color(0xFF006BA6) : ThemeService.instance.primaryColor);
     final isInteractive = widget.onSelected != null;
+    final homePalette = Theme.of(context).extension<HomeScreenPalette>();
+
+    final Color unselectedRestBg =
+        homePalette?.surface ??
+        (isBlue ? const Color(0xCC0A2433) : const Color(0x80262626));
+    final Color unselectedHoverBg =
+        homePalette?.surface ??
+        (isBlue ? const Color(0xD90E3044) : const Color(0x99303030));
+    final Color unselectedPressBg =
+        homePalette?.surface ??
+        (isBlue ? const Color(0xE6123B52) : const Color(0xB3383838));
 
     final Color backgroundColor = widget.isSelected
-        ? effectiveActiveColor.withValues(alpha: 0.28)
+        ? (isBlue
+              ? effectiveActiveColor.withValues(alpha: 0.92)
+              : (homePalette != null
+                    ? effectiveActiveColor
+                    : effectiveActiveColor.withValues(alpha: 0.78)))
         : (_isPressed
-            ? Colors.white.withValues(alpha: 0.14)
-            : (_isHovered
-                ? Colors.white.withValues(alpha: 0.10)
-                : const Color(0x1A2A2A2A)));
+              ? unselectedPressBg
+              : (_isHovered ? unselectedHoverBg : unselectedRestBg));
 
     final Color borderColor = widget.isSelected
-        ? effectiveActiveColor.withValues(alpha: 0.85)
+        ? (isBlue
+              ? const Color(0xFF66C7F4)
+              : effectiveActiveColor.withValues(alpha: 0.90))
         : (_isHovered || _isPressed
-            ? Colors.white.withValues(alpha: 0.32)
-            : Colors.white.withValues(alpha: 0.14));
+              ? (homePalette?.textMuted ??
+                    (isBlue
+                        ? const Color(0x805AD2F4)
+                        : Colors.white.withValues(alpha: 0.36)))
+              : (homePalette?.divider ??
+                    (isBlue
+                        ? const Color(0x4D5AD2F4)
+                        : Colors.white.withValues(alpha: 0.20))));
 
     final Color textColor = widget.isSelected
-        ? (widget.activeTextColor ?? Colors.white)
-        : (isInteractive ? const Color(0xFFCCCCCC) : const Color(0xFF757575));
+        ? (widget.activeTextColor ?? (homePalette?.textPrimary ?? Colors.white))
+        : (homePalette?.textSecondary ??
+              (isInteractive
+                  ? (isBlue
+                        ? const Color(0xFFE2F1FF)
+                        : const Color(0xFFE5E5E5))
+                  : (isBlue
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF8A8A8A))));
 
     final List<BoxShadow> shadows = widget.isSelected
         ? [
@@ -179,8 +211,9 @@ class _GlassChipButtonState extends State<GlassChipButton> {
                     style: TextStyle(
                       color: textColor,
                       fontSize: 13,
-                      fontWeight:
-                          widget.isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: widget.isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -203,7 +236,7 @@ class _GlassChipButtonState extends State<GlassChipButton> {
                         '${widget.count}',
                         style: TextStyle(
                           color: textColor,
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

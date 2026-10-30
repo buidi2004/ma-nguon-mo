@@ -90,7 +90,9 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
   int _pressedIndex = -1;
 
   int get _selectedIndex {
-    final idx = widget.items.indexWhere((it) => it.value == widget.selectedValue);
+    final idx = widget.items.indexWhere(
+      (it) => it.value == widget.selectedValue,
+    );
     return idx >= 0 ? idx : 0;
   }
 
@@ -104,24 +106,35 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveActiveColor = widget.activePillColor ?? ThemeService.instance.primaryColor;
+    final isBlue = ThemeService.instance.isWindowsBlue;
+    final effectiveActiveColor =
+        widget.activePillColor ??
+        (isBlue ? const Color(0xFF006BA6) : ThemeService.instance.primaryColor);
     final borderRadius = BorderRadius.circular(widget.height / 2);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
         final horizontalPadding = widget.padding.horizontal;
-        final availableWidth = (totalWidth - horizontalPadding).clamp(0.0, double.infinity);
+        final availableWidth = (totalWidth - horizontalPadding).clamp(
+          0.0,
+          double.infinity,
+        );
         final segmentWidth = availableWidth / widget.items.length;
-        final innerHeight = (widget.height - widget.padding.vertical).clamp(0.0, double.infinity);
+        final innerHeight = (widget.height - widget.padding.vertical).clamp(
+          0.0,
+          double.infinity,
+        );
 
         return Container(
           height: widget.height,
           decoration: BoxDecoration(
             borderRadius: borderRadius,
-            color: const Color(0x331E1E1E),
+            color: isBlue ? const Color(0xCC092232) : const Color(0x991E1E1E),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: isBlue
+                  ? const Color(0x4D5AD2F4)
+                  : Colors.white.withValues(alpha: 0.16),
               width: 1.0,
             ),
             boxShadow: const [
@@ -161,7 +174,9 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
                     boxShadow: widget.hasGlow
                         ? [
                             BoxShadow(
-                              color: effectiveActiveColor.withValues(alpha: 0.45),
+                              color: effectiveActiveColor.withValues(
+                                alpha: 0.45,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -180,7 +195,10 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
 
                   final textColor = isSelected
                       ? (widget.activeTextColor ?? Colors.white)
-                      : (widget.inactiveTextColor ?? const Color(0xFFB3B3B3));
+                      : (widget.inactiveTextColor ??
+                            (isBlue
+                                ? const Color(0xFFD6EBFC)
+                                : const Color(0xFFCCCCCC)));
 
                   return Expanded(
                     child: Semantics(
@@ -199,16 +217,14 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
                           curve: Curves.easeOutCubic,
                           child: Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (item.icon != null) ...[
-                                    Icon(
-                                      item.icon,
-                                      size: 16,
-                                      color: textColor,
-                                    ),
+                                    Icon(item.icon, size: 16, color: textColor),
                                     const SizedBox(width: 4),
                                   ],
                                   Flexible(
@@ -228,36 +244,40 @@ class _GlassSegmentedControlState<T> extends State<GlassSegmentedControl<T>> {
                                   ),
                                   if (item.badgeCount != null) ...[
                                     const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 1.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.white.withValues(alpha: 0.25)
-                                          : Colors.white.withValues(alpha: 0.08),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '${item.badgeCount}',
-                                      style: TextStyle(
-                                        color: textColor,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.white.withValues(
+                                                alpha: 0.25,
+                                              )
+                                            : Colors.white.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        '${item.badgeCount}',
+                                        style: TextStyle(
+                                          color: textColor,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
               ),
             ],
           ),

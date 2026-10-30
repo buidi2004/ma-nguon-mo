@@ -32,6 +32,7 @@ class ServerMetrics {
   final String? osPretty;
   final String? dockerVersion;
   final String? pocketBaseVersion;
+
   /// Thư mục dữ liệu PocketBase mà agent xác nhận là tồn tại trên máy chủ.
   final String? dataDir;
 
@@ -64,9 +65,7 @@ class ServerMetrics {
 
   /// Có ít nhất một chỉ số tài nguyên dùng được.
   bool get hasAnyResource =>
-      cpuPercent != null ||
-      memUsedGb != null ||
-      diskUsedGb != null;
+      cpuPercent != null || memUsedGb != null || diskUsedGb != null;
 
   factory ServerMetrics.fromJson(Map<dynamic, dynamic> json) {
     final services = json['services'];

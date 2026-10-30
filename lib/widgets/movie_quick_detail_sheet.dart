@@ -72,7 +72,9 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
 
   void _handleShare(BuildContext context) {
     HapticFeedback.lightImpact();
-    Clipboard.setData(ClipboardData(text: 'https://openflix.vn/movie/${widget.movie.id}'));
+    Clipboard.setData(
+      ClipboardData(text: 'https://openflix.vn/movie/${widget.movie.id}'),
+    );
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -99,13 +101,14 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
         minChildSize: 0.25,
         maxChildSize: 0.94,
         snap: true,
-        snapSizes: const [0.50, 0.94],
-        snapAnimationDuration: const Duration(milliseconds: 240),
+        snapSizes: [0.50, 0.94],
+        snapAnimationDuration: Duration(milliseconds: 240),
         builder: (sheetContext, scrollController) {
-          final bottomInset = MediaQuery.of(sheetContext).padding.bottom + 16.0;
+          final bottomInset =
+              MediaQuery.paddingOf(sheetContext).bottom + 16.0;
 
           return Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               boxShadow: [
@@ -118,6 +121,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
             ),
             child: CustomScrollView(
               controller: scrollController,
+              cacheExtent: 400.0,
               physics: const ClampingScrollPhysics(),
               slivers: [
                 // 1. Thanh kéo đỉnh chuẩn Netflix (Tinh giản, đối xứng, không nút X thừa)
@@ -157,19 +161,19 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                 memCacheHeight: 372,
                                 maxHeightDiskCache: 450,
                                 placeholder: (_, _) =>
-                                    const ColoredBox(color: AppColors.surfaceLight),
+                                    ColoredBox(color: AppColors.surfaceLight),
                                 errorWidget: (_, _, _) => Container(
                                   width: 84,
                                   height: 124,
                                   color: AppColors.surfaceLight,
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.movie_outlined,
                                     color: Colors.white30,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 14),
+                            SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,9 +182,9 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                     movie.title,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textPrimary,
-                                      fontSize: 18,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.w700,
                                       height: 1.25,
                                     ),
@@ -189,7 +193,8 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                   Wrap(
                                     spacing: 6,
                                     runSpacing: 4,
-                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
                                     children: [
                                       if (isTrailer)
                                         Container(
@@ -199,13 +204,15 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: primaryColor,
-                                            borderRadius: BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
                                           ),
-                                          child: const Text(
+                                          child: Text(
                                             'TRAILER',
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 10,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w800,
                                               letterSpacing: 0.5,
                                             ),
@@ -213,13 +220,13 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                         ),
                                       Text(
                                         '${movie.releaseYear}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppColors.textSecondary,
                                           fontSize: 13,
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
+                                        padding: EdgeInsets.symmetric(
                                           horizontal: 4,
                                           vertical: 1,
                                         ),
@@ -228,13 +235,15 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                             color: AppColors.textMuted,
                                             width: 0.8,
                                           ),
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'HD',
                                           style: TextStyle(
                                             color: AppColors.textSecondary,
-                                            fontSize: 10,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -242,50 +251,52 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                       if (movie.durationMinutes > 5)
                                         Text(
                                           '${movie.durationMinutes}p',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppColors.textSecondary,
                                             fontSize: 13,
                                           ),
                                         ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
+                                        padding: EdgeInsets.symmetric(
                                           horizontal: 4,
                                           vertical: 1,
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.white12,
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
                                         ),
                                         child: Text(
                                           movie.ageRating,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppColors.textSecondary,
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
+                                  SizedBox(height: 6),
                                   Text(
                                     movie.category,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: primaryColor,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  SizedBox(height: 6),
                                   Text(
                                     movie.description,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                       height: 1.3,
                                     ),
                                   ),
@@ -340,8 +351,12 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                         ListenableBuilder(
                           listenable: LibraryService.instance,
                           builder: (context, _) {
-                            final isInList = LibraryService.instance.isInMyList(movie.id);
-                            final isLiked = LibraryService.instance.isLiked(movie.id);
+                            final isInList = LibraryService.instance.isInMyList(
+                              movie.id,
+                            );
+                            final isLiked = LibraryService.instance.isLiked(
+                              movie.id,
+                            );
 
                             return Row(
                               children: [
@@ -357,12 +372,18 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                 ),
                                 Expanded(
                                   child: _ActionButton(
-                                    icon: isInList ? Icons.check_rounded : Icons.add_rounded,
-                                    iconColor: isInList ? primaryColor : Colors.white,
+                                    icon: isInList
+                                        ? Icons.check_rounded
+                                        : Icons.add_rounded,
+                                    iconColor: isInList
+                                        ? primaryColor
+                                        : Colors.white,
                                     label: isInList ? 'Đã thêm' : 'Danh sách',
                                     onTap: () {
                                       HapticFeedback.lightImpact();
-                                      LibraryService.instance.toggleMyList(movie.id);
+                                      LibraryService.instance.toggleMyList(
+                                        movie.id,
+                                      );
                                     },
                                   ),
                                 ),
@@ -371,11 +392,15 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                     icon: isLiked
                                         ? Icons.thumb_up_alt_rounded
                                         : Icons.thumb_up_off_alt_rounded,
-                                    iconColor: isLiked ? primaryColor : Colors.white,
+                                    iconColor: isLiked
+                                        ? primaryColor
+                                        : Colors.white,
                                     label: isLiked ? 'Đã thích' : 'Thích',
                                     onTap: () {
                                       HapticFeedback.lightImpact();
-                                      LibraryService.instance.toggleLike(movie.id);
+                                      LibraryService.instance.toggleLike(
+                                        movie.id,
+                                      );
                                     },
                                   ),
                                 ),
@@ -390,7 +415,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                             );
                           },
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
 
                         // Gợi ý kéo lên (Affordance trực quan)
                         Center(
@@ -398,7 +423,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                             fit: BoxFit.scaleDown,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.keyboard_arrow_up_rounded,
                                   size: 16,
@@ -409,7 +434,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                   'Kéo lên để xem đầy đủ & phim tương tự',
                                   style: TextStyle(
                                     color: AppColors.textMuted,
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -426,7 +451,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                 SliverToBoxAdapter(
                   child: Container(
                     height: 1,
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     color: Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
@@ -434,11 +459,11 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                 // 4. Nội dung tầng 2 (Tóm tắt trọn vẹn + Đạo diễn / Diễn viên)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Tóm tắt nội dung',
                           style: TextStyle(
                             color: AppColors.textPrimary,
@@ -446,27 +471,27 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           movie.description.trim().isNotEmpty
                               ? movie.description
                               : 'Chưa có mô tả chi tiết cho phim này.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 13.5,
+                            fontSize: 13,
                             height: 1.45,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         Text.rich(
                           TextSpan(
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
-                              fontSize: 12.5,
+                              fontSize: 13,
                               height: 1.4,
                             ),
                             children: [
-                              const TextSpan(
+                              TextSpan(
                                 text: 'Đạo diễn: ',
                                 style: TextStyle(
                                   color: AppColors.textMuted,
@@ -474,7 +499,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                                 ),
                               ),
                               TextSpan(text: '${movie.director}\n'),
-                              const TextSpan(
+                              TextSpan(
                                 text: 'Diễn viên: ',
                                 style: TextStyle(
                                   color: AppColors.textMuted,
@@ -503,7 +528,7 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                             label: const Text(
                               'Mở toàn trang chi tiết phim',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -518,11 +543,11 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 22),
+                        SizedBox(height: 22),
 
                         // Tiêu đề khối phim tương tự
                         if (widget.similarMovies.isNotEmpty) ...[
-                          const Text(
+                          Text(
                             'Nội dung tương tự',
                             style: TextStyle(
                               color: AppColors.textPrimary,
@@ -542,51 +567,47 @@ class _MovieQuickDetailSheetState extends State<MovieQuickDetailSheet> {
                   SliverPadding(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 2 / 3,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final item = widget.similarMovies[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                              widget.onOpenFullDetail(item);
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: CachedNetworkImage(
-                                imageUrl: item.posterUrl,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 200,
-                                memCacheHeight: 300,
-                                placeholder: (_, _) =>
-                                    const ColoredBox(color: AppColors.surfaceLight),
-                                errorWidget: (_, _, _) => Container(
-                                  color: AppColors.surfaceLight,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.movie_outlined,
-                                      color: Colors.white24,
-                                      size: 28,
-                                    ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
+                            childAspectRatio: 2 / 3,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final item = widget.similarMovies[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.onOpenFullDetail(item);
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: CachedNetworkImage(
+                              imageUrl: item.posterUrl,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 200,
+                              memCacheHeight: 300,
+                              placeholder: (_, _) =>
+                                  ColoredBox(color: AppColors.surfaceLight),
+                              errorWidget: (_, _, _) => Container(
+                                color: AppColors.surfaceLight,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.movie_outlined,
+                                    color: Colors.white24,
+                                    size: 28,
                                   ),
                                 ),
                               ),
                             ),
-                          );
-                        },
-                        childCount: widget.similarMovies.length.clamp(0, 9),
-                      ),
+                          ),
+                        );
+                      }, childCount: widget.similarMovies.length.clamp(0, 9)),
                     ),
                   )
                 else
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: bottomInset),
-                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: bottomInset)),
               ],
             ),
           );
@@ -616,20 +637,20 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: iconColor, size: 22),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 label,
                 maxLines: 1,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),

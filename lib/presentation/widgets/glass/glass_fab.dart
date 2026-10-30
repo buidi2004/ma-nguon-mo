@@ -97,7 +97,7 @@ class GlassFAB extends StatefulWidget {
               label,
               style: TextStyle(
                 color: textColor,
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.2,
               ),
@@ -160,14 +160,17 @@ class _GlassFABState extends State<GlassFAB> {
   @override
   Widget build(BuildContext context) {
     final isInteractive = widget.onPressed != null;
-    final effectiveGlowColor = widget.glowColor ?? ThemeService.instance.primaryColor;
+    final effectiveGlowColor =
+        widget.glowColor ?? ThemeService.instance.primaryColor;
 
-    final Color bgColor = widget.backgroundColor ??
+    final Color bgColor =
+        widget.backgroundColor ??
         (_isPressed
             ? const Color(0x662A2A2A)
             : (_isHovered ? const Color(0x552A2A2A) : const Color(0x401E1E1E)));
 
-    final Color bdrColor = widget.borderColor ??
+    final Color bdrColor =
+        widget.borderColor ??
         (_isHovered || _isPressed
             ? Colors.white.withValues(alpha: 0.40)
             : Colors.white.withValues(alpha: 0.20));

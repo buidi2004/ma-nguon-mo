@@ -5,6 +5,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
 import 'services/admin_auth_service.dart';
 import 'services/server_telemetry_service.dart';
+import '../../waves_background.dart';
 
 class ServerMonitorScreen extends StatefulWidget {
   const ServerMonitorScreen({super.key});
@@ -56,7 +57,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -130,7 +131,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         'Cấu hình Phần cứng (theo gói VPS đã thuê)',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -144,8 +145,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         color: const Color(0xFF22C55E).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color:
-                              const Color(0xFF22C55E).withValues(alpha: 0.3),
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(
@@ -153,7 +153,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         key: const ValueKey('vps-host-badge'),
                         style: const TextStyle(
                           color: Color(0xFF22C55E),
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -218,8 +218,9 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         subtitle: diskUsed == null
                             ? 'Tổng SSD • Mức dùng: chưa đo được'
                             : '${diskPercent!.toStringAsFixed(1)}% đã dùng',
-                        percent:
-                            diskPercent == null ? null : diskPercent / 100.0,
+                        percent: diskPercent == null
+                            ? null
+                            : diskPercent / 100.0,
                         icon: Icons.album_outlined,
                         color: const Color(0xFFA855F7),
                       ),
@@ -259,10 +260,10 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                             : Icons.info_outline_rounded,
                         size: 16,
                         color: data.metricsLive
-                            ? const Color(0xFF22C55E)
+                            ? Color(0xFF22C55E)
                             : AppColors.textMuted,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           data.metricsLive
@@ -271,7 +272,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                                     '${data.metricsGeneratedAt == null ? '' : ' • cập nhật ${data.metricsGeneratedAt}'}'
                               : '${data.vpsPlan}\n'
                                     '${data.metricsError ?? kMetricsUnavailableNote}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 11,
                             height: 1.4,
@@ -311,7 +312,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
           );
         },
       ),
-    );
+    ));
   }
 
   Widget _buildServerStatusBanner(ServerTelemetryData data) {
@@ -383,11 +384,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.network_ping_rounded,
-                      size: 14,
-                      color: accent,
-                    ),
+                    Icon(Icons.network_ping_rounded, size: 14, color: accent),
                     const SizedBox(width: 4),
                     Text(
                       pingLabel,
@@ -402,16 +399,16 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(color: Colors.white10, height: 1),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
+          Divider(color: Colors.white10, height: 1),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Địa chỉ Host VPS',
                       style: TextStyle(
                         color: AppColors.textMuted,
@@ -421,7 +418,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                     const SizedBox(height: 2),
                     Text(
                       data.vpsHost,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -434,7 +431,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Web Engine & OS VPS',
                       style: TextStyle(
                         color: AppColors.textMuted,
@@ -483,13 +480,13 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
           Row(
             children: [
               Icon(icon, color: color, size: 18),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -508,24 +505,24 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
           ),
           const SizedBox(height: 8),
           // THANH BIỂU ĐỒ TIẾN TRÌNH (để trống khi chưa có số đo)
@@ -584,7 +581,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                     : '${formatGb(diskUsed)} / '
                           '${formatGb(totalGb)} GB '
                           '(${data.vpsDiskUsagePercent!.toStringAsFixed(1)}%)',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFFA855F7),
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -592,23 +589,23 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (diskUsed == null)
             // Không có số đo → không vẽ biểu đồ bằng số bịa.
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline_rounded,
                   size: 16,
                   color: AppColors.textMuted,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Chưa có dữ liệu dung lượng ổ cứng để vẽ biểu đồ. '
                     '$kMetricsUnavailableNote',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 11,
                       height: 1.4,
@@ -654,7 +651,12 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
     void addBar(Color color, double gb) {
       if (gb <= 0) return;
       if (bars.isNotEmpty) bars.add(const SizedBox(width: 1));
-      bars.add(Flexible(flex: flexOf(gb), child: Container(color: color)));
+      bars.add(
+        Flexible(
+          flex: flexOf(gb),
+          child: Container(color: color),
+        ),
+      );
     }
 
     const colorOs = Color(0xFF38BDF8);
@@ -689,13 +691,15 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
         if (otherGb > 0)
           _buildLegendDot(
             color: AppColors.warning,
-            label: 'Khác (chưa phân loại): ${formatGb(otherGb)} GB '
+            label:
+                'Khác (chưa phân loại): ${formatGb(otherGb)} GB '
                 '(${percentOf(otherGb)})',
           ),
       ] else
         _buildLegendDot(
           color: AppColors.red,
-          label: 'Đã dùng: ${formatGb(diskUsedGb)} GB '
+          label:
+              'Đã dùng: ${formatGb(diskUsedGb)} GB '
               '(${percentOf(diskUsedGb)})',
         ),
       _buildLegendDot(
@@ -711,21 +715,25 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
         borderRadius: BorderRadius.circular(5),
         child: SizedBox(height: 12, child: Row(children: bars)),
       ),
-      const SizedBox(height: 14),
+      SizedBox(height: 14),
       Wrap(spacing: 16, runSpacing: 8, children: legends),
       if (!hasBreakdown) ...[
-        const SizedBox(height: 10),
-        const Text(
+        SizedBox(height: 10),
+        Text(
           'Máy chủ chưa trả về chi tiết phân bổ (Ubuntu/DB/Media), nên chỉ '
           'hiển thị phần đã dùng thật và phần trống.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 11, height: 1.4),
+          style: TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 11,
+            height: 1.4,
+          ),
         ),
       ],
       if (dataDir != null) ...[
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Text(
           'Thư mục dữ liệu PocketBase (agent xác nhận): $dataDir',
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          style: TextStyle(color: AppColors.textMuted, fontSize: 11),
         ),
       ],
     ];
@@ -780,16 +788,16 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ...rows.map(
             (row) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: EdgeInsets.only(bottom: 8.0),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       row[0],
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12,
                       ),
@@ -798,9 +806,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                   Text(
                     row[1],
                     style: TextStyle(
-                      color: row[1] == '—'
-                          ? AppColors.textMuted
-                          : Colors.white,
+                      color: row[1] == '—' ? AppColors.textMuted : Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -821,18 +827,12 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 11,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
         ),
       ],
     );
@@ -878,13 +878,21 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         ),
                       )
                     : const Icon(Icons.radar_rounded, size: 14),
-                label: Text(_telemetry.isScanning ? 'Đang quét...' : 'Quét Ngay'),
+                label: Text(
+                  _telemetry.isScanning ? 'Đang quét...' : 'Quét Ngay',
+                ),
                 onPressed: _telemetry.isScanning ? null : _handleScanVps,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.red,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -912,8 +920,8 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                           color: log.contains('❌')
                               ? AppColors.red
                               : (log.contains('⚠️')
-                                  ? AppColors.warning
-                                  : const Color(0xFF4ADE80)),
+                                    ? AppColors.warning
+                                    : const Color(0xFF4ADE80)),
                           fontSize: 11,
                           fontFamily: 'monospace',
                         ),
@@ -954,7 +962,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -976,7 +984,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (data.pingHistory.isEmpty)
             Container(
               height: 90,
@@ -987,7 +995,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: Colors.white10),
               ),
-              child: const Text(
+              child: Text(
                 'Chưa có mẫu đo độ trễ nào.',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
@@ -1049,7 +1057,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
             'Tiến trình Dịch vụ Máy chủ VPS (Processes)',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1061,14 +1069,14 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               child: Row(
                 children: [
                   Icon(_statusIcon(s[2]), color: color, size: 16),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           s[0],
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -1076,7 +1084,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                         ),
                         Text(
                           s[1],
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 11,
                           ),
@@ -1097,7 +1105,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                       s[2],
                       style: TextStyle(
                         color: color,
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1111,9 +1119,8 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
     );
   }
 
-  String _statusLabel(bool? reachable) => reachable == null
-      ? 'CHƯA RÕ'
-      : (reachable ? 'ONLINE' : 'LỖI');
+  String _statusLabel(bool? reachable) =>
+      reachable == null ? 'CHƯA RÕ' : (reachable ? 'ONLINE' : 'LỖI');
 
   Color _statusColor(String status) => switch (status) {
     'ONLINE' => const Color(0xFF22C55E),
@@ -1164,19 +1171,19 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
                 ),
                 child: Text(
                   data.clientOs.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             'RAM ứng dụng: ${data.processRamMb} MB (Đỉnh: ${data.peakRamMb} MB) • Vi xử lý: ${data.cpuCores} Cores • Cache Poster: ${data.imageCacheMb} MB',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
           ),
           const SizedBox(height: 14),
           Row(
@@ -1214,7 +1221,10 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.movie_filter_rounded, size: 16),
-                  label: const Text('Kho phim Admin', style: TextStyle(fontSize: 12)),
+                  label: const Text(
+                    'Kho phim Admin',
+                    style: TextStyle(fontSize: 12),
+                  ),
                   onPressed: () => context.push('/admin/movies'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.red,
@@ -1237,9 +1247,7 @@ class _ServerMonitorScreenState extends State<ServerMonitorScreen> {
 class TelemetrySparklinePainter extends CustomPainter {
   final List<double> pingPoints;
 
-  TelemetrySparklinePainter({
-    required this.pingPoints,
-  });
+  TelemetrySparklinePainter({required this.pingPoints});
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -5,6 +5,7 @@ import '../../core/widgets/state_view.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class NotificationItem {
   final String id;
@@ -105,22 +106,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ? _notifications.where((n) => !n.isRead).toList()
         : _notifications;
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Flexible(
+            Flexible(
               child: Text(
                 'Thông báo',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 17,
                 ),
               ),
             ),
@@ -274,7 +275,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               color: item.isRead
                                   ? Colors.white10
                                   : ThemeService.instance.primaryColor
-                                      .withAlpha(128),
+                                        .withAlpha(128),
                             ),
                           ),
                           child: Row(
@@ -283,16 +284,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: (item.isRead
-                                          ? Colors.white24
-                                          : ThemeService.instance.primaryColor)
-                                      .withAlpha(35),
+                                  color:
+                                      (item.isRead
+                                              ? Colors.white24
+                                              : ThemeService
+                                                    .instance
+                                                    .primaryColor)
+                                          .withAlpha(35),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   item.icon,
                                   color: item.isRead
-                                      ? Colors.white70
+                                      ? AppColors.textMuted
                                       : ThemeService.instance.primaryColor,
                                   size: 22,
                                 ),
@@ -312,8 +316,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
+                                              color: AppColors.textPrimary,
+                                              fontSize: 15,
                                               fontWeight: item.isRead
                                                   ? FontWeight.w600
                                                   : FontWeight.bold,
@@ -322,33 +326,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         ),
                                         if (!item.isRead) ...[
                                           Container(
-                                            margin: const EdgeInsets.only(top: 4, left: 6),
+                                            margin: EdgeInsets.only(
+                                              top: 4,
+                                              left: 6,
+                                            ),
                                             width: 8,
                                             height: 8,
                                             decoration: BoxDecoration(
                                               color: ThemeService
-                                                  .instance.primaryColor,
+                                                  .instance
+                                                  .primaryColor,
                                               shape: BoxShape.circle,
                                             ),
                                           ),
                                         ],
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
+                                    SizedBox(height: 4),
                                     Text(
                                       item.body,
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
                                         height: 1.4,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: 6),
                                     Text(
                                       item.timeAgo,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppColors.textMuted,
                                         fontSize: 11,
                                       ),
@@ -365,6 +373,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

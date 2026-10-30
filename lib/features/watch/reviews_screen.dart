@@ -6,6 +6,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class ReviewItem {
   final String author;
@@ -76,7 +77,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Widget build(BuildContext context) {
     final title = _movie?.title ?? 'Đánh giá phim';
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
@@ -84,8 +85,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
@@ -94,8 +95,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       floatingActionButton: GlassFAB.extended(
         label: 'Viết đánh giá',
         icon: Icons.rate_review_rounded,
-        backgroundColor:
-            ThemeService.instance.primaryColor.withValues(alpha: 0.9),
+        backgroundColor: ThemeService.instance.primaryColor.withValues(
+          alpha: 0.9,
+        ),
         glowColor: ThemeService.instance.primaryColor.withValues(alpha: 0.5),
         onPressed: () async {
           final res = await context.push<ReviewItem>(
@@ -135,32 +137,32 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                             '4.8',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 36,
+                              fontSize: 34,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
                           Row(
                             children: List.generate(
                               5,
-                              (i) => const Icon(
+                              (i) => Icon(
                                 Icons.star,
                                 color: Colors.amber,
                                 size: 16,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${_reviews.length} đánh giá',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(width: 24),
-                      const Expanded(
+                      SizedBox(width: 24),
+                      Expanded(
                         child: Text(
                           'Đa số khán giả đánh giá tác phẩm này rất xuất sắc về mặt hình ảnh và kỹ xảo điện ảnh.',
                           style: TextStyle(
@@ -174,8 +176,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
-                const Text(
+                SizedBox(height: 24),
+                Text(
                   'BÌNH LUẬN NỔI BẬT TỪ CỘNG ĐỒNG',
                   style: TextStyle(
                     color: AppColors.textMuted,
@@ -213,29 +215,29 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 rev.author,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 15,
                                 ),
                               ),
                             ),
                             Text(
                               rev.timeAgo,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 11,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Row(
                           children: List.generate(
                             5,
@@ -246,10 +248,10 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           rev.comment,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                             height: 1.4,
@@ -262,6 +264,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 const SizedBox(height: 60),
               ],
             ),
-    );
+    ));
   }
 }

@@ -73,7 +73,9 @@ class PocketBaseService {
 
   /// Lấy toàn bộ danh sách phim từ PocketBase (có bộ nhớ đệm trong RAM & chống trùng request)
   Future<List<MovieModel>> getMovies({bool forceRefresh = false}) async {
-    if (!forceRefresh && _cachedMovies != null && _cachedMovies!.isNotEmpty) {
+    if (forceRefresh) {
+      clearCache();
+    } else if (!_isUsingOfflineMock && _cachedMovies != null && _cachedMovies!.isNotEmpty) {
       return _cachedMovies!;
     }
 
@@ -92,10 +94,11 @@ class PocketBaseService {
   Future<List<MovieModel>> _fetchMoviesInternal() async {
     try {
       // Dùng batch 50 an toàn với giới hạn PocketBase server (triệt tiêu lỗi 400 Bad Request)
+      // Tăng timeout lên 10 giây để đảm bảo ổn định trên kết nối mạng di động / Wi-Fi
       final records = await _pb
           .collection('movies')
           .getFullList(batch: 50, sort: '-created')
-          .timeout(const Duration(milliseconds: 3500));
+          .timeout(const Duration(seconds: 10));
 
       _isUsingOfflineMock = false;
       final result = records
@@ -127,7 +130,10 @@ class PocketBaseService {
     final cacheKey =
         '${page}_${perPage}_${category ?? ''}_${filter ?? ''}_${sort ?? ''}';
 
-    if (!forceRefresh && _pagedCache.containsKey(cacheKey)) {
+    if (forceRefresh) {
+      _pagedCache.clear();
+      _inFlightPagedRequests.clear();
+    } else if (!_isUsingOfflineMock && _pagedCache.containsKey(cacheKey)) {
       return _pagedCache[cacheKey]!;
     }
 
@@ -176,7 +182,7 @@ class PocketBaseService {
             sort: sort ?? '-created',
             filter: combinedFilter,
           )
-          .timeout(const Duration(milliseconds: 3500));
+          .timeout(const Duration(seconds: 10));
 
       _isUsingOfflineMock = false;
       final items = result.items.map((r) => MovieModel.fromRecord(r)).toList();
@@ -225,15 +231,47 @@ class PocketBaseService {
     }
 
     if (filter != null && filter.isNotEmpty) {
-      final queryLower = filter.toLowerCase();
-      list = list
-          .where(
-            (m) =>
-                m.title.toLowerCase().contains(queryLower) ||
-                m.description.toLowerCase().contains(queryLower) ||
-                m.category.toLowerCase().contains(queryLower),
-          )
-          .toList();
+      if (filter.contains('is_new = true')) {
+        list = list.where((m) => m.isNew).toList();
+      }
+      final yearMatch = RegExp(r'release_year\s*=\s*(\d+)').firstMatch(filter);
+      if (yearMatch != null) {
+        final yr = int.tryParse(yearMatch.group(1)!);
+        if (yr != null) {
+          list = list.where((m) => m.releaseYear == yr).toList();
+        }
+      }
+      final yearBeforeMatch =
+          RegExp(r'release_year\s*<\s*(\d+)').firstMatch(filter);
+      if (yearBeforeMatch != null) {
+        final yr = int.tryParse(yearBeforeMatch.group(1)!);
+        if (yr != null) {
+          list = list.where((m) => m.releaseYear < yr).toList();
+        }
+      }
+      if (!filter.contains('=') && !filter.contains('<')) {
+        final queryLower = filter.toLowerCase();
+        list = list
+            .where(
+              (m) =>
+                  m.title.toLowerCase().contains(queryLower) ||
+                  m.description.toLowerCase().contains(queryLower) ||
+                  m.category.toLowerCase().contains(queryLower),
+            )
+            .toList();
+      }
+    }
+
+    if (sort != null && sort.isNotEmpty) {
+      if (sort.contains('duration_minutes')) {
+        list.sort((a, b) => a.durationMinutes.compareTo(b.durationMinutes));
+      } else if (sort.contains('title')) {
+        list.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
+      } else if (sort.contains('rank')) {
+        list.sort((a, b) => (b.rank ?? 0).compareTo(a.rank ?? 0));
+      }
     }
 
     final totalItems = list.length;
@@ -440,7 +478,7 @@ class PocketBaseService {
       title: 'Big Buck Bunny',
       description: 'Một chú thỏ khổng lồ tốt bụng quyết định trả đũa ba chú sóc bay hay bắt nạt các sinh vật nhỏ bé trong khu rừng tươi đẹp. Một tác phẩm phim 3D mã nguồn mở kinh điển của Blender Foundation.',
       category: 'Hoạt hình',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/600px-Big_buck_bunny_poster_big.jpg',
+      posterUrl: 'http://180.93.120.246/posters/big_buck_bunny.jpg?v=4',
       videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
       releaseYear: 2008,
       isFeatured: true,
@@ -450,7 +488,7 @@ class PocketBaseService {
       title: 'Sintel - Trái Tim Rồng',
       description: 'Cuộc hành trình đơn độc và đầy trắc trở của cô gái trẻ Sintel vượt qua sa mạc băng giá để tìm lại chú rồng con Scales bị bắt cóc.',
       category: 'Hoạt hình',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/600px-Sintel_poster.jpg',
+      posterUrl: 'http://180.93.120.246/posters/sintel_poster.jpg?v=4',
       videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
       releaseYear: 2010,
       isFeatured: true,
@@ -460,7 +498,7 @@ class PocketBaseService {
       title: 'Tears of Steel',
       description: 'Lấy bối cảnh tương lai hậu tận thế tại Amsterdam, một nhóm chiến binh và nhà khoa học cố gắng cứu vãn tương lai loài người khỏi sự thống trị của người máy tàn bạo.',
       category: 'Viễn tưởng',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Tears_of_Steel_poster.jpg/600px-Tears_of_Steel_poster.jpg',
+      posterUrl: 'http://180.93.120.246/posters/tears_of_steel.jpg?v=4',
       videoUrl:
           'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
       releaseYear: 2012,
@@ -471,7 +509,7 @@ class PocketBaseService {
       title: 'Elephants Dream',
       description: 'Hai nhân vật Proog và Emo cùng lạc vào cỗ máy khổng lồ vô tận, đối mặt với những ảo cảnh siêu thực trong thế giới máy móc phức tạp.',
       category: 'Viễn tưởng',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Elephants_Dream_poster.jpg/600px-Elephants_Dream_poster.jpg',
+      posterUrl: 'http://180.93.120.246/posters/elephants_dream.jpg?v=4',
       videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
       releaseYear: 2006,
       isFeatured: false,
@@ -521,7 +559,7 @@ class PocketBaseService {
       title: 'Cosmos Laundromat',
       description: 'Trên hòn đảo hoang vắng, chú cừu Franck tuyệt vọng chuẩn bị kết liễu cuộc đời thì một nhân vật bí ẩn xuất hiện đề nghị cho chú một cơ hội tái sinh.',
       category: 'Hoạt hình',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Cosmos_Laundromat_-_First_Cycle_poster.jpg/600px-Cosmos_Laundromat_-_First_Cycle_poster.jpg',
+      posterUrl: 'http://180.93.120.246/posters/cosmos_laundromat.jpg?v=4',
       videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
       releaseYear: 2015,
       isFeatured: false,
@@ -532,7 +570,7 @@ class PocketBaseService {
       title: 'Spring - Mùa Xuân Kỳ Diệu',
       description: 'Cô bé chăn cừu và chú chó trung thành phải đối mặt với các linh hồn cổ xưa để đánh thức mùa xuân và giải cứu thung lũng khỏi mùa đông vĩnh cửu.',
       category: 'Hoạt hình',
-      posterUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Spring_-_Blender_Open_Movie_poster.jpg/600px-Spring_-_Blender_Open_Movie_poster.jpg',
+      posterUrl: 'http://180.93.120.246/posters/spring_blender.jpg?v=4',
       videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
       releaseYear: 2019,
       isFeatured: false,

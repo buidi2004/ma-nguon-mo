@@ -8,6 +8,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class EpisodeItem {
   final int number;
@@ -96,7 +97,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
@@ -104,8 +105,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
           _movie != null ? 'Tập phim: ${_movie!.title}' : 'Danh sách tập',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
@@ -118,17 +119,14 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               children: [
                 // Season Selector Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: const BoxDecoration(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     border: Border(bottom: BorderSide(color: Colors.white10)),
                   ),
                   child: Row(
                     children: [
-                      const Text(
+                      Text(
                         'Chọn mùa: ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -146,10 +144,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                               label: 'Mùa 1',
                               badgeCount: 4,
                             ),
-                            GlassSegmentItem<int>(
-                              value: 2,
-                              label: 'Mùa 2',
-                            ),
+                            GlassSegmentItem<int>(value: 2, label: 'Mùa 2'),
                           ],
                           selectedValue: _selectedSeason,
                           onValueChanged: (val) {
@@ -242,16 +237,16 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                           'Tập ${ep.number}. ${ep.title}',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14,
+                                            fontSize: 15,
                                           ),
                                         ),
-                                        const SizedBox(height: 2),
+                                        SizedBox(height: 2),
                                         Text(
                                           ep.duration,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppColors.textMuted,
                                             fontSize: 12,
                                           ),
@@ -272,19 +267,19 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                                           content: Text(
                                             'Đang tải tập ${ep.number} để xem offline...',
                                           ),
-                                          duration: const Duration(seconds: 1),
+                                          duration: Duration(seconds: 1),
                                         ),
                                       );
                                     },
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               Text(
                                 ep.description,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 12,
                                   height: 1.4,
@@ -299,6 +294,6 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 ),
               ],
             ),
-    );
+    ));
   }
 }

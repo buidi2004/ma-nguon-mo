@@ -1,17 +1,19 @@
 import 'dart:async';
+
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../services/theme_service.dart';
+import '../../../waves_background.dart';
 import '../glass/glass_components.dart';
 
 /// Chế độ tỉ lệ khung hình của Video Player
 enum VideoFitMode {
-  fit,      // 16:9 Vừa khung hình (Contain - không mất chi tiết, có vệt đen 2 bên trên màn dài)
-  fill,     // Phóng to tràn viền (Cover - loại bỏ hoàn toàn 2 vệt đen như YouTube)
-  stretch,  // Kéo giãn (Fill toàn bộ khung hình)
+  fit, // 16:9 Vừa khung hình (Contain - không mất chi tiết, có vệt đen 2 bên trên màn dài)
+  fill, // Phóng to tràn viền (Cover - loại bỏ hoàn toàn 2 vệt đen như YouTube)
+  stretch, // Kéo giãn (Fill toàn bộ khung hình)
 }
 
 /// Widget phát toàn màn hình xoay ngang (Landscape Fullscreen) cao cấp của OpenFlix.
@@ -45,7 +47,8 @@ class OpenFlixFullscreenPlayer extends StatefulWidget {
   });
 
   @override
-  State<OpenFlixFullscreenPlayer> createState() => _OpenFlixFullscreenPlayerState();
+  State<OpenFlixFullscreenPlayer> createState() =>
+      _OpenFlixFullscreenPlayerState();
 }
 
 class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
@@ -55,7 +58,8 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
   late bool _isMuted;
 
   // Ma trận thu phóng & Di chuyển (Zoom & Pan 1.0x -> 3.5x)
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   double _currentScale = 1.0;
 
   // Thanh điều khiển (Controls Overlay) & Hẹn giờ tự ẩn
@@ -68,12 +72,14 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
   IconData? _hudIcon;
   Timer? _hudTimer;
 
-  // Tua mượt mà (Debounce & Seek-on-release)
-  bool _isScrubbing = false;
-  double _scrubSeconds = 0.0;
+  // Tua mượt mà (Debounce & Seek-on-release không rebuild toàn bộ màn hình)
+  final ValueNotifier<bool> _isScrubbingNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<double> _scrubSecondsNotifier =
+      ValueNotifier<double>(0.0);
   Timer? _seekDebounceTimer;
   int _accumulatedSeekSeconds = 0;
   Duration? _baseSeekPosition;
+  bool _lastIsPlaying = false;
 
   // Hiệu ứng sóng lan tỏa khi chạm đúp tua
   bool _showLeftSeekRipple = false;
@@ -89,32 +95,50 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
     _fitMode = widget.initialFitMode;
     _currentSpeed = widget.playbackSpeed;
     _isMuted = widget.isMuted;
+    _lastIsPlaying = _videoController.value.isPlaying;
+    if (_lastIsPlaying) {
+      WavesBackground.notifyVideoPlaybackStarted();
+    }
+    _videoController.addListener(_onVideoControllerTick);
 
-    _videoController.addListener(_onVideoTick);
     _startControlsHideTimer();
+  }
+
+  void _onVideoControllerTick() {
+    if (!mounted) return;
+    final isPlaying = _videoController.value.isPlaying;
+    if (isPlaying != _lastIsPlaying) {
+      _lastIsPlaying = isPlaying;
+      if (isPlaying) {
+        WavesBackground.notifyVideoPlaybackStarted();
+      } else {
+        WavesBackground.notifyVideoPlaybackStopped();
+      }
+    }
   }
 
   @override
   void dispose() {
-    _videoController.removeListener(_onVideoTick);
+    if (_lastIsPlaying) {
+      WavesBackground.notifyVideoPlaybackStopped();
+    }
+    _videoController.removeListener(_onVideoControllerTick);
     _controlsHideTimer?.cancel();
     _hudTimer?.cancel();
     _seekDebounceTimer?.cancel();
     _rippleTimer?.cancel();
     _transformationController.dispose();
+    _isScrubbingNotifier.dispose();
+    _scrubSecondsNotifier.dispose();
     super.dispose();
-  }
-
-  void _onVideoTick() {
-    if (mounted && !_isScrubbing && _showControls) {
-      setState(() {});
-    }
   }
 
   void _startControlsHideTimer() {
     _controlsHideTimer?.cancel();
     _controlsHideTimer = Timer(const Duration(milliseconds: 3500), () {
-      if (mounted && _videoController.value.isPlaying && !_isScrubbing) {
+      if (mounted &&
+          _videoController.value.isPlaying &&
+          !_isScrubbingNotifier.value) {
         setState(() {
           _showControls = false;
         });
@@ -292,7 +316,7 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final tapX = details.globalPosition.dx;
 
     if (tapX < screenWidth * 0.35) {
@@ -335,7 +359,7 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: ThemeService.instance.backgroundColor,
         body: Stack(
           fit: StackFit.expand,
           children: [
@@ -355,33 +379,42 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       _startControlsHideTimer();
                     },
                     onInteractionUpdate: (details) {
-                      _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                      _currentScale = _transformationController.value
+                          .getMaxScaleOnAxis();
 
                       // Cử chỉ 2 ngón tay kéo dãn (Pinch-to-Fill) kiểu YouTube:
                       if (details.pointerCount >= 2) {
                         // Kéo dãn 2 ngón ra ngoài khi đang ở chế độ 16:9 gốc
-                        if (_fitMode == VideoFitMode.fit && details.scale > 1.12) {
+                        if (_fitMode == VideoFitMode.fit &&
+                            details.scale > 1.12) {
                           HapticFeedback.selectionClick();
                           _setFitMode(VideoFitMode.fill);
                         }
                         // Bóp 2 ngón vào trong khi đang ở chế độ Tràn viền
-                        else if (_fitMode == VideoFitMode.fill && details.scale < 0.88) {
+                        else if (_fitMode == VideoFitMode.fill &&
+                            details.scale < 0.88) {
                           HapticFeedback.selectionClick();
                           _setFitMode(VideoFitMode.fit);
                         }
                       }
                     },
                     onInteractionEnd: (details) {
-                      _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                      _currentScale = _transformationController.value
+                          .getMaxScaleOnAxis();
                       if (_currentScale > 1.05) {
-                        _showHud('Thu phóng: ${_currentScale.toStringAsFixed(1)}x', Icons.zoom_in_rounded);
+                        _showHud(
+                          'Thu phóng: ${_currentScale.toStringAsFixed(1)}x',
+                          Icons.zoom_in_rounded,
+                        );
                       }
                     },
                     child: Center(
                       child: FittedBox(
                         fit: _fitMode == VideoFitMode.fill
                             ? BoxFit.cover
-                            : (_fitMode == VideoFitMode.stretch ? BoxFit.fill : BoxFit.contain),
+                            : (_fitMode == VideoFitMode.stretch
+                                  ? BoxFit.fill
+                                  : BoxFit.contain),
                         child: SizedBox(
                           width: videoWidth,
                           height: videoHeight,
@@ -402,7 +435,7 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                 left: 0,
                 top: 0,
                 bottom: 0,
-                width: MediaQuery.of(context).size.width * 0.35,
+                width: MediaQuery.sizeOf(context).width * 0.35,
                 child: IgnorePointer(
                   child: Container(
                     decoration: BoxDecoration(
@@ -419,11 +452,19 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.replay_10_rounded, color: Colors.white, size: 44),
+                          Icon(
+                            Icons.replay_10_rounded,
+                            color: Colors.white,
+                            size: 44,
+                          ),
                           SizedBox(height: 6),
                           Text(
                             '-10 giây',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -436,7 +477,7 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                 right: 0,
                 top: 0,
                 bottom: 0,
-                width: MediaQuery.of(context).size.width * 0.35,
+                width: MediaQuery.sizeOf(context).width * 0.35,
                 child: IgnorePointer(
                   child: Container(
                     decoration: BoxDecoration(
@@ -453,11 +494,19 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.forward_10_rounded, color: Colors.white, size: 44),
+                          Icon(
+                            Icons.forward_10_rounded,
+                            color: Colors.white,
+                            size: 44,
+                          ),
                           SizedBox(height: 6),
                           Text(
                             '+10 giây',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -475,27 +524,41 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                 child: Center(
                   child: IgnorePointer(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1,
+                        ),
                         boxShadow: const [
-                          BoxShadow(color: Colors.black87, blurRadius: 16, spreadRadius: 3),
+                          BoxShadow(
+                            color: Colors.black87,
+                            blurRadius: 16,
+                            spreadRadius: 3,
+                          ),
                         ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (_hudIcon != null) ...[
-                            Icon(_hudIcon, color: ThemeService.instance.primaryColor, size: 20),
+                            Icon(
+                              _hudIcon,
+                              color: ThemeService.instance.primaryColor,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                           ],
                           Text(
                             _hudMessage!,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 13.5,
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.3,
                             ),
@@ -522,7 +585,9 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                   ? const SizedBox.shrink()
                   : IgnorePointer(
                       ignoring: !_showControls,
-                      child: _buildControlsOverlay(context),
+                      child: RepaintBoundary(
+                        child: _buildControlsOverlay(context),
+                      ),
                     ),
             ),
           ],
@@ -532,10 +597,6 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
   }
 
   Widget _buildControlsOverlay(BuildContext context) {
-    final isInitialized = _videoController.value.isInitialized;
-    final totalDuration = isInitialized ? _videoController.value.duration : Duration.zero;
-    final currentPosition = isInitialized ? _videoController.value.position : Duration.zero;
-
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -570,7 +631,9 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                   // Tên phim
                   Expanded(
                     child: Text(
-                      widget.movieTitle.isNotEmpty ? widget.movieTitle : 'Đang phát phim',
+                      widget.movieTitle.isNotEmpty
+                          ? widget.movieTitle
+                          : 'Đang phát phim',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -588,18 +651,26 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                       onTap: _resetZoom,
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
-                          color: ThemeService.instance.primaryColor
-                              .withValues(alpha: 0.85),
+                          color: ThemeService.instance.primaryColor.withValues(
+                            alpha: 0.85,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white, width: 1),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.zoom_out_rounded, color: Colors.white, size: 15),
+                            const Icon(
+                              Icons.zoom_out_rounded,
+                              color: Colors.white,
+                              size: 15,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${_currentScale.toStringAsFixed(1)}x (Đặt lại)',
@@ -620,7 +691,10 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                     onTap: _cycleFitMode,
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(20),
@@ -633,8 +707,8 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                             icon: _fitMode == VideoFitMode.fill
                                 ? Icons.fullscreen_rounded
                                 : (_fitMode == VideoFitMode.stretch
-                                    ? Icons.fit_screen_rounded
-                                    : Icons.fullscreen_exit_rounded),
+                                      ? Icons.fit_screen_rounded
+                                      : Icons.fullscreen_exit_rounded),
                             color: Colors.white,
                             size: 16,
                           ),
@@ -642,7 +716,9 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                           Text(
                             _fitMode == VideoFitMode.fill
                                 ? 'Tràn viền'
-                                : (_fitMode == VideoFitMode.stretch ? 'Kéo giãn' : '16:9'),
+                                : (_fitMode == VideoFitMode.stretch
+                                      ? 'Kéo giãn'
+                                      : '16:9'),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -660,7 +736,10 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                     onTap: _cyclePlaybackSpeed,
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(20),
@@ -687,11 +766,14 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                 onTap: _toggleControls,
                 onDoubleTapDown: _handleDoubleTapDown,
                 child: Center(
-                  child: GlassPlayerPlayButton(
-                    isPlaying: _videoController.value.isPlaying,
-                    isLoading: _videoController.value.isBuffering,
-                    size: 68,
-                    onPressed: _togglePlayPause,
+                  child: ValueListenableBuilder<VideoPlayerValue>(
+                    valueListenable: _videoController,
+                    builder: (context, value, _) => GlassPlayerPlayButton(
+                      isPlaying: value.isPlaying,
+                      isLoading: value.isBuffering,
+                      size: 68,
+                      onPressed: _togglePlayPause,
+                    ),
                   ),
                 ),
               ),
@@ -707,42 +789,61 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       trackHeight: 4.0,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 7,
+                      ),
+                      overlayShape: const RoundSliderOverlayShape(
+                        overlayRadius: 14,
+                      ),
                       activeTrackColor: ThemeService.instance.primaryColor,
                       inactiveTrackColor: Colors.white24,
                       thumbColor: ThemeService.instance.primaryColor,
-                      overlayColor: ThemeService.instance.primaryColor.withValues(alpha: 0.25),
+                      overlayColor: ThemeService.instance.primaryColor
+                          .withValues(alpha: 0.25),
                     ),
-                    child: Builder(
-                      builder: (context) {
-                        final maxSec = (totalDuration.inSeconds > 0 ? totalDuration.inSeconds : 1).toDouble();
-                        final currentSec = _isScrubbing
-                            ? _scrubSeconds.clamp(0.0, maxSec)
-                            : currentPosition.inSeconds.toDouble().clamp(0.0, maxSec);
+                    child: ListenableBuilder(
+                      listenable: Listenable.merge([
+                        _videoController,
+                        _isScrubbingNotifier,
+                        _scrubSecondsNotifier,
+                      ]),
+                      builder: (context, _) {
+                        final totalDuration =
+                            _videoController.value.isInitialized
+                                ? _videoController.value.duration
+                                : Duration.zero;
+                        final currentPosition =
+                            _videoController.value.isInitialized
+                                ? _videoController.value.position
+                                : Duration.zero;
+                        final maxSec = (totalDuration.inSeconds > 0
+                                ? totalDuration.inSeconds
+                                : 1)
+                            .toDouble();
+                        final isScrubbing = _isScrubbingNotifier.value;
+                        final currentSec = isScrubbing
+                            ? _scrubSecondsNotifier.value.clamp(0.0, maxSec)
+                            : currentPosition.inSeconds.toDouble().clamp(
+                                0.0,
+                                maxSec,
+                              );
                         return Slider(
                           min: 0.0,
                           max: maxSec,
                           value: currentSec,
                           onChangeStart: (val) {
-                            setState(() {
-                              _isScrubbing = true;
-                              _scrubSeconds = val;
-                            });
+                            _isScrubbingNotifier.value = true;
+                            _scrubSecondsNotifier.value = val;
                             _controlsHideTimer?.cancel();
                           },
                           onChanged: (val) {
-                            setState(() {
-                              _scrubSeconds = val;
-                            });
+                            _scrubSecondsNotifier.value = val;
                           },
                           onChangeEnd: (val) async {
                             final target = Duration(seconds: val.toInt());
                             await _videoController.seekTo(target);
                             if (mounted) {
-                              setState(() {
-                                _isScrubbing = false;
-                              });
+                              _isScrubbingNotifier.value = false;
                               _startControlsHideTimer();
                             }
                           },
@@ -756,28 +857,56 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       children: [
-                        Text(
-                          _formatDuration(
-                            _isScrubbing
-                                ? Duration(seconds: _scrubSeconds.toInt())
-                                : currentPosition,
-                          ),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          ' / ${_formatDuration(totalDuration)}',
-                          style: const TextStyle(color: Colors.white54, fontSize: 12.5),
+                        ListenableBuilder(
+                          listenable: Listenable.merge([
+                            _videoController,
+                            _isScrubbingNotifier,
+                            _scrubSecondsNotifier,
+                          ]),
+                          builder: (context, _) {
+                            final totalDuration =
+                                _videoController.value.isInitialized
+                                    ? _videoController.value.duration
+                                    : Duration.zero;
+                            final isScrubbing = _isScrubbingNotifier.value;
+                            final currentPosition = isScrubbing
+                                ? Duration(
+                                    seconds:
+                                        _scrubSecondsNotifier.value.toInt(),
+                                  )
+                                : (_videoController.value.isInitialized
+                                    ? _videoController.value.position
+                                    : Duration.zero);
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _formatDuration(currentPosition),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  ' / ${_formatDuration(totalDuration)}',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         const Spacer(),
 
                         // Nút Bật / Tắt âm thanh
                         IconButton(
                           icon: OpenFlixMorphIcon.smooth(
-                            icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                            icon: _isMuted
+                                ? Icons.volume_off_rounded
+                                : Icons.volume_up_rounded,
                             color: Colors.white,
                             size: 22,
                           ),
@@ -787,7 +916,11 @@ class _OpenFlixFullscreenPlayerState extends State<OpenFlixFullscreenPlayer> {
 
                         // Nút Thoát Fullscreen
                         IconButton(
-                          icon: const Icon(Icons.fullscreen_exit_rounded, color: Colors.white, size: 24),
+                          icon: const Icon(
+                            Icons.fullscreen_exit_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                           tooltip: 'Thu nhỏ màn hình',
                           onPressed: () {
                             widget.controller.exitFullScreen();

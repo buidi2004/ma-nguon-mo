@@ -7,6 +7,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 import '../admin/services/admin_auth_service.dart';
 
 class MeScreen extends StatefulWidget {
@@ -24,16 +25,16 @@ class _MeScreenState extends State<MeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    final scaffold = Scaffold(
+      backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
         leading: const GlassBackButton(fallbackRoute: '/'),
-        title: const Text(
+        title: Text(
           'Tài khoản & Cá nhân',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
         actions: [
@@ -57,11 +58,16 @@ class _MeScreenState extends State<MeScreen>
             listenable: AuthService.instance,
             builder: (context, _) {
               final auth = AuthService.instance;
+              final isBlue = ThemeService.instance.isWindowsBlue;
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isBlue ? const Color(0xCC0A2433) : AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isBlue ? const Color(0x335AD2F4) : Colors.white10,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -73,10 +79,7 @@ class _MeScreenState extends State<MeScreen>
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            const UserAvatarCircle(
-                              size: 52,
-                              showGlow: true,
-                            ),
+                            const UserAvatarCircle(size: 52, showGlow: true),
                             Positioned(
                               bottom: -2,
                               right: -2,
@@ -121,18 +124,18 @@ class _MeScreenState extends State<MeScreen>
                               auth.userName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               auth.isLoggedIn
                                   ? auth.userEmail
                                   : 'Chưa đăng nhập • Chạm để đăng nhập',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
                               ),
@@ -142,7 +145,7 @@ class _MeScreenState extends State<MeScreen>
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.chevron_right,
                         color: AppColors.textMuted,
                       ),
@@ -160,8 +163,8 @@ class _MeScreenState extends State<MeScreen>
             },
           ),
 
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24),
+          Text(
             'NỘI DUNG CỦA TÔI',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -202,8 +205,8 @@ class _MeScreenState extends State<MeScreen>
             onTap: () => context.push('/me/downloads'),
           ),
 
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24),
+          Text(
             'TÀI KHOẢN & DỊCH VỤ',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -239,8 +242,8 @@ class _MeScreenState extends State<MeScreen>
             onTap: () => context.push('/settings/language'),
           ),
 
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24),
+          Text(
             'QUẢN TRỊ HỆ THỐNG',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -265,7 +268,7 @@ class _MeScreenState extends State<MeScreen>
           ),
           _buildTile(
             icon: Icons.speed_rounded,
-            iconColor: const Color(0xFF22C55E),
+            iconColor: Color(0xFF22C55E),
             title: 'Giám sát máy chủ (Real-time)',
             subtitle: 'Theo dõi RAM, CPU, Storage, Ping máy chủ VPS',
             onTap: () {
@@ -277,8 +280,8 @@ class _MeScreenState extends State<MeScreen>
             },
           ),
 
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24),
+          Text(
             'HỖ TRỢ & HỆ THỐNG',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -332,15 +335,16 @@ class _MeScreenState extends State<MeScreen>
             builder: (context, _) {
               final auth = AuthService.instance;
               if (!auth.isLoggedIn) {
-                return GlassButton.brand(
+                return GlassButton.capsule(
                   text: 'Đăng nhập tài khoản',
                   icon: Icons.login_rounded,
+                  style: GlassButtonStyle.brandRed,
                   height: 48,
-                  borderRadius: 10,
                   onPressed: () => context.push('/welcome'),
                 );
               }
               return GlassDestructiveButton.logout(
+                borderRadius: 24,
                 onPressed: () async {
                   await AuthService.instance.logout();
                   if (context.mounted) {
@@ -354,6 +358,7 @@ class _MeScreenState extends State<MeScreen>
         ],
       ),
     );
+    return WavesBackground.wrapIfBlue(scaffold);
   }
 
   Widget _buildTile({
@@ -363,20 +368,39 @@ class _MeScreenState extends State<MeScreen>
     Color? iconColor,
     required VoidCallback onTap,
   }) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 5),
+      decoration: BoxDecoration(
+        color: isBlue ? const Color(0xCC0A2433) : AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isBlue ? const Color(0x265AD2F4) : Colors.white10,
+          width: 0.8,
+        ),
+      ),
       child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(6),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
         child: ListTile(
-          leading: Icon(icon, color: iconColor ?? Colors.white, size: 22),
+          dense: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          leading: Icon(
+            icon,
+            color: iconColor ?? (isBlue ? const Color(0xFF66C7F4) : Colors.white),
+            size: 22,
+          ),
           title: Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            style: TextStyle(
+              color: isBlue
+                  ? const Color(0xFFE2F1FF)
+                  : Theme.of(context).colorScheme.onSurface,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -385,15 +409,15 @@ class _MeScreenState extends State<MeScreen>
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: isBlue ? const Color(0xFF94A3B8) : AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 )
               : null,
-          trailing: const Icon(
+          trailing: Icon(
             Icons.chevron_right,
-            color: AppColors.textMuted,
+            color: isBlue ? const Color(0x805AD2F4) : AppColors.textMuted,
             size: 20,
           ),
           onTap: onTap,

@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,8 @@ import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/cinema/cinema_location_picker_sheet.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S43: Khám Phá Phim Rạp (Cinema Hub Screen) — Phong cách Nền Trắng Rạp Chuẩn CineFlix Cinema
 class CinemaHubScreen extends StatefulWidget {
@@ -82,10 +86,13 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
   @override
   Widget build(BuildContext context) {
     final cinemaService = CinemaService.instance;
-    const blueColor = Color(0xFF0284C7);    // Xanh CineFlix
+    const blueColor = Color(
+      0xFF0369A1,
+    ); // Xanh CineFlix, tương phản tốt trên nền trắng
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -132,7 +139,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                             'Tra cứu lịch chiếu và đặt vé siêu nhanh',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 10.5,
+                              fontSize: 11,
                             ),
                           ),
                         ],
@@ -143,14 +150,18 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Bạn đang trải nghiệm trực tiếp trên CineFlix Cinema!'),
+                            content: Text(
+                              'Bạn đang trải nghiệm trực tiếp trên CineFlix Cinema!',
+                            ),
                             duration: Duration(seconds: 2),
                           ),
                         );
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 5),
+                          horizontal: 14,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.white70),
                           borderRadius: BorderRadius.circular(16),
@@ -168,8 +179,11 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     const SizedBox(width: 6),
                     // Nút đóng
                     IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          color: Colors.white60, size: 18),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white60,
+                        size: 18,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: () =>
@@ -204,8 +218,11 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                           shape: BoxShape.circle,
                           border: Border.all(color: blueColor, width: 2),
                         ),
-                        child: const Icon(Icons.theaters_rounded,
-                            color: blueColor, size: 18),
+                        child: const Icon(
+                          Icons.theaters_rounded,
+                          color: blueColor,
+                          size: 18,
+                        ),
                       ),
                       const SizedBox(width: 6),
                       Column(
@@ -251,7 +268,9 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 7),
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFB923C), Color(0xFFEA580C)],
@@ -267,14 +286,17 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.star_rounded,
-                              color: Colors.white, size: 15),
+                          Icon(
+                            Icons.star_rounded,
+                            color: Colors.white,
+                            size: 15,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Mua Vé',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12.5,
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -287,16 +309,20 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
 
                   // Nút Tin tức / Blog rạp
                   IconButton(
-                    icon: const Icon(Icons.newspaper_rounded,
-                        color: Color(0xFF334155)),
+                    icon: const Icon(
+                      Icons.newspaper_rounded,
+                      color: Color(0xFF334155),
+                    ),
                     tooltip: 'Bình luận & Blog điện ảnh',
                     onPressed: () => context.push('/cinema/news'),
                   ),
 
                   // Nút Vé của tôi
                   IconButton(
-                    icon: const Icon(Icons.receipt_long_rounded,
-                        color: Color(0xFF334155)),
+                    icon: const Icon(
+                      Icons.receipt_long_rounded,
+                      color: Color(0xFF334155),
+                    ),
                     tooltip: 'Vé đã đặt',
                     onPressed: () => context.push('/cinema/my-tickets'),
                   ),
@@ -327,17 +353,23 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                     return Stack(
                                       fit: StackFit.expand,
                                       children: [
-                                        Image.network(
-                                          banner['image']!,
+                                        CachedNetworkImage(
+                                          imageUrl: banner['image']!,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (ctx, err, stack) =>
-                                              Container(
+                                          memCacheWidth: 720,
+                                          maxWidthDiskCache: 1080,
+                                          placeholder: (ctx, url) => Container(
                                             color: const Color(0xFFFEF3C7),
-                                            child: const Icon(
-                                                Icons.movie_creation_rounded,
-                                                color: Colors.orange,
-                                                size: 48),
                                           ),
+                                          errorWidget: (ctx, url, err) =>
+                                              Container(
+                                                color: const Color(0xFFFEF3C7),
+                                                child: const Icon(
+                                                  Icons.movie_creation_rounded,
+                                                  color: Colors.orange,
+                                                  size: 48,
+                                                ),
+                                              ),
                                         ),
                                         // Gradient overlay màu vàng/cam nghệ thuật
                                         Container(
@@ -346,8 +378,12 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                               begin: Alignment.topCenter,
                                               end: Alignment.bottomCenter,
                                               colors: [
-                                                Colors.orange.withValues(alpha: 0.15),
-                                                Colors.black.withValues(alpha: 0.75),
+                                                Colors.orange.withValues(
+                                                  alpha: 0.15,
+                                                ),
+                                                Colors.black.withValues(
+                                                  alpha: 0.75,
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -363,10 +399,13 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 2),
+                                                      horizontal: 8,
+                                                      vertical: 2,
+                                                    ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFEF4444),
+                                                  color: const Color(
+                                                    0xFFEF4444,
+                                                  ),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
                                                 ),
@@ -374,7 +413,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                                   banner['tag']!,
                                                   style: const TextStyle(
                                                     color: Colors.white,
-                                                    fontSize: 10,
+                                                    fontSize: 11,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -384,7 +423,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                                 banner['title']!,
                                                 style: const TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 14,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.w900,
                                                   letterSpacing: 0.3,
                                                 ),
@@ -393,7 +432,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                                 banner['subtitle']!,
                                                 style: const TextStyle(
                                                   color: Colors.white70,
-                                                  fontSize: 11.5,
+                                                  fontSize: 12,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -418,21 +457,26 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                       (index) {
                                         final isRealIndex =
                                             index < _promoBanners.length;
-                                        final isActive = isRealIndex &&
+                                        final isActive =
+                                            isRealIndex &&
                                             _activeBannerIndex == index;
                                         return Container(
                                           margin: const EdgeInsets.symmetric(
-                                              horizontal: 2.5),
+                                            horizontal: 2.5,
+                                          ),
                                           width: 7,
                                           height: 7,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: isActive
                                                 ? Colors.white
-                                                : Colors.white.withValues(alpha: 0.4),
+                                                : Colors.white.withValues(
+                                                    alpha: 0.4,
+                                                  ),
                                             border: Border.all(
-                                                color: Colors.black26,
-                                                width: 0.5),
+                                              color: Colors.black26,
+                                              width: 0.5,
+                                            ),
                                           ),
                                         );
                                       },
@@ -452,17 +496,17 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       delegate: _WhiteCinemaTabBarDelegate(
                         TabBar(
                           controller: _tabController,
-                          indicatorColor: const Color(0xFF0284C7),
+                          indicatorColor: const Color(0xFF0369A1),
                           indicatorWeight: 3,
                           indicatorSize: TabBarIndicatorSize.label,
-                          labelColor: const Color(0xFF0284C7),
+                          labelColor: const Color(0xFF0369A1),
                           unselectedLabelColor: const Color(0xFF64748B),
                           labelStyle: const TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                           unselectedLabelStyle: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
                           tabs: const [
@@ -476,12 +520,17 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                           onTap: _openLocationPicker,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.explore_outlined,
-                                    color: Color(0xFF0284C7), size: 16),
+                                const Icon(
+                                  Icons.explore_outlined,
+                                  color: Color(0xFF0284C7),
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 ListenableBuilder(
                                   listenable: cinemaService,
@@ -489,7 +538,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                                     cinemaService.selectedCityName,
                                     style: const TextStyle(
                                       color: Color(0xFF0284C7),
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -508,21 +557,29 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     // Tab 1: Đang chiếu
                     _buildMovieGrid(
                       cinemaService.movies
-                          .where((m) => m.status == CinemaMovieStatus.nowShowing)
+                          .where(
+                            (m) => m.status == CinemaMovieStatus.nowShowing,
+                          )
                           .toList(),
                     ),
                     // Tab 2: Sắp chiếu
                     _buildMovieGrid(
                       cinemaService.movies
-                          .where((m) => m.status == CinemaMovieStatus.comingSoon)
+                          .where(
+                            (m) => m.status == CinemaMovieStatus.comingSoon,
+                          )
                           .toList(),
                     ),
                     // Tab 3: IMAX (Hiển thị các phim chiếu định dạng IMAX bom tấn)
                     _buildMovieGrid(
                       cinemaService.movies
-                          .where((m) =>
-                              m.status == CinemaMovieStatus.imax ||
-                              m.formats.any((f) => f.toUpperCase().contains('IMAX')))
+                          .where(
+                            (m) =>
+                                m.status == CinemaMovieStatus.imax ||
+                                m.formats.any(
+                                  (f) => f.toUpperCase().contains('IMAX'),
+                                ),
+                          )
                           .toList(),
                     ),
                   ],
@@ -543,6 +600,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
         },
         child: const Icon(Icons.sync_rounded, color: Color(0xFF0284C7)),
       ),
+    ),
     );
   }
 
@@ -591,20 +649,30 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.movie_filter_rounded,
-                          size: 52, color: Colors.grey.shade300),
+                      Icon(
+                        Icons.movie_filter_rounded,
+                        size: 52,
+                        color: ThemeService.instance.isWindowsBlue
+                            ? Colors.white70
+                            : Colors.grey.shade300,
+                      ),
                       const SizedBox(height: 10),
                       Text(
                         _selectedCountryFilter == 'all'
                             ? 'Chưa có phim trong mục này'
                             : 'Không tìm thấy phim $_selectedCountryFilter phù hợp',
-                        style: const TextStyle(
-                            color: Color(0xFF64748B), fontSize: 14),
+                        style: TextStyle(
+                          color: ThemeService.instance.isWindowsBlue
+                              ? Colors.white
+                              : const Color(0xFF64748B),
+                          fontSize: 15,
+                        ),
                       ),
                     ],
                   ),
                 )
               : CustomScrollView(
+                  cacheExtent: 600.0,
                   physics: const BouncingScrollPhysics(),
                   slivers: [
                     SliverPadding(
@@ -612,25 +680,20 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.58,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 16,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final movie = movieList[index];
-                            return _buildCinemaMovieCard(movie);
-                          },
-                          childCount: movieList.length,
-                        ),
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.58,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 16,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final movie = movieList[index];
+                          return _buildCinemaMovieCard(movie);
+                        }, childCount: movieList.length),
                       ),
                     ),
 
                     // CHÂN TRANG RẠP CHIẾU PHIM (CINEMA FOOTER ĐỒ SỘ)
-                    SliverToBoxAdapter(
-                      child: _buildCinemaFooter(),
-                    ),
+                    SliverToBoxAdapter(child: _buildCinemaFooter()),
                   ],
                 ),
         ),
@@ -654,13 +717,11 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF0284C7)
-              : const Color(0xFFF1F5F9),
+          color: isSelected ? const Color(0xFF0369A1) : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF0284C7)
+                ? const Color(0xFF0369A1)
                 : const Color(0xFFE2E8F0),
             width: 1,
           ),
@@ -690,34 +751,56 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
 
   // Card phim nền trắng sắc nét (Khớp Screenshot 1)
   Widget _buildCinemaMovieCard(CinemaMovieModel movie) {
-    return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        context.push('/cinema/movie/${movie.id}');
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Poster 2:3 với nhãn tuổi & rating
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    movie.posterUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => Container(
-                      color: const Color(0xFFF1F5F9),
-                      child: const Center(
-                        child: Icon(Icons.movie_rounded,
-                            color: Colors.grey, size: 36),
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          context.push('/cinema/movie/${movie.id}');
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Poster 2:3 với nhãn tuổi & rating
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: CachedNetworkImage(
+                      imageUrl: movie.posterUrl,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 320,
+                      memCacheHeight: 480,
+                      maxWidthDiskCache: 600,
+                      placeholder: (ctx, url) => Container(
+                        color: const Color(0xFFF1F5F9),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFEF4444),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (ctx, url, err) => Container(
+                        color: const Color(0xFFF1F5F9),
+                        child: const Center(
+                          child: Icon(
+                            Icons.movie_rounded,
+                            color: Colors.grey,
+                            size: 36,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
 
                 // Viền mỏng
                 Positioned.fill(
@@ -737,8 +820,10 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   top: 6,
                   left: 6,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2.5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(4),
@@ -759,10 +844,12 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                         Text(
                           movie.country.contains('Việt Nam')
                               ? 'VN'
-                              : (movie.country.contains('Thái Lan') ? 'THÁI' : movie.country),
+                              : (movie.country.contains('Thái Lan')
+                                    ? 'THÁI'
+                                    : movie.country),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
                           ),
@@ -779,16 +866,18 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     right: 6,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7),
+                        color: const Color(0xFF0369A1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
                         'IMAX',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 9.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.8,
                         ),
@@ -801,8 +890,10 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   right: 6,
                   bottom: 38,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(4),
@@ -810,8 +901,11 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded,
-                            color: Colors.amber, size: 14),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Colors.amber,
+                          size: 14,
+                        ),
                         const SizedBox(width: 3),
                         Text(
                           movie.rating.toStringAsFixed(1),
@@ -831,10 +925,12 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   right: 6,
                   bottom: 6,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF97316),
+                      color: const Color(0xFFC2410C),
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: const [
                         BoxShadow(
@@ -863,9 +959,11 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
           // Tên phim
           Text(
             movie.title,
-            style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 13.5,
+            style: TextStyle(
+              color: ThemeService.instance.isWindowsBlue
+                  ? Colors.white
+                  : const Color(0xFF0F172A),
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.2,
             ),
@@ -878,17 +976,20 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
           // Thời lượng & Khởi chiếu
           Text(
             '${movie.durationMinutes} Phút • Khởi chiếu ${movie.releaseDate}',
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 11.5,
+            style: TextStyle(
+              color: ThemeService.instance.isWindowsBlue
+                  ? const Color(0xFFD6EBFC)
+                  : const Color(0xFF64748B),
+              fontSize: 12,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ==========================================
   // CHÂN TRANG ĐIỆN ẢNH (CINEMA FOOTER ĐỒ SỘ)
@@ -907,10 +1008,16 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFF0369A1),
+                    width: 1.5,
+                  ),
                 ),
-                child: const Icon(Icons.theaters_rounded,
-                    color: Color(0xFF0284C7), size: 18),
+                child: const Icon(
+                  Icons.theaters_rounded,
+                  color: Color(0xFF0369A1),
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 8),
               RichText(
@@ -919,8 +1026,8 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                     TextSpan(
                       text: 'Cine',
                       style: TextStyle(
-                        color: Color(0xFF0284C7),
-                        fontSize: 18,
+                        color: Color(0xFF0369A1),
+                        fontSize: 17,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.3,
                       ),
@@ -929,7 +1036,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       text: 'Flix',
                       style: TextStyle(
                         color: Color(0xFFF97316),
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -940,14 +1047,14 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0284C7).withValues(alpha: 0.1),
+                  color: const Color(0xFF0369A1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
                   'CINEMA VIỆT NAM',
                   style: TextStyle(
-                    color: Color(0xFF0284C7),
-                    fontSize: 9.5,
+                    color: Color(0xFF0369A1),
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1,
                   ),
@@ -1036,7 +1143,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   ),
                   child: const Icon(
                     Icons.headset_mic_rounded,
-                    color: Color(0xFFF97316),
+                    color: Color(0xFFC2410C),
                     size: 24,
                   ),
                 ),
@@ -1049,7 +1156,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                         'TỔNG ĐÀI HỖ TRỢ ĐẶT VÉ (8:00 - 22:00)',
                         style: TextStyle(
                           color: Color(0xFF64748B),
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
@@ -1068,7 +1175,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                       Text(
                         'Email: cskh@cineflix.vn | Khiếu nại dịch vụ rạp',
                         style: TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: Color(0xFF64748B),
                           fontSize: 11,
                         ),
                       ),
@@ -1123,11 +1230,20 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
               const SizedBox(width: 10),
               _buildSocialIcon(Icons.public_rounded, const Color(0xFF1877F2)),
               const SizedBox(width: 8),
-              _buildSocialIcon(Icons.smart_display_rounded, const Color(0xFFEF4444)),
+              _buildSocialIcon(
+                Icons.smart_display_rounded,
+                const Color(0xFFEF4444),
+              ),
               const SizedBox(width: 8),
-              _buildSocialIcon(Icons.music_note_rounded, const Color(0xFF0F172A)),
+              _buildSocialIcon(
+                Icons.music_note_rounded,
+                const Color(0xFF0F172A),
+              ),
               const SizedBox(width: 8),
-              _buildSocialIcon(Icons.camera_alt_rounded, const Color(0xFFE1306C)),
+              _buildSocialIcon(
+                Icons.camera_alt_rounded,
+                const Color(0xFFE1306C),
+              ),
             ],
           ),
 
@@ -1140,7 +1256,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
             'CÔNG TY CỔ PHẦN ĐIỆN ẢNH CINEFLIX VIỆT NAM (CINEFLIX CINEMA VIETNAM)',
             style: TextStyle(
               color: Color(0xFF1E293B),
-              fontSize: 11.5,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1152,7 +1268,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
             'Chi nhánh Đà Nẵng: Tầng 4, AEON Mall Thanh Khê, Q. Thanh Khê, TP. Đà Nẵng.',
             style: TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 10.5,
+              fontSize: 11,
               height: 1.5,
             ),
           ),
@@ -1162,22 +1278,31 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDC2626).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: const Color(0xFFDC2626).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(Icons.verified_rounded, color: Color(0xFFDC2626), size: 16),
+                    Icon(
+                      Icons.verified_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 16,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'ĐÃ THÔNG BÁO BỘ CÔNG THƯƠNG',
                       style: TextStyle(
                         color: Color(0xFFDC2626),
-                        fontSize: 10.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
@@ -1189,7 +1314,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
               const Text(
                 '© 2026 CineFlix Entertainment',
                 style: TextStyle(
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFF64748B),
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1237,7 +1362,7 @@ class _CinemaHubScreenState extends State<CinemaHubScreen>
                   link,
                   style: const TextStyle(
                     color: Color(0xFF64748B),
-                    fontSize: 11.5,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -1298,7 +1423,10 @@ class _WhiteCinemaTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 8),

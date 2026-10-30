@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../services/theme_service.dart';
+import 'glass_perf.dart';
 import 'glass_surface.dart';
 import 'openflix_morph_icon.dart';
 
@@ -65,7 +66,8 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
   @override
   void didUpdateWidget(covariant GlassPlayerPlayButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final shouldPulse = widget.enablePulse && (!widget.isPlaying || widget.isLoading);
+    final shouldPulse =
+        widget.enablePulse && (!widget.isPlaying || widget.isLoading);
     if (shouldPulse && !_pulseController.isAnimating) {
       _pulseController.repeat();
     } else if (!shouldPulse && _pulseController.isAnimating) {
@@ -99,7 +101,8 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
   @override
   Widget build(BuildContext context) {
     final double buttonSize = widget.size;
-    final effectiveGlowColor = widget.glowColor ?? ThemeService.instance.primaryColor;
+    final effectiveGlowColor =
+        widget.glowColor ?? ThemeService.instance.primaryColor;
 
     Widget buttonContent = Stack(
       alignment: Alignment.center,
@@ -118,12 +121,16 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: effectiveGlowColor.withValues(alpha: opacity.clamp(0.0, 1.0)),
+                    color: effectiveGlowColor.withValues(
+                      alpha: opacity.clamp(0.0, 1.0),
+                    ),
                     width: 2.0 * (1.0 - value),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: effectiveGlowColor.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0)),
+                      color: effectiveGlowColor.withValues(
+                        alpha: (opacity * 0.6).clamp(0.0, 1.0),
+                      ),
                       blurRadius: 18.0 * value,
                       spreadRadius: 2.0 * value,
                     ),
@@ -138,6 +145,8 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
           size: buttonSize,
           blur: 20.0,
           refractiveIndex: 1.48,
+          // Nút play là tiêu điểm của player: giữ premium trên mọi thiết bị.
+          quality: GlassPerf.focal,
           thickness: 48.0,
           tintColor: const Color(0x33141414), // Nền kính điện ảnh đen mờ
           borderTint: const Color(0x33FFFFFF), // Viền rim 20% sáng
@@ -155,7 +164,9 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
                     height: buttonSize * 0.42,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.8,
-                      valueColor: AlwaysStoppedAnimation<Color>(widget.iconColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        widget.iconColor,
+                      ),
                     ),
                   )
                 : OpenFlixMorphIcon.smooth(
@@ -173,7 +184,9 @@ class _GlassPlayerPlayButtonState extends State<GlassPlayerPlayButton>
     // Bọc hiệu ứng nhún lò xo (Micro-spring Scale 0.92x)
     return Semantics(
       button: true,
-      label: widget.tooltip ?? (widget.isPlaying ? 'Tạm dừng video' : 'Phát video'),
+      label:
+          widget.tooltip ??
+          (widget.isPlaying ? 'Tạm dừng video' : 'Phát video'),
       child: GestureDetector(
         onTapDown: _handleTapDown,
         onTapUp: _handleTapUp,

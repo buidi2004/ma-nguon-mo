@@ -6,6 +6,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class ProfileItem {
   final String id;
@@ -64,16 +65,16 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Ai đang xem?',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
           ),
         ),
         actions: [
@@ -95,7 +96,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -104,10 +105,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                     ? 'Chạm vào hồ sơ để chỉnh sửa'
                     : 'Chọn hồ sơ của bạn để cá nhân hóa nội dung',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
               ),
               const SizedBox(height: 32),
 
@@ -134,9 +132,9 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                             width: 88,
                             height: 88,
                             borderRadius: 18,
-                            tintColor: const Color(0x332A2A2A),
+                            tintColor: Color(0x332A2A2A),
                             blur: 10,
-                            child: const Center(
+                            child: Center(
                               child: Icon(
                                 Icons.add_rounded,
                                 color: Colors.white,
@@ -144,15 +142,15 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
+                          SizedBox(height: 10),
+                          Text(
                             'Thêm hồ sơ',
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: AppColors.textSecondary,
-                              fontSize: 14,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -171,10 +169,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                           alignment: Alignment.center,
                           children: [
                             if (profile.id == 'p1')
-                              const UserAvatarCircle(
-                                size: 88,
-                                showGlow: false,
-                              )
+                              const UserAvatarCircle(size: 88, showGlow: false)
                             else
                               Container(
                                 width: 88,
@@ -220,9 +215,9 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                           profile.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -235,6 +230,6 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

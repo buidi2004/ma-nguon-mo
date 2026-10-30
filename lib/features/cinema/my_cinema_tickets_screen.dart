@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S49: Quản Lý Vé Rạp Của Tôi (My Cinema Tickets Screen) — Nền Trắng Rạp
 class MyCinemaTicketsScreen extends StatefulWidget {
@@ -33,10 +36,11 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
   @override
   Widget build(BuildContext context) {
     final cinemaService = CinemaService.instance;
-    const blueColor = Color(0xFF0284C7);
+    const blueColor = Color(0xFF0369A1);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -55,7 +59,10 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
           indicatorWeight: 3,
           labelColor: blueColor,
           unselectedLabelColor: const Color(0xFF64748B),
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
           tabs: const [
             Tab(text: 'Vé sắp xem'),
             Tab(text: 'Lịch sử vé đã xem'),
@@ -65,10 +72,12 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
       body: ListenableBuilder(
         listenable: cinemaService,
         builder: (context, _) {
-          final activeBookings =
-              cinemaService.userBookings.where((b) => !b.isUsed).toList();
-          final pastBookings =
-              cinemaService.userBookings.where((b) => b.isUsed).toList();
+          final activeBookings = cinemaService.userBookings
+              .where((b) => !b.isUsed)
+              .toList();
+          final pastBookings = cinemaService.userBookings
+              .where((b) => b.isUsed)
+              .toList();
 
           return TabBarView(
             controller: _tabController,
@@ -79,23 +88,36 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
           );
         },
       ),
+    ),
     );
   }
 
-  Widget _buildTicketList(List<CinemaBookingModel> list, {required bool isActive}) {
+  Widget _buildTicketList(
+    List<CinemaBookingModel> list, {
+    required bool isActive,
+  }) {
     if (list.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.confirmation_num_outlined,
-                size: 64, color: Colors.grey.shade300),
+            Icon(
+              Icons.confirmation_num_outlined,
+              size: 64,
+              color: ThemeService.instance.isWindowsBlue
+                  ? Colors.white70
+                  : Colors.grey.shade300,
+            ),
             const SizedBox(height: 12),
             Text(
-              isActive ? 'Bạn chưa có vé phim sắp xem nào' : 'Chưa có lịch sử vé đã xem',
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 14.5,
+              isActive
+                  ? 'Bạn chưa có vé phim sắp xem nào'
+                  : 'Chưa có lịch sử vé đã xem',
+              style: TextStyle(
+                color: ThemeService.instance.isWindowsBlue
+                    ? Colors.white
+                    : const Color(0xFF64748B),
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -103,8 +125,11 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
             ElevatedButton(
               onPressed: () => context.go('/cinema'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF97316),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                backgroundColor: const Color(0xFFC2410C),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 11,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -112,7 +137,10 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
               ),
               child: const Text(
                 'Khám phá phim rạp ngay',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -130,10 +158,7 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
         return InkWell(
           onTap: () {
             HapticFeedback.lightImpact();
-            context.push(
-              '/cinema/ticket/${booking.id}',
-              extra: booking,
-            );
+            context.push('/cinema/ticket/${booking.id}', extra: booking);
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
@@ -157,9 +182,16 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                   child: SizedBox(
                     width: 70,
                     height: 100,
-                    child: Image.network(
-                      booking.posterUrl,
+                    child: CachedNetworkImage(
+                      imageUrl: booking.posterUrl,
                       fit: BoxFit.cover,
+                      memCacheWidth: 210,
+                      memCacheHeight: 300,
+                      placeholder: (_, _) => Container(color: Colors.grey.shade200),
+                      errorWidget: (_, _, _) => Container(
+                        color: Colors.grey.shade300,
+                        child: const Icon(Icons.movie_rounded, size: 24, color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
@@ -172,7 +204,9 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: isActive
                                   ? const Color(0xFFDCFCE7)
@@ -185,7 +219,7 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                                 color: isActive
                                     ? const Color(0xFF16A34A)
                                     : Colors.grey,
-                                fontSize: 10.5,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -194,7 +228,7 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                           Text(
                             booking.bookingCode,
                             style: const TextStyle(
-                              color: Color(0xFF0284C7),
+                              color: Color(0xFF0369A1),
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -217,7 +251,7 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                         booking.theaterName,
                         style: const TextStyle(
                           color: Color(0xFF475569),
-                          fontSize: 12.5,
+                          fontSize: 13,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -226,7 +260,7 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                       Text(
                         '${booking.showtime} • Hôm nay • Ghế: ${booking.seatLabels.join(", ")}',
                         style: const TextStyle(
-                          color: Color(0xFFEA580C),
+                          color: Color(0xFFC2410C),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -234,8 +268,10 @@ class _MyCinemaTicketsScreenState extends State<MyCinemaTicketsScreen>
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: Color(0xFF94A3B8)),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF64748B),
+                ),
               ],
             ),
           ),

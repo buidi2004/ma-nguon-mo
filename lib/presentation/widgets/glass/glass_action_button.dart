@@ -66,7 +66,9 @@ class GlassActionButton extends StatefulWidget {
       isActive: isBookmarked,
       activeIconColor: activeIconColor,
       onPressed: onPressed,
-      tooltip: tooltip ?? (isBookmarked ? 'Xóa khỏi danh sách' : 'Thêm vào danh sách'),
+      tooltip:
+          tooltip ??
+          (isBookmarked ? 'Xóa khỏi danh sách' : 'Thêm vào danh sách'),
     );
   }
 
@@ -122,7 +124,9 @@ class GlassActionButton extends StatefulWidget {
       isActive: isReminded,
       activeIconColor: const Color(0xFFFFD700),
       onPressed: onPressed,
-      tooltip: tooltip ?? (isReminded ? 'Hủy nhận thông báo' : 'Nhận thông báo khi có tập mới'),
+      tooltip:
+          tooltip ??
+          (isReminded ? 'Hủy nhận thông báo' : 'Nhận thông báo khi có tập mới'),
     );
   }
 
@@ -183,11 +187,17 @@ class _GlassActionButtonState extends State<GlassActionButton> {
 
     final effectiveIconColor = widget.isActive
         ? (widget.activeIconColor ?? ThemeService.instance.primaryColor)
-        : (widget.iconColor ?? Colors.white);
+        : (widget.iconColor ??
+              (ThemeService.instance.isLight
+                  ? ThemeService.instance.textSecondary
+                  : Colors.white));
 
     final effectiveTextColor = widget.isActive
         ? (widget.activeTextColor ?? Colors.white)
-        : (widget.textColor ?? const Color(0xFFB3B3B3));
+        : (widget.textColor ??
+              (ThemeService.instance.isLight
+                  ? ThemeService.instance.textSecondary
+                  : const Color(0xFFB3B3B3)));
 
     final isInteractive = widget.onPressed != null;
 
@@ -220,10 +230,10 @@ class _GlassActionButtonState extends State<GlassActionButton> {
                   borderRadius: BorderRadius.circular(10),
                   color: widget.hasGlassHalo
                       ? (_isPressed
-                          ? Colors.white.withValues(alpha: 0.12)
-                          : (_isHovered
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.transparent))
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : (_isHovered
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : Colors.transparent))
                       : Colors.transparent,
                   border: Border.all(
                     color: _isHovered || _isPressed
@@ -254,8 +264,9 @@ class _GlassActionButtonState extends State<GlassActionButton> {
                             ? effectiveTextColor
                             : effectiveTextColor.withValues(alpha: 0.38),
                         fontSize: widget.fontSize,
-                        fontWeight:
-                            widget.isActive ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: widget.isActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         letterSpacing: 0.1,
                       ),
                     ),

@@ -9,6 +9,7 @@ import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class Top10Screen extends StatefulWidget {
   const Top10Screen({super.key});
@@ -40,219 +41,232 @@ class _Top10ScreenState extends State<Top10Screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: const GlassBackButton(),
-        title: const Text(
-          'Top 10 Phim Thịnh Hành',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          leading: const GlassBackButton(),
+          title: Text(
+            'Top 10 Phim Thịnh Hành',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+            ),
           ),
         ),
-      ),
-      body: _isLoading
-          ? StateView.loading(message: 'Đang xếp hạng Top 10...')
-          : _topMovies.isEmpty
-          ? StateView.empty(title: 'Chưa có bảng xếp hạng')
-          : ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: _topMovies.length,
-              separatorBuilder: (context, index) =>
-                  const Divider(color: Colors.white12, height: 20),
-              itemBuilder: (context, index) {
-                final movie = _topMovies[index];
-                final rank = index + 1;
+        body: _isLoading
+            ? StateView.loading(message: 'Đang xếp hạng Top 10...')
+            : _topMovies.isEmpty
+            ? StateView.empty(title: 'Chưa có bảng xếp hạng')
+            : ListView.separated(
+                cacheExtent: 600.0,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                itemCount: _topMovies.length,
+                separatorBuilder: (context, index) =>
+                    const Divider(color: Colors.white12, height: 20),
+                itemBuilder: (context, index) {
+                  final movie = _topMovies[index];
+                  final rank = index + 1;
 
-                return InkWell(
-                  onTap: () => context.push('/movie/${movie.id}'),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Big Rank Number
-                        SizedBox(
-                          width: 50,
-                          child: Text(
-                            '$rank',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w900,
-                              color: rank <= 3
-                                  ? ThemeService.instance.primaryColor
-                                  : Colors.white70,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withAlpha(200),
-                                  blurRadius: 4,
-                                  offset: const Offset(1, 1),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-
-                        // Poster
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: CachedNetworkImage(
-                            imageUrl: movie.posterUrl,
-                            width: 75,
-                            height: 110,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 250,
-                            memCacheHeight: 366,
-                            maxHeightDiskCache: 450,
-                            placeholder: (context, url) => Container(
-                              width: 75,
-                              height: 110,
-                              color: AppColors.surface,
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              width: 75,
-                              height: 110,
-                              color: AppColors.surface,
-                              child: const Icon(
-                                Icons.movie,
-                                color: Colors.white38,
+                  return InkWell(
+                    onTap: () =>
+                        context.push('/movie/${movie.id}', extra: movie),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Big Rank Number
+                          SizedBox(
+                            width: 50,
+                            child: Text(
+                              '$rank',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                color: rank <= 3
+                                    ? ThemeService.instance.primaryColor
+                                    : Colors.white70,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withAlpha(200),
+                                    blurRadius: 4,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 14),
+                          const SizedBox(width: 8),
 
-                        // Movie Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  if (rank <= 3) ...[
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 5,
-                                        vertical: 2,
+                          // Poster
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: CachedNetworkImage(
+                              imageUrl: movie.posterUrl,
+                              width: 75,
+                              height: 110,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 250,
+                              memCacheHeight: 366,
+                              maxHeightDiskCache: 450,
+                              placeholder: (context, url) => Container(
+                                width: 75,
+                                height: 110,
+                                color: AppColors.surface,
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 75,
+                                height: 110,
+                                color: AppColors.surface,
+                                child: const Icon(
+                                  Icons.movie,
+                                  color: Colors.white38,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+
+                          // Movie Info
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    if (rank <= 3) ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                          vertical: 2,
+                                        ),
+                                        margin: const EdgeInsets.only(right: 6),
+                                        decoration: BoxDecoration(
+                                          color: ThemeService
+                                              .instance
+                                              .primaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'HOT',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                      margin: const EdgeInsets.only(right: 6),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            ThemeService.instance.primaryColor,
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                      child: const Text(
-                                        'HOT',
+                                    ],
+                                    Expanded(
+                                      child: Text(
+                                        movie.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 9,
+                                          color: AppColors.textPrimary,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ],
-                                  Expanded(
-                                    child: Text(
-                                      movie.title,
+                                ),
+                                SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${movie.releaseYear}',
+                                      style: TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.white24,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: Text(
+                                        movie.ageRating,
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      movie.category,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                      style: TextStyle(
+                                        color:
+                                            ThemeService.instance.primaryColor,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 4,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  Text(
-                                    '${movie.releaseYear}',
-                                    style: const TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                      vertical: 1,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.white24),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    child: Text(
-                                      movie.ageRating,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    movie.category,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: ThemeService.instance.primaryColor,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                movie.description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12,
+                                  ],
                                 ),
-                              ),
-                            ],
+                                SizedBox(height: 6),
+                                Text(
+                                  movie.description,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
 
-                        // Play Button Icon
-                        IconButton(
-                          icon: const Icon(
-                            Icons.play_circle_fill,
-                            color: Colors.white,
-                            size: 36,
+                          // Play Button Icon
+                          IconButton(
+                            icon: Icon(
+                              Icons.play_circle_fill,
+                              color: AppColors.textSecondary,
+                              size: 36,
+                            ),
+                            onPressed: () {
+                              AuthGuard.runWithAuth(
+                                context,
+                                movieId: movie.id,
+                                movieTitle: movie.title,
+                                hasTrailer: true,
+                                onWatchTrailer: () =>
+                                    context.push('/movie/${movie.id}/trailer'),
+                                onAuthorized: () =>
+                                    context.push('/watch/${movie.id}'),
+                              );
+                            },
                           ),
-                          onPressed: () {
-                            AuthGuard.runWithAuth(
-                              context,
-                              movieId: movie.id,
-                              movieTitle: movie.title,
-                              hasTrailer: true,
-                              onWatchTrailer: () =>
-                                  context.push('/movie/${movie.id}/trailer'),
-                              onAuthorized: () =>
-                                  context.push('/watch/${movie.id}'),
-                            );
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

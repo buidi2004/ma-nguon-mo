@@ -26,9 +26,17 @@ class MovieRow extends StatelessWidget {
     if (movies.isEmpty) return const SizedBox.shrink();
 
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final homePalette = Theme.of(context).extension<HomeScreenPalette>();
     // Tỷ lệ chuẩn: hiển thị 3 poster và lộ ~40% poster thứ 4 để gợi ý vuốt
     final posterWidth = screenWidth / 3.4;
     final posterHeight = posterWidth * 1.5; // Tỷ lệ poster 2:3 chuẩn
+    // Giải mã ảnh theo đúng số điểm ảnh vật lý cần vẽ, không cố định 350x525:
+    // máy màn hình nhỏ không phải giữ bitmap lớn (giảm băng thông bộ nhớ khi
+    // cuộn), máy màn hình lớn vẫn đủ nét. Tỷ lệ 2:3 giữ nguyên.
+    final cacheWidth = (posterWidth * MediaQuery.devicePixelRatioOf(context))
+        .round()
+        .clamp(200, 420);
+    final cacheHeight = (cacheWidth * 1.5).round().clamp(300, 630);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,10 +50,10 @@ class MovieRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: homePalette?.textPrimary ?? AppColors.textPrimary,
                     letterSpacing: -0.2,
                   ),
                   maxLines: 1,
@@ -59,7 +67,9 @@ class MovieRow extends StatelessWidget {
                   child: Text(
                     'Xem tất cả >',
                     style: TextStyle(
-                      color: ThemeService.instance.primaryColor,
+                      color:
+                          homePalette?.action ??
+                          ThemeService.instance.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -74,6 +84,7 @@ class MovieRow extends StatelessWidget {
           child: RepaintBoundary(
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              cacheExtent: 450.0,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: movies.length,
@@ -87,17 +98,17 @@ class MovieRow extends StatelessWidget {
                     width: posterWidth,
                     height: posterHeight,
                     fit: BoxFit.cover,
-                    memCacheWidth: 350,
-                    memCacheHeight: 525,
+                    memCacheWidth: cacheWidth,
+                    memCacheHeight: cacheHeight,
                     maxHeightDiskCache: 600,
                     placeholder: (_, _) => Container(
                       width: posterWidth,
                       height: posterHeight,
-                      color: AppColors.surface,
-                      child: const Center(
+                      color: homePalette?.surface ?? AppColors.surface,
+                      child: Center(
                         child: Icon(
                           Icons.movie_outlined,
-                          color: Colors.white24,
+                          color: homePalette?.textMuted ?? Colors.white24,
                           size: 28,
                         ),
                       ),
@@ -105,14 +116,14 @@ class MovieRow extends StatelessWidget {
                     errorWidget: (_, _, _) => Container(
                       width: posterWidth,
                       height: posterHeight,
-                      color: AppColors.surface,
+                      color: homePalette?.surface ?? AppColors.surface,
                       padding: const EdgeInsets.all(8),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.broken_image_outlined,
-                            color: Colors.white38,
+                            color: homePalette?.textMuted ?? Colors.white38,
                             size: 24,
                           ),
                           const SizedBox(height: 6),
@@ -121,9 +132,11 @@ class MovieRow extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color:
+                                  homePalette?.textSecondary ??
+                                  AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -174,7 +187,7 @@ class MovieRow extends StatelessWidget {
                               Text(
                                 '$rank',
                                 style: TextStyle(
-                                  fontSize: 52,
+                                  fontSize: 34,
                                   fontWeight: FontWeight.w900,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
@@ -186,7 +199,7 @@ class MovieRow extends StatelessWidget {
                               Text(
                                 '$rank',
                                 style: TextStyle(
-                                  fontSize: 52,
+                                  fontSize: 34,
                                   fontWeight: FontWeight.w900,
                                   color: rank <= 3
                                       ? ThemeService.instance.primaryColor

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +7,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/library_service.dart';
 import '../../services/pocketbase_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 /// Item mô hình phim sắp ra mắt hiển thị trên feed
 class _ComingSoonItem {
@@ -215,40 +214,35 @@ class _HotScreenState extends State<HotScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    final scaffold = Scaffold(
+      backgroundColor: AppColors.scaffoldBackground,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Header Kính Mờ Pinned cố định ở đỉnh
+          // Header Tối Giản Hiệu Năng Cao (0 GPU blur pass khi cuộn)
           SliverAppBar(
-            backgroundColor: AppColors.background.withValues(alpha: 0.82),
+            backgroundColor: AppColors.dynamicBackground.withValues(alpha: 0.94),
             pinned: true,
             elevation: 0,
             toolbarHeight: 56,
             surfaceTintColor: Colors.transparent,
-            flexibleSpace: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.background.withValues(alpha: 0.72),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        width: 0.5,
-                      ),
-                    ),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                color: AppColors.dynamicBackground.withValues(alpha: 0.94),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 0.5,
                   ),
                 ),
               ),
             ),
             titleSpacing: 16,
-            title: const Text(
+            title: Text(
               'Sắp ra mắt',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 22,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
               ),
@@ -289,6 +283,7 @@ class _HotScreenState extends State<HotScreen>
         ],
       ),
     );
+    return WavesBackground.wrapIfBlue(scaffold);
   }
 
   /// Thẻ phim sắp ra mắt chuẩn ảnh tham chiếu:
@@ -331,234 +326,236 @@ class _HotScreenState extends State<HotScreen>
                             memCacheWidth: 480,
                             memCacheHeight: 270,
                             maxHeightDiskCache: 600,
-                          placeholder: (_, _) =>
-                              const ColoredBox(color: AppColors.surfaceLight),
-                          errorWidget: (_, _, _) => Container(
-                            color: AppColors.surfaceLight,
-                            child: const Center(
-                              child: Icon(
-                                Icons.movie_outlined,
-                                color: AppColors.textMuted,
-                                size: 44,
+                            placeholder: (_, _) =>
+                                ColoredBox(color: AppColors.surfaceLight),
+                            errorWidget: (_, _, _) => Container(
+                              color: AppColors.surfaceLight,
+                              child: Center(
+                                child: Icon(
+                                  Icons.movie_outlined,
+                                  color: AppColors.textMuted,
+                                  size: 44,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Huy hiệu ĐỘC QUYỀN dạng tròn vàng góc trên bên trái
-                  if (item.isExclusive)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFFFD700),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.40),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1.5),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'ĐỘC',
-                              style: TextStyle(
-                                color: Color(0xFF0D1B2A),
-                                fontSize: 7.5,
-                                fontWeight: FontWeight.w900,
-                                height: 1.0,
-                                letterSpacing: 0.3,
+                    // Huy hiệu ĐỘC QUYỀN dạng tròn vàng góc trên bên trái
+                    if (item.isExclusive)
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFFFD700),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.40),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1.5),
                               ),
-                            ),
-                            Text(
-                              'QUYỀN',
-                              style: TextStyle(
-                                color: Color(0xFF0D1B2A),
-                                fontSize: 7.0,
-                                fontWeight: FontWeight.w900,
-                                height: 1.0,
-                                letterSpacing: 0.2,
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'ĐỘC',
+                                style: TextStyle(
+                                  color: Color(0xFF0D1B2A),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.0,
+                                  letterSpacing: 0.3,
+                                ),
                               ),
-                            ),
-                          ],
+                              Text(
+                                'QUYỀN',
+                                style: TextStyle(
+                                  color: Color(0xFF0D1B2A),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.0,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // 2. Hàng Logo/Tiêu đề in đậm & Cụm nút hành động (Thêm vào DS, Chia sẻ)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Logo / Tiêu đề phim
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 23,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.1,
-                        height: 1.15,
-                      ),
-                    ),
-                    if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        item.subtitle!,
-                        style: const TextStyle(
-                          color: Color(0xFFE0A96D),
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.8,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              // Nút Thêm vào DS
-              GlassActionButton.bookmark(
-                isBookmarked: isInList,
-                onPressed: () => _toggleMyList(item),
-              ),
-
-              const SizedBox(width: 6),
-
-              // Nút Chia sẻ
-              GlassActionButton.share(
-                onPressed: () => _shareMovie(item),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // 3. Metadata: Capsule Phân hạng • Năm • Giới hạn tuổi • Thể loại
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2.5,
-                ),
-                decoration: BoxDecoration(
-                  color: item.tierColor,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  item.tierBadge,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    height: 1.1,
-                  ),
-                ),
-              ),
-              const Text(
-                '•',
-                style: TextStyle(color: Color(0xFF757575), fontSize: 13),
-              ),
-              Text(
-                '${item.releaseYear}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Text(
-                '•',
-                style: TextStyle(color: Color(0xFF757575), fontSize: 13),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    width: 0.8,
-                  ),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(
-                  item.ageRating,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const Text(
-                '•',
-                style: TextStyle(color: Color(0xFF757575), fontSize: 13),
-              ),
-              Text(
-                item.category,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Color(0xFFCCCCCC), fontSize: 13),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // 4. Trạng thái phát hành màu Cyan nổi bật
-          Text(
-            item.statusText,
-            style: const TextStyle(
-              color: Color(0xFF29B6F6),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
             ),
-          ),
 
-          const SizedBox(height: 6),
+            const SizedBox(height: 10),
 
-          // 5. Tóm tắt nội dung kịch bản
-          Text(
-            item.description,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFFB3B3B3),
-              fontSize: 13,
-              height: 1.42,
+            // 2. Hàng Logo/Tiêu đề in đậm & Cụm nút hành động (Thêm vào DS, Chia sẻ)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Logo / Tiêu đề phim
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.1,
+                          height: 1.15,
+                        ),
+                      ),
+                      if (item.subtitle != null &&
+                          item.subtitle!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.subtitle!,
+                          style: const TextStyle(
+                            color: Color(0xFFE0A96D),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.8,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Nút Thêm vào DS
+                GlassActionButton.bookmark(
+                  isBookmarked: isInList,
+                  onPressed: () => _toggleMyList(item),
+                ),
+
+                const SizedBox(width: 6),
+
+                // Nút Chia sẻ
+                GlassActionButton.share(onPressed: () => _shareMovie(item)),
+              ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 8),
+
+            // 3. Metadata: Capsule Phân hạng • Năm • Giới hạn tuổi • Thể loại
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: item.tierColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    item.tierBadge,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+                const Text(
+                  '•',
+                  style: TextStyle(color: Color(0xFF757575), fontSize: 13),
+                ),
+                Text(
+                  '${item.releaseYear}',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Text(
+                  '•',
+                  style: TextStyle(color: Color(0xFF757575), fontSize: 13),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.divider, width: 0.8),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    item.ageRating,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Text(
+                  '•',
+                  style: TextStyle(color: Color(0xFF757575), fontSize: 13),
+                ),
+                Text(
+                  item.category,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFFCCCCCC),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 4. Trạng thái phát hành màu Cyan nổi bật
+            Text(
+              item.statusText,
+              style: const TextStyle(
+                color: Color(0xFF29B6F6),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            // 5. Tóm tắt nội dung kịch bản
+            Text(
+              item.description,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFFB3B3B3),
+                fontSize: 13,
+                height: 1.42,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 }

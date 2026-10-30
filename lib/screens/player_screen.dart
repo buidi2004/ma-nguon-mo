@@ -14,6 +14,7 @@ import '../services/pocketbase_service.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/movie_card.dart';
+import '../waves_background.dart';
 
 export '../presentation/widgets/player/fullscreen_player_overlay.dart'
     show VideoFitMode;
@@ -56,9 +57,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   IconData? _hudIcon;
   Timer? _hudTimer;
 
-  // Thanh tua mượt mà (Seek-on-Release & Debounce)
-  bool _isScrubbing = false;
-  double _scrubSeconds = 0.0;
+  // Thanh tua mượt mà (Seek-on-Release & Debounce không rebuild toàn màn hình)
+  final ValueNotifier<bool> _isScrubbingNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<double> _scrubSecondsNotifier = ValueNotifier<double>(0.0);
   Timer? _seekDebounceTimer;
   int _accumulatedSeekSeconds = 0;
 
@@ -89,7 +90,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
           size: 46,
           iconSize: 22,
           icon: icon,
-          iconColor: isActive ? ThemeService.instance.primaryColor : Colors.white,
+          iconColor: isActive
+              ? ThemeService.instance.primaryColor
+              : Colors.white,
           hasGlow: isActive,
           glowColor: ThemeService.instance.primaryColor,
           onPressed: onTap,
@@ -99,7 +102,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           label,
           style: TextStyle(
             color: isActive ? Colors.white : AppColors.textSecondary,
-            fontSize: 11.5,
+            fontSize: 12,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
@@ -288,7 +291,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, color: ThemeService.instance.primaryColor, size: 48),
+                Icon(
+                  Icons.error_outline,
+                  color: ThemeService.instance.primaryColor,
+                  size: 48,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể phát video: $errorMessage',
@@ -351,9 +358,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void _onVideoTick() {
     if (!mounted || _videoPlayerController == null) return;
     final val = _videoPlayerController!.value;
-    if (val.isPlaying != _lastIsPlaying ||
-        val.isBuffering != _lastIsBuffering) {
+    if (val.isPlaying != _lastIsPlaying) {
+      if (val.isPlaying) {
+        WavesBackground.notifyVideoPlaybackStarted();
+      } else {
+        WavesBackground.notifyVideoPlaybackStopped();
+      }
       _lastIsPlaying = val.isPlaying;
+      setState(() {});
+    }
+    if (val.isBuffering != _lastIsBuffering) {
       _lastIsBuffering = val.isBuffering;
       setState(() {});
     }
@@ -457,12 +471,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
+    if (_lastIsPlaying) {
+      WavesBackground.notifyVideoPlaybackStopped();
+    }
     _videoPlayerController?.removeListener(_onVideoTick);
     _videoPlayerController?.dispose();
     _chewieController?.dispose();
     _seekDebounceTimer?.cancel();
     _hudTimer?.cancel();
     _transformationController.dispose();
+    _isScrubbingNotifier.dispose();
+    _scrubSecondsNotifier.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
@@ -470,12 +489,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final movieTitle = _activeMovie?.title ?? 'Đang tải...';
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const GlassBackButton(),
+        leading: GlassBackButton(
+          fallbackRoute: widget.movieId != null && widget.movieId!.isNotEmpty
+              ? '/movie/${widget.movieId}'
+              : '/',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else if (widget.movieId != null && widget.movieId!.isNotEmpty) {
+              context.go('/movie/${widget.movieId}');
+            } else {
+              context.go('/');
+            }
+          },
+        ),
         title: Text(
           movieTitle,
           maxLines: 1,
@@ -491,7 +523,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
             AspectRatio(
               aspectRatio: _fitMode == VideoFitMode.stretch ? 16 / 9 : 16 / 9,
               child: Container(
-                color: Colors.black,
+                color: ThemeService.instance.isLight
+                    ? AppColors.surfaceLight
+                    : Colors.black,
                 child: _isLoading
                     ? Center(
                         child: Column(
@@ -550,7 +584,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: ThemeService.instance.primaryColor,
+                                  backgroundColor:
+                                      ThemeService.instance.primaryColor,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
@@ -573,9 +608,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: _togglePlayPause,
                             onDoubleTapDown: (details) {
-                              final screenWidth = MediaQuery.of(context)
-                                  .size
-                                  .width;
+                              final screenWidth = MediaQuery.sizeOf(context).width;
                               if (details.localPosition.dx <
                                   screenWidth * 0.35) {
                                 _quickSeek(-10);
@@ -782,7 +815,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                       if (_hudIcon != null) ...[
                                         Icon(
                                           _hudIcon,
-                                          color: ThemeService.instance.primaryColor,
+                                          color: ThemeService
+                                              .instance
+                                              .primaryColor,
                                           size: 18,
                                         ),
                                         const SizedBox(width: 6),
@@ -791,7 +826,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                         _hudMessage!,
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 12.5,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -808,131 +843,137 @@ class _PlayerScreenState extends State<PlayerScreen> {
             // Thanh tua mượt mà (Seek-on-Release & Không giật lag)
             if (_videoPlayerController != null &&
                 _videoPlayerController!.value.isInitialized) ...[
-              AnimatedBuilder(
-                animation: _videoPlayerController!,
-                builder: (context, _) => Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                  child: Column(
-                    children: [
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 3.5,
-                          thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 6,
-                          ),
-                          overlayShape: const RoundSliderOverlayShape(
-                            overlayRadius: 12,
-                          ),
-                          activeTrackColor: ThemeService.instance.primaryColor,
-                          inactiveTrackColor: Colors.white24,
-                          thumbColor: ThemeService.instance.primaryColor,
-                          overlayColor: ThemeService.instance.primaryColor.withValues(alpha: 0.25),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                child: Column(
+                  children: [
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3.5,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 6,
                         ),
-                        child: Builder(
-                          builder: (context) {
-                            final maxSec =
-                                (_videoPlayerController!
-                                                .value
-                                                .duration
-                                                .inSeconds >
-                                            0
-                                        ? _videoPlayerController!
-                                              .value
-                                              .duration
-                                              .inSeconds
-                                        : 1)
-                                    .toDouble();
-                            final currentSec = _isScrubbing
-                                ? _scrubSeconds.clamp(0.0, maxSec)
-                                : _videoPlayerController!
-                                      .value
-                                      .position
-                                      .inSeconds
-                                      .toDouble()
-                                      .clamp(0.0, maxSec);
-                            return Slider(
-                              min: 0.0,
-                              max: maxSec,
-                              value: currentSec,
-                              onChangeStart: (val) {
-                                setState(() {
-                                  _isScrubbing = true;
-                                  _scrubSeconds = val;
-                                });
-                              },
-                              onChanged: (val) {
-                                setState(() {
-                                  _scrubSeconds = val;
-                                });
-                              },
-                              onChangeEnd: (val) async {
-                                final target = Duration(seconds: val.toInt());
-                                await _videoPlayerController!.seekTo(target);
-                                if (mounted) {
-                                  setState(() {
-                                    _isScrubbing = false;
-                                  });
-                                }
-                              },
-                            );
-                          },
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 12,
                         ),
+                        activeTrackColor: ThemeService.instance.primaryColor,
+                        inactiveTrackColor: Colors.white24,
+                        thumbColor: ThemeService.instance.primaryColor,
+                        overlayColor: ThemeService.instance.primaryColor
+                            .withValues(alpha: 0.25),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _formatDuration(
-                                _isScrubbing
-                                    ? Duration(seconds: _scrubSeconds.toInt())
-                                    : _videoPlayerController!.value.position,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              _formatDuration(
-                                _videoPlayerController!.value.duration,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          _videoPlayerController!,
+                          _isScrubbingNotifier,
+                          _scrubSecondsNotifier,
+                        ]),
+                        builder: (context, _) {
+                          final maxSec =
+                              (_videoPlayerController!.value.duration.inSeconds > 0
+                                      ? _videoPlayerController!
+                                          .value
+                                          .duration
+                                          .inSeconds
+                                      : 1)
+                                  .toDouble();
+                          final isScrubbing = _isScrubbingNotifier.value;
+                          final currentSec = isScrubbing
+                              ? _scrubSecondsNotifier.value.clamp(0.0, maxSec)
+                              : _videoPlayerController!
+                                  .value
+                                  .position
+                                  .inSeconds
+                                  .toDouble()
+                                  .clamp(0.0, maxSec);
+                          return Slider(
+                            min: 0.0,
+                            max: maxSec,
+                            value: currentSec,
+                            onChangeStart: (val) {
+                              _isScrubbingNotifier.value = true;
+                              _scrubSecondsNotifier.value = val;
+                            },
+                            onChanged: (val) {
+                              _scrubSecondsNotifier.value = val;
+                            },
+                            onChangeEnd: (val) async {
+                              final target = Duration(seconds: val.toInt());
+                              await _videoPlayerController!.seekTo(target);
+                              if (mounted) {
+                                _isScrubbingNotifier.value = false;
+                              }
+                            },
+                          );
+                        },
                       ),
-                      const SizedBox(height: 10),
-                      // Thanh công cụ kính mờ quang học tinh gọn (Glass Media Toolbar)
-                      Center(
-                        child: GlassMediaToolbar(
-                          onFitModeToggle: _cycleFitMode,
-                          fitModeLabel: _fitMode == VideoFitMode.fill
-                              ? 'Tràn viền'
-                              : (_fitMode == VideoFitMode.stretch
-                                    ? 'Kéo giãn'
-                                    : '16:9'),
-                          fitModeIcon: _fitMode == VideoFitMode.fill
-                              ? Icons.fullscreen
-                              : (_fitMode == VideoFitMode.stretch
-                                    ? Icons.fit_screen
-                                    : Icons.fullscreen_exit),
-                          onSpeedToggle: _cyclePlaybackSpeed,
-                          currentSpeed: _currentSpeed,
-                          onMuteToggle: _toggleMute,
-                          isMuted: _isMuted,
-                          onFullscreenToggle: _toggleFullscreen,
-                          isFullscreen:
-                              _chewieController?.isFullScreen ?? false,
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          _videoPlayerController!,
+                          _isScrubbingNotifier,
+                          _scrubSecondsNotifier,
+                        ]),
+                        builder: (context, _) {
+                          final isScrubbing = _isScrubbingNotifier.value;
+                          final currentPos = isScrubbing
+                              ? Duration(
+                                  seconds: _scrubSecondsNotifier.value.toInt(),
+                                )
+                              : _videoPlayerController!.value.position;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _formatDuration(currentPos),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                _formatDuration(
+                                  _videoPlayerController!.value.duration,
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Thanh công cụ kính mờ quang học tinh gọn (Glass Media Toolbar)
+                    // Nằm độc lập ngoài ListenableBuilder vị trí để không bị vẽ lại mỗi nhịp phát video
+                    Center(
+                      child: GlassMediaToolbar(
+                        onFitModeToggle: _cycleFitMode,
+                        fitModeLabel: _fitMode == VideoFitMode.fill
+                            ? 'Tràn viền'
+                            : (_fitMode == VideoFitMode.stretch
+                                  ? 'Kéo giãn'
+                                  : '16:9'),
+                        fitModeIcon: _fitMode == VideoFitMode.fill
+                            ? Icons.fullscreen
+                            : (_fitMode == VideoFitMode.stretch
+                                  ? Icons.fit_screen
+                                  : Icons.fullscreen_exit),
+                        onSpeedToggle: _cyclePlaybackSpeed,
+                        currentSpeed: _currentSpeed,
+                        onMuteToggle: _toggleMute,
+                        isMuted: _isMuted,
+                        onFullscreenToggle: _toggleFullscreen,
+                        isFullscreen:
+                            _chewieController?.isFullScreen ?? false,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1000,7 +1041,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           'FULL HD 1080p',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1023,8 +1064,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           if (mId == null) return;
                           await LibraryService.instance.toggleMyList(mId);
                           setState(() {
-                            _isBookmarked =
-                                LibraryService.instance.isInMyList(mId);
+                            _isBookmarked = LibraryService.instance.isInMyList(
+                              mId,
+                            );
                           });
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1034,7 +1076,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                       ? 'Đã thêm "${_activeMovie?.title ?? 'phim'}" vào Danh sách'
                                       : 'Đã xóa khỏi Danh sách của tôi',
                                 ),
-                                backgroundColor: ThemeService.instance.primaryColor,
+                                backgroundColor:
+                                    ThemeService.instance.primaryColor,
                                 duration: const Duration(seconds: 1),
                               ),
                             );
@@ -1100,7 +1143,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     _activeMovie?.description ?? '',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 13.5,
+                      fontSize: 13,
                       height: 1.5,
                     ),
                   ),
@@ -1138,6 +1181,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

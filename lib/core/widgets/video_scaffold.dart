@@ -7,6 +7,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../presentation/widgets/player/fullscreen_player_overlay.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class VideoScaffold extends StatefulWidget {
   final String videoUrl;
@@ -67,22 +68,25 @@ class _VideoScaffoldState extends State<VideoScaffold> {
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white54,
         ),
-        routePageBuilder: (context, animation, secondaryAnimation, controllerProvider) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, child) {
-               return ChewieControllerProvider(
-                controller: controllerProvider.controller,
-                child: OpenFlixFullscreenPlayer(
-                  controller: controllerProvider.controller,
-                  movieTitle: widget.title,
-                ),
+        routePageBuilder:
+            (context, animation, secondaryAnimation, controllerProvider) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return ChewieControllerProvider(
+                    controller: controllerProvider.controller,
+                    child: OpenFlixFullscreenPlayer(
+                      controller: controllerProvider.controller,
+                      movieTitle: widget.title,
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
         placeholder: Container(
-          color: Colors.black,
+          color: ThemeService.instance.isLight
+              ? AppColors.surfaceLight
+              : Colors.black,
           child: Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
@@ -104,8 +108,8 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                     color: AppColors.red,
                     size: 48,
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
+                  SizedBox(height: 12),
+                  Text(
                     'Không thể tải nguồn video',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -114,11 +118,11 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     errorMessage,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
@@ -169,8 +173,10 @@ class _VideoScaffoldState extends State<VideoScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
+    return WavesBackground.wrapIfBlue(Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue
+          ? Colors.transparent
+          : Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
@@ -250,7 +256,7 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                             widget.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -261,7 +267,7 @@ class _VideoScaffoldState extends State<VideoScaffold> {
                               widget.subtitle!,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,
                               ),
@@ -277,6 +283,6 @@ class _VideoScaffoldState extends State<VideoScaffold> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

@@ -16,6 +16,8 @@ import '../services/pocketbase_service.dart';
 import '../services/theme_service.dart';
 import '../services/trial_promo_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_typography.dart';
+import '../waves_background.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/movie_quick_detail_sheet.dart';
 import '../widgets/movie_row.dart';
@@ -32,6 +34,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
+  bool _isLightBlueHome = false;
+  HomeScreenPalette? get _homePalette =>
+      _isLightBlueHome ? HomeScreenPalette.lightBlue : null;
   final PocketBaseService _pbService = PocketBaseService.instance;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _homeScrollController = ScrollController();
@@ -59,9 +64,9 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _isLoading = !_pbService.hasCachedMovies;
+    _isLoading = !_pbService.hasCachedMovies || _pbService.isUsingOfflineMock;
     _homeScrollController.addListener(_onHomeScroll);
-    _loadData();
+    _loadData(forceRefresh: _pbService.isUsingOfflineMock);
     _scheduleTrialPromo();
   }
 
@@ -124,16 +129,16 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    // Chỉ kích hoạt cờ loading khi chưa có dữ liệu trong RAM cache
-    if (!_pbService.hasCachedMovies) {
+  Future<void> _loadData({bool forceRefresh = false}) async {
+    // Chỉ kích hoạt cờ loading khi chưa có dữ liệu trong RAM cache hoặc khi ép làm mới
+    if (forceRefresh || !_pbService.hasCachedMovies || _pbService.isUsingOfflineMock) {
       setState(() {
         _isLoading = true;
       });
     }
 
     try {
-      final movies = await _pbService.getMovies();
+      final movies = await _pbService.getMovies(forceRefresh: forceRefresh);
       final featured = movies.where((m) => m.isFeatured).toList();
 
       if (!mounted) return;
@@ -264,7 +269,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _openMovieDetail(MovieModel movie) {
-    context.push('/movie/${movie.id}');
+    // Truyền sẵn MovieModel: màn chi tiết bỏ được vòng "spinner → tải mạng →
+    // dựng lại toàn trang" ngay giữa lúc chuyển màn.
+    context.push('/movie/${movie.id}', extra: movie);
   }
 
   /// Netflix-style Two-stage Quick Details Bottom Sheet
@@ -301,13 +308,15 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               title: Row(
                 children: [
-                  Icon(Icons.cloud_outlined, color: ThemeService.instance.primaryColor),
+                  Icon(
+                    Icons.cloud_outlined,
+                    color: ThemeService.instance.primaryColor,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Cấu hình PocketBase',
-                    style: TextStyle(
+                    style: AppTypography.headline.copyWith(
                       color: Colors.white,
-                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -322,31 +331,31 @@ class _HomeScreenState extends State<HomeScreen>
                       _pbService.isUsingOfflineMock
                           ? '🟡 Đang dùng Mock Data offline'
                           : '🟢 Đã kết nối PocketBase API',
-                      style: TextStyle(
+                      style: AppTypography.footnote.copyWith(
                         color: _pbService.isUsingOfflineMock
                             ? AppColors.warning
                             : AppColors.success,
-                        fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    const Text(
+                    SizedBox(height: 14),
+                    Text(
                       'Địa chỉ máy chủ PocketBase:',
-                      style: TextStyle(
+                      style: AppTypography.caption1.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     TextField(
                       controller: urlController,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      style: AppTypography.footnote.copyWith(
+                        color: Colors.white,
+                      ),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: AppColors.dynamicBackground,
                         hintText: 'https://xxx.pockethost.io',
-                        hintStyle: const TextStyle(color: AppColors.textMuted),
+                        hintStyle: TextStyle(color: AppColors.textMuted),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(4),
                           borderSide: BorderSide.none,
@@ -384,14 +393,14 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         );
                         _pbService.updateBaseUrl(targetUrl);
-                        _loadData();
+                        _loadData(forceRefresh: true);
                       },
                       icon: const Icon(Icons.upload_file, size: 18),
-                      label: const Text('Nạp dữ liệu phim mẫu lên Server'),
+                      label: Text('Nạp dữ liệu phim mẫu lên Server'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ThemeService.instance.primaryColor,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 38),
+                        minimumSize: Size(double.infinity, 38),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -403,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Đóng',
                     style: TextStyle(color: AppColors.textMuted),
                   ),
@@ -412,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen>
                   onPressed: () {
                     _pbService.updateBaseUrl(urlController.text.trim());
                     Navigator.pop(context);
-                    _loadData();
+                    _loadData(forceRefresh: true);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -437,205 +446,243 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final isFilteringCategory = _selectedCategory != 'Tất cả';
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      // Luôn trải dài toàn màn hình để dải hòa trộn 150px hoạt động liên tục
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleSpacing: isFilteringCategory ? 0 : 12,
-        leading: isFilteringCategory
-            ? GlassBackButton(
+    final isBlueTheme = ThemeService.instance.isWindowsBlue;
+    final isGoldTheme = ThemeService.instance.isLuxuryGold;
+    final isDynamicBackground = isBlueTheme || isGoldTheme;
+    _isLightBlueHome = isBlueTheme && MediaQuery.sizeOf(context).width < 600;
+    final baseTheme = Theme.of(context);
+    final homePalette = _homePalette;
+    final topBlendColor = isBlueTheme
+        ? const Color(0xFF031C26)
+        : isGoldTheme
+            ? const Color(0xFF060504)
+            : (homePalette?.background ?? AppColors.background);
+    final scaffold = Theme(
+      data: homePalette == null
+          ? baseTheme
+          : baseTheme.copyWith(extensions: [homePalette]),
+      child: Scaffold(
+        backgroundColor: isDynamicBackground
+            ? Colors.transparent
+            : (homePalette?.background ?? AppColors.background),
+        // Luôn trải dài toàn màn hình để dải hòa trộn 150px hoạt động liên tục
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(
+            color: homePalette?.textPrimary ?? Colors.white,
+          ),
+          titleSpacing: isFilteringCategory ? 0 : 12,
+          leading: isFilteringCategory
+              ? GlassBackButton(onPressed: () => _onCategorySelected('Tất cả'))
+              : null,
+          title: isFilteringCategory
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedCategory,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.headline.copyWith(
+                          color: homePalette?.textPrimary ?? Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ThemeService.instance.primaryColor.withValues(
+                          alpha: 0.20,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: ThemeService.instance.primaryColor.withValues(
+                            alpha: 0.50,
+                          ),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        '${_filteredMovies.length} phim',
+                        style: AppTypography.caption2.copyWith(
+                          color:
+                              homePalette?.action ??
+                              ThemeService.instance.primaryColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        if (_homeScrollController.hasClients) {
+                          _homeScrollController.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOutCubic,
+                          );
+                        }
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // 1. Logo OpenFlix V 3D chính
+                          const AppBrandLogo(iconSize: 36, showText: false),
+                          const SizedBox(width: 8),
+                          // Vạch phân cách tinh tế chuẩn rạp chiếu
+                          Container(
+                            width: 1,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white24,
+                              borderRadius: BorderRadius.circular(0.5),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // 2. Hai biểu tượng hãng phim đối tác xếp 2 tầng (trên - dưới)
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Tầng trên: Legendary Pictures
+                              Image.asset(
+                                'assets/icons/legendary_logo.png',
+                                height: 12.5,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                                errorBuilder: (ctx, err, st) => Image.asset(
+                                  'web/icons/legendary-pictures-logo-print-handle-bracket-aluminium-sink-faucet-transparent-png-648907.png',
+                                  height: 12.5,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              // Tầng dưới: Sony Pictures (màu trắng tương phản cao trên nền đen)
+                              Image.asset(
+                                'assets/icons/sony_logo.png',
+                                height: 10,
+                                fit: BoxFit.contain,
+                                color: Colors.white.withValues(alpha: 0.92),
+                                filterQuality: FilterQuality.high,
+                                errorBuilder: (ctx, err, st) => Image.asset(
+                                  'web/icons/sony_logo_PNG2.png',
+                                  height: 10,
+                                  fit: BoxFit.contain,
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+          actions: [
+            if (isFilteringCategory)
+              IconButton(
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: homePalette?.textSecondary ?? Colors.white70,
+                  size: 22,
+                ),
+                tooltip: 'Xem tất cả phim',
                 onPressed: () => _onCategorySelected('Tất cả'),
-              )
-            : null,
-        title: isFilteringCategory
-            ? Row(
+              ),
+            // Nút Ảnh đại diện chân dung (Chạm: vào màn Tài khoản & Cá nhân, Nhấn giữ: mở nhanh đổi avatar)
+            Padding(
+              padding: const EdgeInsets.only(right: 14, left: 2),
+              child: Center(
+                child: UserAvatarButton(
+                  size: 34,
+                  tooltip: 'Tài khoản & Cá nhân',
+                  onPressed: () => context.push('/me'),
+                  onLongPress: () => UserAvatarDialog.show(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? _buildSkeleton()
+            : Stack(
                 children: [
-                  Expanded(
-                    child: Text(
-                      _selectedCategory,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
+                  RefreshIndicator(
+                    onRefresh: () => _loadData(forceRefresh: true),
+                    color: ThemeService.instance.primaryColor,
+                    backgroundColor: homePalette?.surface ?? AppColors.surface,
+                    child: _buildBody(),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ThemeService.instance.primaryColor.withValues(alpha: 0.20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: ThemeService.instance.primaryColor.withValues(alpha: 0.50),
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Text(
-                      '${_filteredMovies.length} phim',
-                      style: TextStyle(
-                        color: ThemeService.instance.primaryColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                  // Dãy hòa trộn quang học đỉnh (150px): Triệt tiêu hoàn toàn đường cắt ngang.
+                  //
+                  // Độ mờ được "nướng" thẳng vào alpha của từng stop gradient
+                  // thay vì bọc lớp `Opacity`. Với một gradient đơn, kết quả
+                  // pixel là như nhau, nhưng `Opacity` bắt engine tạo thêm một
+                  // `saveLayer` 150 px cho MỖI khung hình cuộn (và kéo theo cả
+                  // các lớp kính nằm dưới phải đọc lại backdrop) — đây là một
+                  // trong những nguồn giật chính khi cuộn trang chủ.
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 150,
+                    child: RepaintBoundary(
+                      child: IgnorePointer(
+                        child: ValueListenableBuilder<double>(
+                          valueListenable: _appBarOpacityNotifier,
+                          builder: (context, opacity, child) {
+                            final double effectiveOpacity = isFilteringCategory
+                                ? 1.0
+                                : opacity;
+                            return DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    topBlendColor.withValues(
+                                      alpha: effectiveOpacity,
+                                    ),
+                                    topBlendColor.withValues(
+                                      alpha: 0.94 * effectiveOpacity,
+                                    ),
+                                    topBlendColor.withValues(
+                                      alpha: 0.65 * effectiveOpacity,
+                                    ),
+                                    topBlendColor.withValues(
+                                      alpha: 0.25 * effectiveOpacity,
+                                    ),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.40, 0.65, 0.85, 1.0],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ],
-              )
-            : Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          if (_homeScrollController.hasClients) {
-                            _homeScrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // 1. Logo OpenFlix V 3D chính
-                            const AppBrandLogo(
-                              iconSize: 36,
-                              showText: false,
-                            ),
-                            const SizedBox(width: 8),
-                            // Vạch phân cách tinh tế chuẩn rạp chiếu
-                            Container(
-                              width: 1,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: Colors.white24,
-                                borderRadius: BorderRadius.circular(0.5),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // 2. Hai biểu tượng hãng phim đối tác xếp 2 tầng (trên - dưới)
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Tầng trên: Legendary Pictures
-                                Image.asset(
-                                  'assets/icons/legendary_logo.png',
-                                  height: 12.5,
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                  errorBuilder: (ctx, err, st) => Image.asset(
-                                    'web/icons/legendary-pictures-logo-print-handle-bracket-aluminium-sink-faucet-transparent-png-648907.png',
-                                    height: 12.5,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                // Tầng dưới: Sony Pictures (màu trắng tương phản cao trên nền đen)
-                                Image.asset(
-                                  'assets/icons/sony_logo.png',
-                                  height: 10,
-                                  fit: BoxFit.contain,
-                                  color: Colors.white.withValues(alpha: 0.92),
-                                  filterQuality: FilterQuality.high,
-                                  errorBuilder: (ctx, err, st) => Image.asset(
-                                    'web/icons/sony_logo_PNG2.png',
-                                    height: 10,
-                                    fit: BoxFit.contain,
-                                    color: Colors.white.withValues(alpha: 0.92),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-        actions: [
-          if (isFilteringCategory)
-            IconButton(
-              icon: const Icon(
-                Icons.refresh_rounded,
-                color: Colors.white70,
-                size: 22,
               ),
-              tooltip: 'Xem tất cả phim',
-              onPressed: () => _onCategorySelected('Tất cả'),
-            ),
-          // Nút Ảnh đại diện chân dung (Chạm: vào màn Tài khoản & Cá nhân, Nhấn giữ: mở nhanh đổi avatar)
-          Padding(
-            padding: const EdgeInsets.only(right: 14, left: 2),
-            child: Center(
-              child: UserAvatarButton(
-                size: 34,
-                tooltip: 'Tài khoản & Cá nhân',
-                onPressed: () => context.push('/me'),
-                onLongPress: () => UserAvatarDialog.show(context),
-              ),
-            ),
-          ),
-        ],
       ),
-      body: _isLoading
-          ? _buildSkeleton()
-          : Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: ThemeService.instance.primaryColor,
-                  backgroundColor: AppColors.surface,
-                  child: _buildBody(),
-                ),
-                // Dãy hòa trộn quang học đỉnh (150px): Triệt tiêu hoàn toàn đường cắt ngang
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 150,
-                  child: IgnorePointer(
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: _appBarOpacityNotifier,
-                      builder: (context, opacity, child) {
-                        final effectiveOpacity =
-                            isFilteringCategory ? 1.0 : opacity;
-                        return Opacity(
-                          opacity: effectiveOpacity,
-                          child: child,
-                        );
-                      },
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              AppColors.background,
-                              AppColors.background.withValues(alpha: 0.94),
-                              AppColors.background.withValues(alpha: 0.65),
-                              AppColors.background.withValues(alpha: 0.25),
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.40, 0.65, 0.85, 1.0],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
     );
+    // Trong app, ThemedBackdrop ở cấp gốc đã cung cấp nền và wrapper này là
+    // no-op; khi Trang chủ được dựng độc lập (preview/test) nó vẫn có đúng
+    // nền theo theme mà không nhân đôi shader trong luồng chạy thực tế.
+    return WavesBackground.wrapIfBlue(scaffold);
   }
 
   Widget _buildBody() {
@@ -644,15 +691,17 @@ class _HomeScreenState extends State<HomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.movie_filter_outlined,
               size: 64,
-              color: AppColors.textMuted,
+              color: _homePalette?.textMuted ?? AppColors.textMuted,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Chưa có dữ liệu phim nào',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+              style: AppTypography.callout.copyWith(
+                color: _homePalette?.textSecondary ?? AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -676,32 +725,40 @@ class _HomeScreenState extends State<HomeScreen>
       return _buildSearchOrFilterGrid();
     }
 
-    // Giao diện chính Netflix: HeroBanner + các hàng phim cuộn ngang
-    return SingleChildScrollView(
+    // Giao diện chính Netflix: HeroBanner + các hàng phim cuộn ngang.
+    //
+    // Dùng `CustomScrollView` + sliver thay cho `SingleChildScrollView` +
+    // `Column`: viewport chỉ layout/nạp những hàng đang (hoặc sắp) hiện ra,
+    // nên poster của các hàng dưới màn hình không bị dựng, không giải mã ảnh
+    // và không chạy placeholder trong khung hình đầu tiên — cũng không bị
+    // dựng lại mỗi lần đổi theme. Bố cục, khoảng cách và thứ tự giữ nguyên
+    // 100% so với bản Column cũ.
+    return CustomScrollView(
       controller: _homeScrollController,
+      cacheExtent: 700.0,
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
-      padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Hero Banner carousel (nhiều phim nổi bật, autoplay lazy)
-          if (_featuredMovies.isNotEmpty)
-            HeroBannerCarousel(
+      slivers: [
+        // 1. Hero Banner carousel (nhiều phim nổi bật, autoplay lazy)
+        if (_featuredMovies.isNotEmpty)
+          SliverToBoxAdapter(
+            child: HeroBannerCarousel(
               movies: _featuredMovies,
               onPlay: _playMovie,
               onInfo: _showMovieDetailModal,
               onImageTap: (movie) => _playTrailer(movie),
             ),
+          ),
 
-          // 2. Chip lọc thể loại nhỏ gọn đè nhẹ dưới Hero
-          _buildCategoryFilterRow(),
+        // 2. Chip lọc thể loại dạng viên thuốc kính mờ (Floating Glass Pills)
+        SliverToBoxAdapter(child: _buildCategoryFilterRow()),
 
-          const SizedBox(height: 12),
+        const SliverToBoxAdapter(child: SizedBox(height: 6)),
 
-          // 3. Hàng "Tiếp tục xem của bạn" chuẩn Netflix (S26)
-          ListenableBuilder(
+        // 3. Hàng "Tiếp tục xem của bạn" chuẩn Netflix (S26)
+        SliverToBoxAdapter(
+          child: ListenableBuilder(
             listenable: LibraryService.instance,
             builder: (context, _) {
               final progressIds = LibraryService.instance.progressMap.keys
@@ -718,60 +775,71 @@ class _HomeScreenState extends State<HomeScreen>
               );
             },
           ),
+        ),
 
-          // 4. Hàng Top 10 Phim Thịnh Hành (S17) — số xám to sau poster
-          Top10Row(
+        // 4. Hàng Top 10 Phim Thịnh Hành (S17) — số xám to sau poster
+        SliverToBoxAdapter(
+          child: Top10Row(
             title: 'Top 10 Phim Thịnh Hành',
             movies: _top10Movies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/top10'),
           ),
+        ),
 
-          // 5. Các hàng phim cuộn ngang chuẩn Netflix 3.4 peek ratio
-          MovieRow(
+        // 5. Các hàng phim cuộn ngang chuẩn Netflix 3.4 peek ratio
+        SliverToBoxAdapter(
+          child: MovieRow(
             title: 'Mới phát hành trên OpenFlix',
             movies: _newReleases.isNotEmpty ? _newReleases : _allMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/see-all/new'),
           ),
+        ),
 
-          MovieRow(
+        SliverToBoxAdapter(
+          child: MovieRow(
             title: 'Hoạt hình đặc sắc',
             movies: _animatedMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Hoạt hình'),
           ),
+        ),
 
-          MovieRow(
+        SliverToBoxAdapter(
+          child: MovieRow(
             title: 'Khoa học viễn tưởng',
             movies: _sciFiMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Viễn tưởng'),
           ),
+        ),
 
-          MovieRow(
+        SliverToBoxAdapter(
+          child: MovieRow(
             title: 'Hành động & Phiêu lưu',
             movies: _actionMovies,
             onTap: _openMovieDetail,
             onSeeAll: () => context.push('/genre/Hành động'),
           ),
+        ),
 
-          const SizedBox(height: 40),
-        ],
-      ),
+        const SliverToBoxAdapter(child: SizedBox(height: 40)),
+      ],
     );
   }
 
   /// Chip lọc danh mục phong cách kính mờ quang học nhẹ nhàng (GlassChipButton)
   Widget _buildCategoryFilterRow() {
     return Container(
-      height: 40,
-      margin: const EdgeInsets.only(top: 8, bottom: 4),
+      height: 42,
+      margin: const EdgeInsets.only(top: 4.0, bottom: 6.0),
       child: ListView.separated(
         clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
+        cacheExtent: 350.0,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         itemCount: _categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -801,8 +869,8 @@ class _HomeScreenState extends State<HomeScreen>
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       child: Shimmer.fromColors(
-        baseColor: const Color(0xFF1E1E1E),
-        highlightColor: const Color(0xFF2C2C2C),
+        baseColor: _homePalette?.divider ?? const Color(0xFF1E1E1E),
+        highlightColor: _homePalette?.surface ?? const Color(0xFF2C2C2C),
         period: const Duration(milliseconds: 1300),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,7 +948,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   /// Lưới 3 cột poster khi tìm kiếm hoặc lọc danh mục chuẩn điện ảnh Netflix
   Widget _buildSearchOrFilterGrid() {
-    final topOffset = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
+    final topOffset = MediaQuery.paddingOf(context).top + kToolbarHeight + 4;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -896,9 +964,8 @@ class _HomeScreenState extends State<HomeScreen>
                   'Danh sách ${_selectedCategory != 'Tất cả' ? _selectedCategory : 'kết quả'} (${_filteredMovies.length} phim)',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
+                  style: AppTypography.subhead.copyWith(
+                    color: _homePalette?.textPrimary ?? AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -908,9 +975,10 @@ class _HomeScreenState extends State<HomeScreen>
                   onTap: () => _onCategorySelected('Tất cả'),
                   child: Text(
                     'Xem tất cả >',
-                    style: TextStyle(
-                      color: ThemeService.instance.primaryColor,
-                      fontSize: 12.5,
+                    style: AppTypography.footnote.copyWith(
+                      color:
+                          _homePalette?.action ??
+                          ThemeService.instance.primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -920,221 +988,281 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         Expanded(
           child: _filteredMovies.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.search_off_rounded,
                         size: 56,
-                        color: AppColors.textMuted,
+                        color: _homePalette?.textMuted ?? AppColors.textMuted,
                       ),
                       SizedBox(height: 12),
                       Text(
                         'Không tìm thấy bộ phim phù hợp',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
+                        style: AppTypography.subhead.copyWith(
+                          color:
+                              _homePalette?.textSecondary ??
+                              AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 )
-              : GridView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 110),
-                  itemCount: _filteredMovies.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 2 / 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemBuilder: (context, index) {
-                    final movie = _filteredMovies[index];
-                    return GestureDetector(
-                      onTap: () => _openMovieDetail(movie),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.40),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
+              : Stack(
+                  children: [
+                    GridView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 110),
+                      itemCount: _filteredMovies.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            childAspectRatio: 2 / 3,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 10,
+                          ),
+                      itemBuilder: (context, index) {
+                        final movie = _filteredMovies[index];
+                        return GestureDetector(
+                          onTap: () => _openMovieDetail(movie),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.40),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              // 1. Ảnh Poster
-                              CachedNetworkImage(
-                                imageUrl: movie.posterUrl,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 350,
-                                memCacheHeight: 525,
-                                maxHeightDiskCache: 600,
-                                placeholder: (_, _) => Container(
-                                  color: AppColors.surface,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              ThemeService.instance.primaryColor,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (_, _, _) => Container(
-                                  color: AppColors.surface,
-                                  padding: const EdgeInsets.all(6),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.movie_outlined,
-                                        color: AppColors.textMuted,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        movie.title,
-                                        maxLines: 2,
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: AppColors.textSecondary,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  // 1. Ảnh Poster
+                                  CachedNetworkImage(
+                                    imageUrl: movie.posterUrl,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 350,
+                                    memCacheHeight: 525,
+                                    maxHeightDiskCache: 600,
+                                    placeholder: (_, _) => Container(
+                                      color:
+                                          _homePalette?.surface ??
+                                          AppColors.surface,
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  ThemeService
+                                                      .instance
+                                                      .primaryColor,
+                                                ),
+                                          ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              // 2. Lớp phủ Vignette chuyển tiếp tinh tế ở đáy poster
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.transparent,
-                                        Colors.black.withValues(alpha: 0.50),
-                                        Colors.black.withValues(alpha: 0.92),
-                                      ],
-                                      stops: const [0.0, 0.45, 0.70, 1.0],
                                     ),
-                                  ),
-                                ),
-                              ),
-
-                              // 3. Viền Hairline tinh xảo
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.14,
-                                        ),
-                                        width: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // 4. Badge chất lượng (HD / MỚI)
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: movie.isNew
-                                        ? ThemeService.instance.primaryColor
-                                        : Colors.black.withValues(alpha: 0.65),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.25,
-                                      ),
-                                      width: 0.6,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    movie.isNew ? 'MỚI' : 'HD',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.4,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // 5. Tiêu đề và Năm phát hành ở đáy poster
-                              Positioned(
-                                left: 6,
-                                right: 6,
-                                bottom: 8,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      movie.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.2,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black,
-                                            blurRadius: 4,
+                                    errorWidget: (_, _, _) => Container(
+                                      color:
+                                          _homePalette?.surface ??
+                                          AppColors.surface,
+                                      padding: const EdgeInsets.all(6),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.movie_outlined,
+                                            color:
+                                                _homePalette?.textMuted ??
+                                                AppColors.textMuted,
+                                            size: 24,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            movie.title,
+                                            maxLines: 2,
+                                            textAlign: TextAlign.center,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTypography.caption2
+                                                .copyWith(
+                                                  color:
+                                                      _homePalette
+                                                          ?.textSecondary ??
+                                                      AppColors.textSecondary,
+                                                ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${movie.releaseYear}',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.70,
+                                  ),
+
+                                  // 2. Lớp phủ Vignette chuyển tiếp tinh tế ở đáy poster
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.transparent,
+                                            Colors.black.withValues(
+                                              alpha: 0.50,
+                                            ),
+                                            Colors.black.withValues(
+                                              alpha: 0.92,
+                                            ),
+                                          ],
+                                          stops: const [0.0, 0.45, 0.70, 1.0],
                                         ),
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+
+                                  // 3. Viền Hairline tinh xảo
+                                  Positioned.fill(
+                                    child: IgnorePointer(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.14,
+                                            ),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // 4. Badge chất lượng (HD / MỚI)
+                                  Positioned(
+                                    top: 5,
+                                    right: 5,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: movie.isNew
+                                            ? ThemeService.instance.primaryColor
+                                            : Colors.black.withValues(
+                                                alpha: 0.65,
+                                              ),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                          width: 0.6,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        movie.isNew ? 'MỚI' : 'HD',
+                                        style: AppTypography.caption2.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // 5. Tiêu đề và Năm phát hành ở đáy poster
+                                  Positioned(
+                                    left: 6,
+                                    right: 6,
+                                    bottom: 8,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          movie.title,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTypography.caption2
+                                              .copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                                height: 1.2,
+                                                shadows: const [
+                                                  Shadow(
+                                                    color: Colors.black,
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
+                                              ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${movie.releaseYear}',
+                                          style: AppTypography.caption2
+                                              .copyWith(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.70,
+                                                ),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Dải sương mù quang học xanh ở đỉnh lưới: poster cuộn lên lướt chìm êm ái
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 20,
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: ThemeService.instance.isWindowsBlue
+                                  ? const [
+                                      Color(0x99031C26),
+                                      Colors.transparent,
+                                    ]
+                                  : ThemeService.instance.isLuxuryGold
+                                      ? const [
+                                          Color(0x99060504),
+                                          Colors.transparent,
+                                        ]
+                                      : [
+                                          AppColors.background.withValues(
+                                            alpha: 0.65,
+                                          ),
+                                          Colors.transparent,
+                                        ],
+                            ),
                           ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
         ),
       ],

@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S47: Thanh Toán & Xác Nhận Đặt Vé (Cinema Checkout Screen) — Nền Trắng Rạp
 class CinemaCheckoutScreen extends StatefulWidget {
@@ -68,8 +72,13 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text('Hết Thời Gian Giữ Vé',
-            style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Hết Thời Gian Giữ Vé',
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: const Text(
           'Đã hết thời gian 5 phút giữ ghế tạm thời. Vui lòng chọn lại suất chiếu.',
           style: TextStyle(color: Color(0xFF475569)),
@@ -80,8 +89,13 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               Navigator.of(context).pop();
               context.go('/cinema');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF97316)),
-            child: const Text('Quay lại danh sách phim', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFC2410C),
+            ),
+            child: const Text(
+              'Quay lại danh sách phim',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -155,7 +169,8 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
       concessions: widget.concessions,
       totalAmount: finalTotal,
       paymentMethod: _getPaymentMethodTitle(_selectedPaymentMethod),
-      qrCodeData: '$bookingCode-${widget.seatLabels.join("")}-${widget.theater.id}',
+      qrCodeData:
+          '$bookingCode-${widget.seatLabels.join("")}-${widget.theater.id}',
       createdAt: DateTime.now(),
       isUsed: false,
     );
@@ -165,10 +180,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
     setState(() => _isProcessing = false);
 
     // Mở màn hình vé điện tử S48
-    context.pushReplacement(
-      '/cinema/ticket/${booking.id}',
-      extra: booking,
-    );
+    context.pushReplacement('/cinema/ticket/${booking.id}', extra: booking);
   }
 
   String _getPaymentMethodTitle(String method) {
@@ -193,8 +205,9 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
     final seconds = (_secondsRemaining % 60).toString().padLeft(2, '0');
     final finalPrice = widget.totalAmount - _discountAmount;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -223,31 +236,36 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.timer_outlined,
-                      color: Color(0xFFEA580C), size: 22),
+                  const Icon(
+                    Icons.timer_outlined,
+                    color: Color(0xFFC2410C),
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
                       'Thời gian giữ ghế tạm thời còn lại:',
                       style: TextStyle(
                         color: Color(0xFF9A3412),
-                        fontSize: 12.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEA580C),
+                      color: const Color(0xFFC2410C),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '$minutes:$seconds',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
@@ -286,9 +304,16 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                         child: SizedBox(
                           width: 50,
                           height: 72,
-                          child: Image.network(
-                            widget.movie.posterUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: widget.movie.posterUrl,
                             fit: BoxFit.cover,
+                            memCacheWidth: 150,
+                            memCacheHeight: 216,
+                            placeholder: (_, _) => Container(color: Colors.grey.shade200),
+                            errorWidget: (_, _, _) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.movie_rounded, size: 20, color: Colors.grey),
+                            ),
                           ),
                         ),
                       ),
@@ -309,7 +334,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                             Text(
                               widget.theater.name,
                               style: const TextStyle(
-                                color: Color(0xFF0284C7),
+                                color: Color(0xFF0369A1),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -334,15 +359,19 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
 
                   // Chi tiết suất chiếu & ghế
                   _buildSummaryRow(
-                      'Suất chiếu', '${widget.showtime.time} • Hôm nay'),
+                    'Suất chiếu',
+                    '${widget.showtime.time} • Hôm nay',
+                  ),
                   const SizedBox(height: 8),
                   _buildSummaryRow('Số ghế', widget.seatLabels.join(', ')),
 
                   // Nếu có bắp nước
                   if (widget.concessions.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    _buildSummaryRow('Bắp nước',
-                        '${widget.concessions.values.reduce((a, b) => a + b)} phần combo'),
+                    _buildSummaryRow(
+                      'Bắp nước',
+                      '${widget.concessions.values.reduce((a, b) => a + b)} phần combo',
+                    ),
                   ],
 
                   const SizedBox(height: 14),
@@ -351,7 +380,9 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
 
                   // Tổng tiền tạm tính & Giảm giá
                   _buildSummaryRow(
-                      'Tạm tính', '${_formatCurrency(widget.totalAmount)} đ'),
+                    'Tạm tính',
+                    '${_formatCurrency(widget.totalAmount)} đ',
+                  ),
                   if (_discountAmount > 0) ...[
                     const SizedBox(height: 6),
                     _buildSummaryRow(
@@ -375,8 +406,8 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                       Text(
                         '${_formatCurrency(finalPrice)} đ',
                         style: const TextStyle(
-                          color: Color(0xFFEA580C),
-                          fontSize: 19,
+                          color: Color(0xFFC2410C),
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -398,17 +429,22 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.discount_outlined,
-                      color: Color(0xFFEA580C), size: 22),
+                  const Icon(
+                    Icons.discount_outlined,
+                    color: Color(0xFFC2410C),
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: _voucherController,
-                      style: const TextStyle(fontSize: 13.5),
+                      style: const TextStyle(fontSize: 13),
                       decoration: const InputDecoration(
                         hintText: 'Nhập mã giảm giá (VD: CINEFLIX20)',
-                        hintStyle:
-                            TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        hintStyle: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                        ),
                         border: InputBorder.none,
                         isDense: true,
                       ),
@@ -417,10 +453,12 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                   ElevatedButton(
                     onPressed: _isVoucherApplied ? null : _applyVoucher,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0284C7),
+                      backgroundColor: const Color(0xFF0369A1),
                       disabledBackgroundColor: Colors.grey.shade300,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -428,7 +466,10 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                     ),
                     child: Text(
                       _isVoucherApplied ? 'Đã áp dụng' : 'Áp dụng',
-                      style: const TextStyle(color: Colors.white, fontSize: 12.5),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -438,10 +479,12 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
             const SizedBox(height: 18),
 
             // 4. PHƯƠNG THỨC THANH TOÁN
-            const Text(
+            Text(
               'Chọn phương thức thanh toán',
               style: TextStyle(
-                color: Color(0xFF0F172A),
+                color: ThemeService.instance.isWindowsBlue
+                    ? Colors.white
+                    : const Color(0xFF0F172A),
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
@@ -506,14 +549,19 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               children: [
                 Checkbox(
                   value: _agreedToTerms,
-                  activeColor: const Color(0xFFEA580C),
+                  activeColor: const Color(0xFFC2410C),
                   onChanged: (val) =>
                       setState(() => _agreedToTerms = val ?? true),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Tôi đồng ý với điều khoản đặt vé rạp và cam kết đúng độ tuổi xem phim.',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 11.5),
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFE2F1FF)
+                          : const Color(0xFF64748B),
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
@@ -528,7 +576,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               child: ElevatedButton(
                 onPressed: _isProcessing ? null : _processPayment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
+                  backgroundColor: const Color(0xFFC2410C),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -558,6 +606,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -620,7 +669,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                     title,
                     style: const TextStyle(
                       color: Color(0xFF0F172A),
-                      fontSize: 13.5,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -628,7 +677,7 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
                     subtitle,
                     style: const TextStyle(
                       color: Color(0xFF64748B),
-                      fontSize: 11.5,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -640,7 +689,9 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFFEA580C) : Colors.grey.shade400,
+                  color: isSelected
+                      ? const Color(0xFFC2410C)
+                      : Colors.grey.shade400,
                   width: isSelected ? 6 : 1.5,
                 ),
               ),
@@ -653,8 +704,8 @@ class _CinemaCheckoutScreenState extends State<CinemaCheckoutScreen> {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

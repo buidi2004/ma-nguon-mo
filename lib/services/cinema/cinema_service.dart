@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/cinema/cinema_models.dart';
 
 /// CinemaService cung cấp dữ liệu rạp phim Việt Nam như thật:
@@ -164,7 +165,8 @@ class CinemaService extends ChangeNotifier {
       name: 'CGV Vincom Center Landmark 81',
       chain: 'CGV Cinemas',
       cityId: 'hcm',
-      address: 'Tầng B1, Vincom Landmark 81, 720A Điện Biên Phủ, Bình Thạnh, TP.HCM',
+      address:
+          'Tầng B1, Vincom Landmark 81, 720A Điện Biên Phủ, Bình Thạnh, TP.HCM',
       distanceKm: 4.2,
     ),
     CinemaTheaterModel(
@@ -172,7 +174,8 @@ class CinemaService extends ChangeNotifier {
       name: 'BHD Star Cineplex Bitexco',
       chain: 'BHD Star',
       cityId: 'hcm',
-      address: 'Tầng 3 & 4, Bitexco Icon 68, 2 Hải Triều, Bến Nghé, Quận 1, TP.HCM',
+      address:
+          'Tầng 3 & 4, Bitexco Icon 68, 2 Hải Triều, Bến Nghé, Quận 1, TP.HCM',
       distanceKm: 3.6,
     ),
     CinemaTheaterModel(
@@ -201,15 +204,18 @@ class CinemaService extends ChangeNotifier {
       name: 'Combo Solo Tiết Kiệm',
       description: '1 Bắp ngọt 60oz thơm bơ + 1 Nước ngọt có ga 32oz mát lạnh',
       price: 85000,
-      imageUrl: 'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=400',
       category: 'combo',
     ),
     CinemaConcessionModel(
       id: 'combo_couple',
       name: 'Combo Couple Hẹn Hò',
-      description: '1 Bắp lớn 80oz (tùy chọn Caramel/Phô mai) + 2 Nước ngọt 32oz',
+      description:
+          '1 Bắp lớn 80oz (tùy chọn Caramel/Phô mai) + 2 Nước ngọt 32oz',
       price: 119000,
-      imageUrl: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=400',
       category: 'combo',
     ),
     CinemaConcessionModel(
@@ -217,15 +223,18 @@ class CinemaService extends ChangeNotifier {
       name: 'Combo Family Đại Gia Đình',
       description: '2 Bắp lớn 80oz + 3 Nước ngọt 32oz + 1 Khoai tây chiên lắc phô mai giòn tan',
       price: 189000,
-      imageUrl: 'https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?w=400',
       category: 'combo',
     ),
     CinemaConcessionModel(
       id: 'popcorn_cheese',
       name: 'Bắp Rang Phô Mai Lắc Vàng',
-      description: 'Hạt bắp nổ bung phủ lớp phô mai New Zealand béo ngậy hảo hạng',
+      description:
+          'Hạt bắp nổ bung phủ lớp phô mai New Zealand béo ngậy hảo hạng',
       price: 65000,
-      imageUrl: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400',
       category: 'popcorn',
     ),
     CinemaConcessionModel(
@@ -233,7 +242,8 @@ class CinemaService extends ChangeNotifier {
       name: 'Bắp Rang Caramel Mạch Nha',
       description: 'Vị ngọt thanh đượm hương đường nâu caramel nấu thủ công',
       price: 65000,
-      imageUrl: 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400',
       category: 'popcorn',
     ),
     CinemaConcessionModel(
@@ -241,7 +251,8 @@ class CinemaService extends ChangeNotifier {
       name: 'Pepsi Lạnh 32oz',
       description: 'Pepsi có ga mát lạnh ướp đá sảng khoái',
       price: 35000,
-      imageUrl: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400',
       category: 'drink',
     ),
     CinemaConcessionModel(
@@ -249,7 +260,8 @@ class CinemaService extends ChangeNotifier {
       name: '7Up Chanh Tươi 32oz',
       description: 'Nước ngọt vị chanh thanh mát, đã khát',
       price: 35000,
-      imageUrl: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400',
       category: 'drink',
     ),
     CinemaConcessionModel(
@@ -257,7 +269,8 @@ class CinemaService extends ChangeNotifier {
       name: 'Ly Topper Nhân Vật Độc Quyền',
       description: 'Ly rạp phim kèm topper nhân vật phiên bản giới hạn kỷ niệm công chiếu',
       price: 149000,
-      imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
       category: 'merch',
     ),
   ];
@@ -275,7 +288,8 @@ Diễn xuất của dàn cast chính đạt độ chín muồi xuất sắc. T�
 
 Đặc biệt, hệ thống âm thanh vòm Dolby Atmos tại rạp chiếu tạo nên không khí nghẹt thở đến tột cùng, xứng đáng là lựa chọn bom tấn không thể bỏ qua dịp cuối tuần này!
 ''',
-      imageUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800',
+      imageUrl:
+          'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800',
       author: 'Đức Nguyễn — Cine Critic',
       category: 'review',
       publishedAt: DateTime.now().subtract(const Duration(hours: 3)),
@@ -292,7 +306,8 @@ Phiên bản làm lại mới nhất của dòng phim kinh dị sinh tồn mang 
 
 Hiệu ứng hóa trang thực tế cùng kỹ xảo âm thanh xuất sắc khiến từng phân cảnh truy đuổi trong hành lang bệnh viện ngập tràn cảm giác hồi hộp tột độ.
 ''',
-      imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
+      imageUrl:
+          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600',
       author: 'Minh Tuấn Movie',
       category: 'review',
       publishedAt: DateTime.now().subtract(const Duration(hours: 8)),
@@ -309,7 +324,8 @@ Hiệu ứng hóa trang thực tế cùng kỹ xảo âm thanh xuất sắc khi�
 
 Hình ảnh sông nước miền Tây u tịch cùng phần âm nhạc ai oán đẩy cảm xúc của người xem lên đến đỉnh điểm trong trường đoạn cuối.
 ''',
-      imageUrl: 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=600',
+      imageUrl:
+          'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=600',
       author: 'Phương Uyên',
       category: 'review',
       publishedAt: DateTime.now().subtract(const Duration(hours: 18)),
@@ -326,7 +342,8 @@ Bộ phim đặt bối cảnh Trái Đất hậu tận thế khi nguồn tài ng
 
 Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư chỉn chu, mang lại trải nghiệm thị giác ấn tượng trên màn chiếu lớn.
 ''',
-      imageUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=600',
+      imageUrl:
+          'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=600',
       author: 'Quốc Bảo',
       category: 'blog',
       publishedAt: DateTime.now().subtract(const Duration(days: 1)),
@@ -363,7 +380,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Dreamcraft Studio & CineFlix',
         genres: const ['Hài', 'Tâm Lý', 'Phá Án'],
         director: 'Đức Nguyễn',
-        cast: const ['Anh Tú', 'DJ Mie', 'Vũ Ngọc Anh', 'Huy Khánh', 'Long Đẹp Trai'],
+        cast: const [
+          'Anh Tú',
+          'DJ Mie',
+          'Vũ Ngọc Anh',
+          'Huy Khánh',
+          'Long Đẹp Trai',
+        ],
         synopsis: 'Trinh vô tình phát hiện xác chết của tình địch bị nghi ngờ có mối quan hệ mờ ám với chồng sắp cưới. Đại (thám tử tư) được Trinh thuê theo dõi vụ ngoại tình lén vào giúp thì vấp ngã để lại dấu vân tay lên tử thi và bị bảo vệ bắt quả tang. Từ đây, liên tiếp những tình huống dở khóc dở cười nổ ra giữa hai người khi vừa trốn chạy cảnh sát dí sát gót, vừa hợp lực vạch trần bí mật đen tối của giới showbiz.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'VIP - AQUALIS', 'VIP - LAURUS'],
@@ -385,7 +408,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Trấn Thành Town & CJ HK Entertainment',
         genres: const ['Tâm Lý', 'Tình Cảm', 'Lãng Mạn'],
         director: 'Trấn Thành',
-        cast: const ['Phương Anh Đào', 'Tuấn Trần', 'Hồng Đào', 'NSND Việt Anh', 'Uyển Ân'],
+        cast: const [
+          'Phương Anh Đào',
+          'Tuấn Trần',
+          'Hồng Đào',
+          'NSND Việt Anh',
+          'Uyển Ân',
+        ],
         synopsis: 'Câu chuyện xoay quanh Mai – người phụ nữ gần 40 tuổi làm nghề massage trị liệu chịu nhiều ánh mắt phán xét của xã hội. Cuộc đời trầm lặng của cô bỗng rực rỡ khi Dương – chàng nhạc công trẻ tuổi đào hoa xuất hiện và theo đuổi cô mãnh liệt. Một bản tình ca day dứt về tình yêu, số phận và khát vọng hạnh phúc của người phụ nữ.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'IMAX 2D', 'VIP - LAURUS'],
@@ -407,7 +436,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Lý Hải Production',
         genres: const ['Gia Đình', 'Tâm Lý', 'Chữa Lành'],
         director: 'Lý Hải',
-        cast: const ['NSƯT Thanh Hiền', 'Trương Minh Cường', 'Đinh Y Nhung', 'Quách Ngọc Tuyên', 'Ammy Minh Khuê'],
+        cast: const [
+          'NSƯT Thanh Hiền',
+          'Trương Minh Cường',
+          'Đinh Y Nhung',
+          'Quách Ngọc Tuyên',
+          'Ammy Minh Khuê',
+        ],
         synopsis: 'Bà Hai (73 tuổi) sống đơn độc tại ngôi nhà nhỏ ở vùng núi Lạc Dương, một mình tảo tần nuôi 5 người con khôn lớn. Khi bà không may bị tai nạn gãy chân, 5 người con với 5 hoàn cảnh sống khác nhau đùn đẩy trách nhiệm nuôi mẹ, mở ra hành trình gắn kết gia đình đầy xúc động chạm đến trái tim hàng triệu khán giả.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề', 'IMAX 2D'],
@@ -429,7 +464,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'ProductionQ & CineFlix Studios',
         genres: const ['Kinh Dị', 'Cổ Trang', 'Dân Gian'],
         director: 'Trần Hữu Tấn',
-        cast: const ['Thúy Diễm', 'Rima Thanh Vy', 'Lâm Thanh Mỹ', 'Quốc Cường', 'Hải Nam'],
+        cast: const [
+          'Thúy Diễm',
+          'Rima Thanh Vy',
+          'Lâm Thanh Mỹ',
+          'Quốc Cường',
+          'Hải Nam',
+        ],
         synopsis: 'Dị bản kinh dị đen tối lấy cảm hứng từ truyện cổ tích Tấm Cám. Khác với truyện xưa, Cám sinh ra với khuôn mặt dị tật gớm ghiếc, bị gia đình ruồng rẫy và cha mẹ ghẻ lạnh. Trong nỗi uất hận tột cùng, Cám dần bước vào nghi lễ hiến tế tà thuật kinh hoàng của quỷ Bạch Lão để đổi lấy sắc đẹp và sự sủng ái tàn bạo.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'IMAX 2D'],
@@ -517,7 +558,12 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'V Pictures & GDH 559',
         genres: const ['Hành Động', 'Tội Phạm', 'Giật Gân'],
         director: 'Lê Thanh Sơn',
-        cast: const ['Kiều Minh Tuấn', 'Trấn Thành', 'Jun Vũ', 'Sunny Suwanmethanont'],
+        cast: const [
+          'Kiều Minh Tuấn',
+          'Trấn Thành',
+          'Jun Vũ',
+          'Sunny Suwanmethanont',
+        ],
         synopsis: 'Hành trình vượt ngục giải cứu đồng đội của những người lao động bị lừa sang khu kinh tế ngầm nơi biên giới. Một tác phẩm hành động căng thẳng đến nghẹt thở với các cảnh truy sát khốc liệt.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'IMAX 2D'],
@@ -628,7 +674,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'GDH 559',
         genres: const ['Gia Đình', 'Tâm Lý', 'Cảm Động'],
         director: 'Pat Boonnitipat',
-        cast: const ['Billkin Putthipong', 'Usha Seamkhum (Amah)', 'Tu Tontawan'],
+        cast: const [
+          'Billkin Putthipong',
+          'Usha Seamkhum (Amah)',
+          'Tu Tontawan',
+        ],
         synopsis: 'M (Billkin) quyết định bỏ việc stream game để đến chăm sóc người bà mắc ung thư giai đoạn cuối với ý định được chia thừa kế căn nhà tiền tỷ. Nhưng trong những tháng ngày cùng bà đẩy xe bán cháo, M nhận ra điều vô giá nhất trong đời không phải là tiền tài danh vọng mà là những khoảnh khắc ấm áp bên người thân yêu.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'VIP - LAURUS'],
@@ -650,7 +700,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Major Join Film & BEC World',
         genres: const ['Kinh Dị', 'Hành Động', 'Tâm Linh Thái'],
         director: 'Taweewat Wantha',
-        cast: const ['Nadech Kugimiya', 'Denise Jelilcha Kapaun', 'Junior Kajbhunditt'],
+        cast: const [
+          'Nadech Kugimiya',
+          'Denise Jelilcha Kapaun',
+          'Junior Kajbhunditt',
+        ],
         synopsis: 'Ba năm sau cái chết bi thảm của Yam, người anh cả Yak (Nadech Kugimiya) vẫn không ngừng cầm súng lùng sục bóng ma áo đen báo thù cho em gái. Lần theo manh mối tà thuật, Yak dấn thân vào khu rừng ma quái Dong Khmoch – sào huyệt của những nghi lễ ăn tạng man rợ nhất Đông Nam Á.',
         status: CinemaMovieStatus.imax,
         formats: const ['IMAX 2D', '2D Phụ Đề'],
@@ -694,7 +748,12 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'GDH 559 & Broadcast Thai Television',
         genres: const ['Hài Hước', 'Lãng Mạn', 'Cổ Trang'],
         director: 'Adisorn Tresirikasem',
-        cast: const ['Pope Thanavat', 'Bella Ranee', 'Ice Paris', 'Nonkul Chanon'],
+        cast: const [
+          'Pope Thanavat',
+          'Bella Ranee',
+          'Ice Paris',
+          'Nonkul Chanon',
+        ],
         synopsis: 'Kiếp sau của cặp đôi định mệnh Dech và Karaket ở thời kỳ đầu vương triều Rattanakosin. Chàng Bhop tin rằng cô gái xinh đẹp xuất hiện trong giấc mơ của mình chính là định mệnh kiếp trước, tạo nên vô số tình huống tán tỉnh hài hước dở khóc dở cười.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -716,7 +775,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'GDH 559',
         genres: const ['Giật Gân', 'Tội Phạm', 'Học Đường'],
         director: 'Nattawut Poonpiriya',
-        cast: const ['Chutimon Chuengcharoensukying', 'Chanon Santinatornkul', 'Teeradon Supapunpinyo'],
+        cast: const [
+          'Chutimon Chuengcharoensukying',
+          'Chanon Santinatornkul',
+          'Teeradon Supapunpinyo',
+        ],
         synopsis: 'Lynn – nữ sinh học bổng thiên tài vạch ra đường dây quay cóp kỳ thi quốc tế STIC xuyên múi giờ trị giá hàng triệu Baht. Một tác phẩm giật gân kịch tính nghẹt thở biến phòng thi thành đấu trường trí tuệ sinh tử.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề', 'IMAX 2D'],
@@ -804,7 +867,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Trấn Thành Town & CJ HK Entertainment',
         genres: const ['Tâm Lý', 'Gia Đình', 'Hài Hước'],
         director: 'Trấn Thành',
-        cast: const ['Trấn Thành', 'Uyển Ân', 'Song Luân', 'Lê Giang', 'NSND Ngọc Giàu'],
+        cast: const [
+          'Trấn Thành',
+          'Uyển Ân',
+          'Song Luân',
+          'Lê Giang',
+          'NSND Ngọc Giàu',
+        ],
         synopsis: 'Bà Nữ làm nghề bán bánh canh cua gia truyền, một mình chèo chống gia đình 3 thế hệ phụ nữ. Sự áp đặt và kỳ vọng khắt khe của bà khiến con gái út Nhi luôn khao khát thoát ly để tự do yêu đương, dẫn đến những xung đột gia đình gay gắt nhưng chân thực đến rơi nước mắt.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -826,7 +895,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Trấn Thành Town & HKFilm',
         genres: const ['Tình Cảm', 'Gia Đình', 'Chữa Lành'],
         director: 'Vũ Ngọc Đãng, Trấn Thành',
-        cast: const ['Trấn Thành', 'Tuấn Trần', 'NSND Ngọc Giàu', 'Lan Phương', 'Hoàng Mèo'],
+        cast: const [
+          'Trấn Thành',
+          'Tuấn Trần',
+          'NSND Ngọc Giàu',
+          'Lan Phương',
+          'Hoàng Mèo',
+        ],
         synopsis: 'Câu chuyện về tình cha con trong con hẻm nghèo xóm lao động Sài Gòn. Ba Sang thương con nhưng bảo thủ, vụng về trong cách thể hiện tình cảm, còn Quắn đại diện cho thế hệ trẻ tự lập và bốc đồng. Một tác phẩm điện ảnh chạm tới nơi sâu thẳm nhất tình phụ tử.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -848,7 +923,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: '1984 Pictures',
         genres: const ['Hài Hước', 'Lãng Mạn', 'Xuyên Không'],
         director: 'Đoàn Nhất Trung',
-        cast: const ['Anh Tú', 'Diệu Nhi', 'Ngọc Phước', 'Quốc Khánh', 'Lê Giang'],
+        cast: const [
+          'Anh Tú',
+          'Diệu Nhi',
+          'Ngọc Phước',
+          'Quốc Khánh',
+          'Lê Giang',
+        ],
         synopsis: 'Phúc – chàng diễn viên quần chúng mồ côi gặp tai nạn bất ngờ rơi vào dòng xoáy thời gian trở về Sài Gòn năm 1997. Tại đây, anh gặp gỡ Huyền và phát hiện ra bí mật cuộc đời mình cùng tình mẫu tử thiêng liêng mà anh chưa từng được biết.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -914,7 +995,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'F35 Studio',
         genres: const ['Kinh Dị', 'Tâm Linh', 'Dân Gian'],
         director: 'Lưu Thành Luân',
-        cast: const ['Quang Tuấn', 'Nam Thư', 'NSND Kim Xuân', 'Quốc Quân', 'Mie'],
+        cast: const [
+          'Quang Tuấn',
+          'Nam Thư',
+          'NSND Kim Xuân',
+          'Quốc Quân',
+          'Mie',
+        ],
         synopsis: 'Lấy cảm hứng từ truyền thuyết đô thị ghê rợn "Chó đội nón mê" của người Việt. Sau cái chết bất đắc kỳ tử của ông chủ lò mổ chó, gia đình bắt đầu bị một thế lực tà ác mang hình hài linh cẩu trắng quấy nhiễu, trừng phạt từng thành viên theo luật nhân quả báo ứng rùng rợn.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề'],
@@ -936,7 +1023,13 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'HKFilm & Galaxy Studio',
         genres: const ['Phiêu Lưu', 'Lịch Sử', 'Gia Đình'],
         director: 'Nguyễn Quang Dũng',
-        cast: const ['Hạo Khang', 'Tuấn Trần', 'Trấn Thành', 'Tiến Luật', 'Băng Di'],
+        cast: const [
+          'Hạo Khang',
+          'Tuấn Trần',
+          'Trấn Thành',
+          'Tiến Luật',
+          'Băng Di',
+        ],
         synopsis: 'Hành trình lưu lạc tìm cha đầy cảm xúc của cậu bé An giữa thiên nhiên Nam Bộ trù phú, hào sảng những năm đầu thế kỷ 20. Trên đường đi, An kết bạn với Út Lục Lâm, bác Ba Phi và hòa mình vào phong trào yêu nước kiên cường của người dân Nam Kỳ.',
         status: CinemaMovieStatus.imax,
         formats: const ['IMAX 2D', '2D Lồng Tiếng'],
@@ -1069,7 +1162,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'GDH 559',
         genres: const ['Hài Hước', 'Đấu Trí', 'Lãng Mạn'],
         director: 'Mez Tharatorn',
-        cast: const ['Nadech Kugimiya', 'Baifern Pimchanok', 'Thiti Mahayotaruk'],
+        cast: const [
+          'Nadech Kugimiya',
+          'Baifern Pimchanok',
+          'Thiti Mahayotaruk',
+        ],
         synopsis: 'Ina – cô nàng nhân viên ngân hàng ngây thơ bị bạn trai cũ lừa một khoản tiền lớn. Cô bắt tay với Tower – một siêu lừa đảo đào hoa chuyên nghiệp để lên kế hoạch "gài bẫy" trả đũa gã tình cũ bạc bẽo trong một phi vụ triệu Baht cười ra nước mắt.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -1091,7 +1188,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Five Star Production',
         genres: const ['Kinh Dị', 'Hài Hước', 'Tâm Linh'],
         director: 'Phontharis Chotkijsadarsopon',
-        cast: const ['Mean Phiravich', 'Tar Atiwat', 'Witawat Rattanaboonbaramee'],
+        cast: const [
+          'Mean Phiravich',
+          'Tar Atiwat',
+          'Witawat Rattanaboonbaramee',
+        ],
         synopsis: 'Thương hiệu kinh dị hài lầy lội số 1 xứ Chùa Vàng trở lại. Lần này, lời nguyền mặt nạ quỷ Nak trỗi dậy tại ngôi đền cổ xưa, khiến bộ ba bạn thân phải bước vào cuộc đào tẩu tâm linh vừa rùng rợn vừa cười nghiêng ngả.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Lồng Tiếng', '2D Phụ Đề'],
@@ -1113,7 +1214,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'GDH 559 & Showbox',
         genres: const ['Kinh Dị', 'Tâm Linh', 'Giả Tài Liệu'],
         director: 'Banjong Pisanthanakun',
-        cast: const ['Narilya Gulmongkolpech', 'Sawanee Utoomma', 'Sirani Yankittikan'],
+        cast: const [
+          'Narilya Gulmongkolpech',
+          'Sawanee Utoomma',
+          'Sirani Yankittikan',
+        ],
         synopsis: 'Tác phẩm hợp tác lịch sử giữa bậc thầy kinh dị Thái Lan và đạo diễn Hàn Quốc Na Hong-jin. Bộ phim theo chân đoàn làm phim tài liệu theo dõi bà đồng Nim tại vùng Isan hoang sơ, cho đến khi cháu gái Mink bắt đầu có những biểu hiện bị quỷ dữ chiếm đoạt thể xác tàn bạo.',
         status: CinemaMovieStatus.imax,
         formats: const ['IMAX 2D', '2D Phụ Đề'],
@@ -1179,7 +1284,11 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         productionStudio: 'Transformation Films',
         genres: const ['Kinh Dị', 'Lãng Mạn', 'Dân Gian'],
         director: 'Sitisiri Mongkolsiri',
-        cast: const ['Oabnithi Wiwattanawarang', 'Phantira Pipityakorn', 'Sapol Assawamunkong'],
+        cast: const [
+          'Oabnithi Wiwattanawarang',
+          'Phantira Pipityakorn',
+          'Sapol Assawamunkong',
+        ],
         synopsis: 'Dựa trên truyền thuyết kinh dị nổi tiếng Krasue của Thái Lan. Ban ngày Sai là thiếu nữ xinh đẹp hiền lành, nhưng khi màn đêm buông xuống, đầu và ruột cô tách rời khỏi cơ thể bay đi săn mồi trong sự giằng xé giữa tình yêu và bản năng ma quái.',
         status: CinemaMovieStatus.nowShowing,
         formats: const ['2D Phụ Đề'],
@@ -1195,7 +1304,8 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
         movieTitle: 'Án Mạng Xém Hoàn Hảo',
         posterUrl: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600',
         theaterName: 'CineFlix Thiso Mall Sala',
-        theaterAddress: 'Tầng 3, Thiso Mall Sala, 10 Mai Chí Thọ, TP Thủ Đức, TP.HCM',
+        theaterAddress:
+            'Tầng 3, Thiso Mall Sala, 10 Mai Chí Thọ, TP Thủ Đức, TP.HCM',
         hallName: 'VIP - LAURUS',
         format: '2D Phụ Đề',
         showtime: '14:45',
@@ -1356,7 +1466,8 @@ Thiết kế mỹ thuật và trang phục phi hành gia được đầu tư ch�
       final colCount = (type == SeatType.sweetbox) ? 10 : 14;
       for (int c = 1; c <= colCount; c++) {
         // Một số ghế đã bán
-        final isReserved = (r == 4 && (c == 6 || c == 7 || c == 8)) ||
+        final isReserved =
+            (r == 4 && (c == 6 || c == 7 || c == 8)) ||
             (r == 5 && (c == 7 || c == 8)) ||
             (r == 2 && c == 4);
 

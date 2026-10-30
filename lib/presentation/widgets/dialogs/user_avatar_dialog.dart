@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -10,11 +11,7 @@ import '../brand/user_avatar_circle.dart';
 import '../glass/glass_button.dart';
 
 /// Các chế độ chọn nguồn ảnh đại diện
-enum _AvatarSourceMode {
-  preset,
-  device,
-  url,
-}
+enum _AvatarSourceMode { preset, device, url }
 
 /// Modal quản lý ảnh đại diện chân dung & hồ sơ
 /// Cho phép người dùng:
@@ -114,7 +111,8 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       setState(() => _isPicking = true);
-      final picker = widget.customPicker ??
+      final picker =
+          widget.customPicker ??
           UserAvatarDialog.globalImagePicker ??
           ImagePicker();
 
@@ -228,9 +226,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
       decoration: const BoxDecoration(
         color: Color(0xFF181B22),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: Colors.white12, width: 0.8),
-        ),
+        border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
       ),
       padding: EdgeInsets.fromLTRB(20, 12, 20, 24 + bottomInset),
       child: SingleChildScrollView(
@@ -259,7 +255,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                   'Ảnh đại diện chân dung',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -278,21 +274,22 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                 children: [
                   UserAvatarCircle(
                     size: 90,
-                    avatarType: _sourceMode == _AvatarSourceMode.url &&
+                    avatarType:
+                        _sourceMode == _AvatarSourceMode.url &&
                             _urlController.text.trim().isNotEmpty
                         ? 'url'
                         : (_sourceMode == _AvatarSourceMode.device &&
-                                _deviceImageBytes == null &&
-                                _selectedValue.length < 50)
-                            ? 'preset'
-                            : _selectedType,
+                              _deviceImageBytes == null &&
+                              _selectedValue.length < 50)
+                        ? 'preset'
+                        : _selectedType,
                     avatarValue: _sourceMode == _AvatarSourceMode.url
                         ? _urlController.text.trim()
                         : (_sourceMode == _AvatarSourceMode.device &&
-                                _deviceImageBytes == null &&
-                                _selectedValue.length < 50)
-                            ? '🐼'
-                            : _selectedValue,
+                              _deviceImageBytes == null &&
+                              _selectedValue.length < 50)
+                        ? '🐼'
+                        : _selectedValue,
                     imageBytes: _sourceMode == _AvatarSourceMode.device
                         ? _deviceImageBytes
                         : null,
@@ -311,10 +308,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                   const SizedBox(height: 2),
                   const Text(
                     'Đang hoạt động',
-                    style: TextStyle(
-                      color: AppColors.success,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.success, fontSize: 12),
                   ),
                 ],
               ),
@@ -409,8 +403,8 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                 ),
                 itemBuilder: (context, index) {
                   final item = _presetAvatars[index];
-                  final isSelected = _selectedValue == item.emoji &&
-                      _selectedType == 'preset';
+                  final isSelected =
+                      _selectedValue == item.emoji && _selectedType == 'preset';
 
                   return GestureDetector(
                     onTap: () {
@@ -436,9 +430,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                       child: Center(
                         child: Text(
                           item.emoji,
-                          style: TextStyle(
-                            fontSize: isSelected ? 24 : 20,
-                          ),
+                          style: TextStyle(fontSize: isSelected ? 24 : 20),
                         ),
                       ),
                     ),
@@ -462,25 +454,32 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                       (_selectedType == 'file' && _selectedValue.length > 50))
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.20),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.success.withValues(alpha: 0.5)),
+                          color: AppColors.success.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle_rounded,
-                              size: 12, color: AppColors.success),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 12,
+                            color: AppColors.success,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Đã chọn ảnh',
                             style: TextStyle(
-                                color: AppColors.success,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600),
+                              color: AppColors.success,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -498,8 +497,9 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                       icon: Icons.photo_library_rounded,
                       style: GlassButtonStyle.brandRed,
                       height: 42,
-                      onPressed:
-                          _isPicking ? null : () => _pickImage(ImageSource.gallery),
+                      onPressed: _isPicking
+                          ? null
+                          : () => _pickImage(ImageSource.gallery),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -509,8 +509,9 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                       icon: Icons.camera_alt_rounded,
                       style: GlassButtonStyle.neutralDark,
                       height: 42,
-                      onPressed:
-                          _isPicking ? null : () => _pickImage(ImageSource.camera),
+                      onPressed: _isPicking
+                          ? null
+                          : () => _pickImage(ImageSource.camera),
                     ),
                   ),
                 ],
@@ -537,14 +538,14 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.red),
+                              AppColors.red,
+                            ),
                           ),
                         ),
                         SizedBox(width: 12),
                         Text(
                           'Đang xử lý ảnh từ thiết bị...',
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 13),
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -574,8 +575,10 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                                 width: 48,
                                 height: 48,
                                 color: Colors.white10,
-                                child: const Icon(Icons.image,
-                                    color: Colors.white70),
+                                child: const Icon(
+                                  Icons.image,
+                                  color: Colors.white70,
+                                ),
                               ),
                       ),
                       const SizedBox(width: 12),
@@ -587,7 +590,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                               'Ảnh chân dung thiết bị',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 13.5,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -596,15 +599,18 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                               'Sẵn sàng • Tự căn chỉnh vừa vặn khuôn tròn',
                               style: TextStyle(
                                 color: Colors.white54,
-                                fontSize: 11.5,
+                                fontSize: 12,
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.refresh_rounded,
-                            color: Colors.white70, size: 22),
+                        icon: const Icon(
+                          Icons.refresh_rounded,
+                          color: Colors.white70,
+                          size: 22,
+                        ),
                         tooltip: 'Chọn ảnh khác',
                         onPressed: () => _pickImage(ImageSource.gallery),
                       ),
@@ -622,10 +628,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white24,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.white24, width: 1),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -645,7 +648,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                                 'Chạm để tải ảnh từ thiết bị',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13.5,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -654,7 +657,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                                 'Hỗ trợ JPG, PNG, WebP • Tự động nén & tối ưu',
                                 style: TextStyle(
                                   color: Colors.white38,
-                                  fontSize: 11.5,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
@@ -680,19 +683,25 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
               const SizedBox(height: 6),
               TextField(
                 controller: _urlController,
-                style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.08),
                   hintText: 'https://example.com/my-photo.jpg',
                   hintStyle: const TextStyle(color: Colors.white38),
-                  prefixIcon: const Icon(Icons.image_outlined,
-                      color: Colors.white54, size: 20),
+                  prefixIcon: const Icon(
+                    Icons.image_outlined,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
                   suffixIcon: _urlController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: Colors.white54, size: 18),
+                          icon: const Icon(
+                            Icons.clear,
+                            color: Colors.white54,
+                            size: 18,
+                          ),
                           onPressed: () {
                             _urlController.clear();
                             setState(() {});
@@ -703,8 +712,10 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -750,8 +761,7 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: Color(g.color)
-                                      .withValues(alpha: 0.60),
+                                  color: Color(g.color).withValues(alpha: 0.60),
                                   blurRadius: 10,
                                   spreadRadius: 2,
                                 ),
@@ -759,8 +769,11 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                             : null,
                       ),
                       child: isSelected
-                          ? const Icon(Icons.check,
-                              color: Colors.white, size: 18)
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 18,
+                            )
                           : null,
                     ),
                   ),
@@ -804,8 +817,11 @@ class _UserAvatarDialogState extends State<UserAvatarDialog> {
                   Navigator.pop(context);
                   context.push('/profiles');
                 },
-                icon: const Icon(Icons.manage_accounts_rounded,
-                    size: 18, color: Colors.white60),
+                icon: const Icon(
+                  Icons.manage_accounts_rounded,
+                  size: 18,
+                  color: Colors.white60,
+                ),
                 label: const Text(
                   'Chuyển đổi hoặc quản lý danh sách hồ sơ',
                   style: TextStyle(color: Colors.white70, fontSize: 13),

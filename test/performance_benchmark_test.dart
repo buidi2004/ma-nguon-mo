@@ -164,6 +164,11 @@ void main() {
 
       // Cleanly teardown widget tree to cancel continuous shimmer animations
       await tester.pumpWidget(const SizedBox());
+      // `_SimilarMoviesSliver` tải phim tương tự qua
+      // `PocketBaseService.getMovies()`, vốn bọc `.timeout(10s)`. Trong
+      // môi trường test không có mạng nên Future chỉ kết thúc khi timeout chạy;
+      // nhảy qua mốc 10s để không còn Timer treo khi test kết thúc.
+      await tester.pump(const Duration(seconds: 11));
     });
   });
 }

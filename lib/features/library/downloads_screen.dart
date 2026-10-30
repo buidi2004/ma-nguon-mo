@@ -8,6 +8,7 @@ import '../../services/auth_guard.dart';
 import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
@@ -42,7 +43,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
       _downloadedMovies.removeWhere((m) => m.id == movieId);
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Đã xóa phim khỏi bộ nhớ thiết bị'),
         backgroundColor: AppColors.surface,
         duration: Duration(seconds: 1),
@@ -54,7 +55,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     showGlassDialog(
       context: context,
       title: 'Xóa tất cả tải xuống?',
-      content: const Text(
+      content: Text(
         'Tất cả video ngoại tuyến và bộ nhớ đệm cache sẽ được giải phóng hoàn toàn.',
         style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
       ),
@@ -71,7 +72,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
               _downloadedMovies.clear();
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Đã giải phóng 1.4 GB bộ nhớ đệm'),
                 backgroundColor: AppColors.surface,
               ),
@@ -84,18 +85,18 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: const GlassBackButton(fallbackRoute: '/me'),
-        title: const Text(
+        title: Text(
           'Tệp tải xuống & Bộ nhớ',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         actions: [
@@ -133,7 +134,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'Bộ nhớ thiết bị',
                               maxLines: 1,
@@ -141,12 +142,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 15,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
+                          SizedBox(width: 8),
+                          Text(
                             'Trống 38.4 GB',
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -202,8 +203,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Text(
+                              SizedBox(width: 6),
+                              Text(
                                 'OpenFlix (1.4 GB)',
                                 style: TextStyle(
                                   color: AppColors.textSecondary,
@@ -218,13 +219,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: Colors.blueGrey,
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Text(
+                              SizedBox(width: 6),
+                              Text(
                                 'Khác (24.2 GB)',
                                 style: TextStyle(
                                   color: AppColors.textSecondary,
@@ -239,13 +240,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: Colors.white24,
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Text(
+                              SizedBox(width: 6),
+                              Text(
                                 'Còn trống',
                                 style: TextStyle(
                                   color: AppColors.textSecondary,
@@ -276,10 +277,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       '${_downloadedMovies.length} mục',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -298,8 +299,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                           size: 56,
                           color: AppColors.textMuted.withValues(alpha: 0.6),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
+                        SizedBox(height: 16),
+                        Text(
                           'Chưa có video tải xuống',
                           style: TextStyle(
                             color: Colors.white,
@@ -307,8 +308,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        const Text(
+                        SizedBox(height: 6),
+                        Text(
                           'Tải các bộ phim yêu thích để xem ngoại tuyến mọi lúc mọi nơi.',
                           style: TextStyle(
                             color: AppColors.textSecondary,
@@ -385,13 +386,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                        fontSize: 15,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Wrap(
+                                    SizedBox(height: 4),
+                                    Wrap(
                                       spacing: 6,
                                       children: [
                                         Text(
@@ -431,9 +432,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.wifi, color: Colors.white70),
-                  title: const Text(
+                  title: Text(
                     'Chỉ tải qua Wi-Fi',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 15,
+                    ),
                   ),
                   trailing: Switch(
                     value: true,
@@ -443,22 +447,25 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.high_quality_outlined,
                     color: Colors.white70,
                   ),
-                  title: const Text(
+                  title: Text(
                     'Chất lượng video tải xuống',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 15,
+                    ),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Tiêu chuẩn (1080p)',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
-                  trailing: const Icon(
+                  trailing: Icon(
                     Icons.chevron_right,
                     color: AppColors.textMuted,
                   ),
@@ -466,6 +473,6 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 ),
               ],
             ),
-    );
+    ));
   }
 }

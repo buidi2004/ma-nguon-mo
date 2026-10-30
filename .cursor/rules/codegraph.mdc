@@ -1,0 +1,21 @@
+---
+description: CodeGraph semantic intelligence rules
+globs: *
+alwaysApply: true
+---
+
+# CodeGraph — QUY TẮC BẮT BUỘC: ĐỌC VÀ SỬ DỤNG TRƯỚC KHI THỰC HIỆN BẤT KỲ CÔNG VIỆC NÀO
+
+> [!IMPORTANT]
+> **QUY TẮC BẮT BUỘC DÀNH CHO TẤT CẢ AI AGENT:**
+> Dự án này đã được lập chỉ mục Semantic Code Intelligence bằng **CodeGraph** (thư mục `.codegraph/`).
+> Trước khi thực hiện bất kỳ việc đọc file, tìm kiếm `grep/find`, chỉnh sửa code hoặc refactor nào, AI Agent **BẮT BUỘC** phải tham khảo và sử dụng CodeGraph để nắm bắt toàn diện cấu trúc codebase, call graph, quan hệ phụ thuộc giữa các file và tầm ảnh hưởng (impact):
+>
+> 1. **Truy vấn ngữ cảnh & luồng gọi hàm:**
+>    - Sử dụng công cụ MCP `codegraph_explore` (hoặc lệnh shell `codegraph explore "<câu hỏi, tên hàm, class, hoặc route>"`) để nhận đầy đủ mã nguồn verbatim và luồng gọi chính xác chỉ trong 1 lần gọi duy nhất.
+> 2. **Tìm kiếm ký hiệu (Symbols/Classes/Methods):**
+>    - Dùng `codegraph query "<tên ký hiệu>"` hoặc công cụ `codegraph_node` để định vị tức thì định nghĩa, vị trí khai báo và cách sử dụng.
+> 3. **Phân tích tác động trước khi sửa code (Blast Radius):**
+>    - Trước khi sửa bất kỳ hàm, class, model hay API nào, chạy `codegraph impact "<tên symbol hoặc file>"` để biết chính xác những file/màn hình nào sẽ bị ảnh hưởng, tuyệt đối tránh gây lỗi hồi quy (regression bugs).
+> 4. **Trực quan hóa & Ngữ cảnh nhiệm vụ:**
+>    - Dùng `codegraph context "<mô tả công việc>"` hoặc `codegraph status` để thu thập ngữ cảnh toàn diện trước khi thực thi.

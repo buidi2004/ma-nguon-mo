@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
 import '../../../services/theme_service.dart';
 import '../brand/app_brand_logo.dart';
 import 'openflix_morph_icon.dart';
-
 
 /// Modal Pop-up Chiến Dịch Ưu Đãi tái tạo chuẩn 100% theo phong cách Pop-up CGV.
 ///
@@ -25,11 +25,7 @@ class GlassTrialPromoModal extends StatelessWidget {
   /// Callback khi người dùng bấm nút đóng "X" hoặc chạm ra ngoài.
   final VoidCallback? onDismiss;
 
-  const GlassTrialPromoModal({
-    super.key,
-    this.onSubscribe,
-    this.onDismiss,
-  });
+  const GlassTrialPromoModal({super.key, this.onSubscribe, this.onDismiss});
 
   /// Hiển thị modal ưu đãi với hiệu ứng Fade + Scale mượt mà.
   static Future<void> show(
@@ -157,11 +153,7 @@ class GlassTrialPromoModal extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Icon(
-              Icons.close_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: Icon(Icons.close_rounded, color: Colors.white, size: 24),
           ),
         ),
       ),
@@ -208,16 +200,13 @@ class GlassTrialPromoModal extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const AppBrandLogo.small(
-                    iconSize: 22,
-                    fontSize: 16,
-                  ),
+                  const AppBrandLogo.small(iconSize: 22, fontSize: 16),
                   Text(
                     '*',
                     style: TextStyle(
                       color: ThemeService.instance.primaryColor,
                       fontWeight: FontWeight.w900,
-                      fontSize: 18,
+                      fontSize: 17,
                       height: 1.0,
                     ),
                   ),
@@ -255,7 +244,10 @@ class GlassTrialPromoModal extends StatelessWidget {
 
               // 3. Badge 3D nổi "DEAL GIẢM ĐẾN"
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFF4081), Color(0xFFE91E63)],
@@ -298,7 +290,7 @@ class GlassTrialPromoModal extends StatelessWidget {
                 '*Áp dụng khi mua Gói thành viên hoặc Thẻ Quà Tặng OpenFlix',
                 style: TextStyle(
                   color: Color(0xFFC2185B),
-                  fontSize: 9.5,
+                  fontSize: 11,
                   fontStyle: FontStyle.italic,
                   letterSpacing: 0.2,
                 ),
@@ -320,7 +312,7 @@ class GlassTrialPromoModal extends StatelessWidget {
         Text(
           '100.000Đ',
           style: TextStyle(
-            fontSize: 35,
+            fontSize: 34,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.0,
             foreground: Paint()
@@ -332,11 +324,7 @@ class GlassTrialPromoModal extends StatelessWidget {
         // Lớp gradient chữ hồng sáng bóng
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [
-              Color(0xFFFFFFFF),
-              Color(0xFFFF80AB),
-              Color(0xFFE91E63),
-            ],
+            colors: [Color(0xFFFFFFFF), Color(0xFFFF80AB), Color(0xFFE91E63)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(bounds),
@@ -344,7 +332,7 @@ class GlassTrialPromoModal extends StatelessWidget {
             '100.000Đ',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 35,
+              fontSize: 34,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.0,
               shadows: [
@@ -435,10 +423,7 @@ class GlassTrialPromoModal extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFFF80AB),
-                    Color(0xFFF06292),
-                  ],
+                  colors: [Color(0xFFFF80AB), Color(0xFFF06292)],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -461,17 +446,16 @@ class GlassTrialPromoModal extends StatelessWidget {
                   ),
 
                   // Nơ ruy-băng lụa vàng thắt ở góc phải
-                  Positioned(
-                    right: 8,
-                    top: 14,
-                    child: _buildYellowRibbonBow(),
-                  ),
+                  Positioned(right: 8, top: 14, child: _buildYellowRibbonBow()),
 
                   // Viên thuốc thời gian sự kiện: Thời gian: 12/10 - 20/10
                   Positioned(
                     bottom: 14,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -529,10 +513,7 @@ class GlassTrialPromoModal extends StatelessWidget {
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withAlpha(120),
-          width: 1.0,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(120), width: 1.0),
       ),
       child: Stack(
         children: [
@@ -573,7 +554,7 @@ class GlassTrialPromoModal extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white.withAlpha(220),
                     fontWeight: FontWeight.bold,
-                    fontSize: 8.5,
+                    fontSize: 11,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -641,17 +622,14 @@ class GlassTrialPromoModal extends StatelessWidget {
                 offset: const Offset(0, 5),
               ),
             ],
-            border: Border.all(
-              color: Colors.white,
-              width: 1.8,
-            ),
+            border: Border.all(color: Colors.white, width: 1.8),
           ),
           child: const Center(
             child: Text(
               'MUA NGAY',
               style: TextStyle(
                 color: Color(0xFFC2185B), // Đỏ hồng đậm tương phản hoàn hảo
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2.0,
                 shadows: [

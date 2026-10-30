@@ -30,28 +30,36 @@ class GlassOpticalTokens {
   static const double actionButtonBlur = 12.0;
   static const double actionButtonSnell = 1.35;
   static const double actionButtonRadius = 10.0;
-  static const Color actionButtonRim = Color(0x1FFFFFFF); // rgba(255,255,255, 0.12)
+  static const Color actionButtonRim = Color(
+    0x1FFFFFFF,
+  ); // rgba(255,255,255, 0.12)
 
   // 2. GlassChipButton (34 px Capsule)
   static const double chipButtonHeight = 34.0;
   static const double chipButtonBlur = 8.0;
   static const double chipButtonSnell = 1.25;
   static const double chipButtonRadius = 17.0;
-  static const Color chipButtonRim = Color(0x26FFFFFF); // rgba(255,255,255, 0.15)
+  static const Color chipButtonRim = Color(
+    0x26FFFFFF,
+  ); // rgba(255,255,255, 0.15)
 
   // 3. GlassDestructiveButton (44-48 px)
   static const double destructiveButtonHeight = 48.0;
   static const double destructiveButtonBlur = 14.0;
   static const double destructiveButtonSnell = 1.40;
   static const double destructiveButtonRadius = 12.0;
-  static const Color destructiveButtonRim = Color(0x59E50914); // rgba(229,9,20, 0.35)
+  static const Color destructiveButtonRim = Color(
+    0x59E50914,
+  ); // rgba(229,9,20, 0.35)
 
   // 4. GlassSegmentedControl (42 px Capsule)
   static const double segmentedControlHeight = 42.0;
   static const double segmentedControlBlur = 16.0;
   static const double segmentedControlSnell = 1.45;
   static const double segmentedControlRadius = 21.0;
-  static const Color segmentedControlRim = Color(0x1AFFFFFF); // rgba(255,255,255, 0.10)
+  static const Color segmentedControlRim = Color(
+    0x1AFFFFFF,
+  ); // rgba(255,255,255, 0.10)
 
   // 5. GlassFAB (56 x 56 px Circle)
   static const double fabSize = 56.0;
@@ -65,14 +73,18 @@ class GlassOpticalTokens {
   static const double playerPlayButtonBlur = 20.0;
   static const double playerPlayButtonSnell = 1.48;
   static const double playerPlayButtonRadius = 34.0;
-  static const Color playerPlayButtonRim = Color(0x33FFFFFF); // rgba(255,255,255, 0.20)
+  static const Color playerPlayButtonRim = Color(
+    0x33FFFFFF,
+  ); // rgba(255,255,255, 0.20)
 
   // 7. GlassMediaToolbar (48 px Capsule)
   static const double mediaToolbarHeight = 48.0;
   static const double mediaToolbarBlur = 16.0;
   static const double mediaToolbarSnell = 1.45;
   static const double mediaToolbarRadius = 24.0;
-  static const Color mediaToolbarRim = Color(0x26FFFFFF); // rgba(255,255,255, 0.15)
+  static const Color mediaToolbarRim = Color(
+    0x26FFFFFF,
+  ); // rgba(255,255,255, 0.15)
 
   // ==========================================
   // THÔNG SỐ QUANG HỌC MENU & POPUP (MENU TOKENS)

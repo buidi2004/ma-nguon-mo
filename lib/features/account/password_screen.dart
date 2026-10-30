@@ -6,6 +6,7 @@ import '../../core/widgets/primary_button.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class PasswordScreen extends StatefulWidget {
   const PasswordScreen({super.key});
@@ -84,23 +85,26 @@ class _PasswordScreenState extends State<PasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Đổi mật khẩu',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Bảo mật tài khoản',
                 style: TextStyle(
                   color: Colors.white,
@@ -108,8 +112,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 6),
-              const Text(
+              SizedBox(height: 6),
+              Text(
                 'Mật khẩu mới phải có tối thiểu 6 ký tự để bảo vệ tài khoản của bạn.',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
@@ -215,6 +219,6 @@ class _PasswordScreenState extends State<PasswordScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class GenresScreen extends StatelessWidget {
   const GenresScreen({super.key});
@@ -52,16 +53,20 @@ class GenresScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final genres = _getGenres();
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Danh mục thể loại',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: GridView.builder(
+        cacheExtent: 500.0,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16),
         itemCount: genres.length,
@@ -134,6 +139,6 @@ class GenresScreen extends StatelessWidget {
           );
         },
       ),
-    );
+    ));
   }
 }

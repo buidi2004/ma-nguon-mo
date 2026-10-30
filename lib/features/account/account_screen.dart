@@ -9,6 +9,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/auth_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -68,11 +69,11 @@ class _AccountScreenState extends State<AccountScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text(
+          title: Text(
             'Đăng xuất tài khoản',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
-          content: const Text(
+          content: Text(
             'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng OpenFlix không?',
             style: TextStyle(color: AppColors.textSecondary),
           ),
@@ -100,13 +101,16 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
-        title: const Text(
+        title: Text(
           'Thông tin tài khoản',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
@@ -121,10 +125,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
-                  const UserAvatarCircle(
-                    size: 96,
-                    showGlow: true,
-                  ),
+                  const UserAvatarCircle(size: 96, showGlow: true),
                   Positioned(
                     bottom: 0,
                     right: 0,
@@ -133,10 +134,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.85),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white38,
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: Colors.white38, width: 1.5),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.5),
@@ -159,9 +157,20 @@ class _AccountScreenState extends State<AccountScreen> {
           Center(
             child: InkWell(
               onTap: _showAvatarPicker,
-              borderRadius: BorderRadius.circular(16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: ThemeService.instance.primaryColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: ThemeService.instance.primaryColor.withValues(alpha: 0.35),
+                    width: 0.8,
+                  ),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -195,10 +204,7 @@ class _AccountScreenState extends State<AccountScreen> {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13.5,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
           ),
           const SizedBox(height: 28),
@@ -207,6 +213,7 @@ class _AccountScreenState extends State<AccountScreen> {
             controller: _nameController,
             label: 'Họ và tên hiển thị',
             prefixIcon: Icons.badge_outlined,
+            borderRadius: 24,
           ),
 
           const SizedBox(height: 16),
@@ -215,7 +222,7 @@ class _AccountScreenState extends State<AccountScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Địa chỉ Email',
                 style: TextStyle(
                   color: AppColors.textSecondary,
@@ -226,23 +233,28 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(4),
+                  color: ThemeService.instance.isWindowsBlue
+                      ? const Color(0xCC0A2433)
+                      : AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: ThemeService.instance.isWindowsBlue
+                        ? const Color(0x335AD2F4)
+                        : Colors.white12,
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   _authService.userEmail,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: const TextStyle(color: Colors.white70, fontSize: 15),
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Email liên kết tài khoản dùng để đăng nhập và bảo mật',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12),
               ),
@@ -254,6 +266,7 @@ class _AccountScreenState extends State<AccountScreen> {
           PrimaryButton.white(
             text: 'Lưu thay đổi',
             isLoading: _isLoading,
+            borderRadius: 24,
             onPressed: _handleSave,
           ),
 
@@ -265,10 +278,14 @@ class _AccountScreenState extends State<AccountScreen> {
             label: const Text('Đổi mật khẩu tài khoản'),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white24),
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              side: BorderSide(
+                color: ThemeService.instance.isWindowsBlue
+                    ? const Color(0x4D5AD2F4)
+                    : Colors.white24,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ),
@@ -280,6 +297,12 @@ class _AccountScreenState extends State<AccountScreen> {
             width: double.infinity,
             child: TextButton.icon(
               onPressed: _handleLogout,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
               icon: Icon(Icons.logout, color: AppColors.red, size: 20),
               label: Text(
                 'Đăng xuất khỏi thiết bị',
@@ -293,6 +316,6 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

@@ -5,6 +5,7 @@ import '../../core/widgets/app_text_field.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -44,18 +45,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const GlassBackButton(fallbackRoute: '/login'),
-        title: const Text(
+        title: Text(
           'Khôi phục mật khẩu',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -74,8 +75,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     color: AppColors.cardDark,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: ThemeService.instance.primaryColor
-                          .withValues(alpha: 0.3),
+                      color: ThemeService.instance.primaryColor.withValues(
+                        alpha: 0.3,
+                      ),
                       width: 2,
                     ),
                   ),
@@ -87,24 +89,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Quên mật khẩu?',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(
                 _isSent
                     ? 'Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến ${_emailController.text}. Vui lòng kiểm tra hộp thư đến (hoặc thư rác).'
                     : 'Nhập địa chỉ email liên kết với tài khoản OpenFlix của bạn để nhận hướng dẫn khôi phục quyền truy cập.',
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: 15,
                   color: AppColors.textSecondary,
                   height: 1.5,
                 ),
@@ -145,14 +147,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                SizedBox(height: 28),
                 GlassButton.neutral(
                   text: 'Quay lại đăng nhập',
                   height: 48,
                   borderRadius: 10,
                   onPressed: () => context.go('/login'),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Center(
                   child: TextButton(
                     onPressed: () {
@@ -160,7 +162,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         _isSent = false;
                       });
                     },
-                    child: const Text(
+                    child: Text(
                       'Thử với email khác',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
@@ -208,15 +210,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         context.go('/login');
                       }
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back,
                       size: 16,
-                      color: Colors.white70,
+                      color: ThemeService.instance.primaryColor,
                     ),
-                    label: const Text(
+                    label: Text(
                       'Tôi đã nhớ mật khẩu',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeService.instance.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -227,6 +229,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

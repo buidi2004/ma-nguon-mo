@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S51: Chi Tiết Bài Viết Review & Blog Điện Ảnh (Cinema Article Detail Screen) — Nền Trắng
 class CinemaArticleDetailScreen extends StatefulWidget {
@@ -30,7 +33,8 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _currentArticle = widget.article ??
+    _currentArticle =
+        widget.article ??
         CinemaService.instance.articles.firstWhere(
           (a) => a.id == widget.articleId,
           orElse: () => CinemaService.instance.articles.first,
@@ -48,8 +52,9 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -66,7 +71,7 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: Color(0xFF0284C7)),
+            icon: const Icon(Icons.share_outlined, color: Color(0xFF0369A1)),
             tooltip: 'Chia sẻ bài viết',
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -88,8 +93,10 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
             // Tiêu đề bài viết
             Text(
               _currentArticle.title,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
+              style: TextStyle(
+                color: ThemeService.instance.isWindowsBlue
+                    ? Colors.white
+                    : const Color(0xFF0F172A),
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 height: 1.35,
@@ -104,24 +111,28 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
               children: [
                 const CircleAvatar(
                   radius: 12,
-                  backgroundColor: Color(0xFF0284C7),
+                  backgroundColor: Color(0xFF0369A1),
                   child: Icon(Icons.person, color: Colors.white, size: 14),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _currentArticle.author,
-                    style: const TextStyle(
-                      color: Color(0xFF334155),
-                      fontSize: 12.5,
+                    style: TextStyle(
+                      color: ThemeService.instance.isWindowsBlue
+                          ? const Color(0xFFE2F1FF)
+                          : const Color(0xFF334155),
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Text(
                   '${_currentArticle.viewsCount} lượt xem',
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                  style: TextStyle(
+                    color: ThemeService.instance.isWindowsBlue
+                        ? const Color(0xFFD6EBFC)
+                        : const Color(0xFF64748B),
                     fontSize: 12,
                   ),
                 ),
@@ -135,9 +146,22 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
               borderRadius: BorderRadius.circular(12),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  _currentArticle.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: _currentArticle.imageUrl,
                   fit: BoxFit.cover,
+                  memCacheWidth: 720,
+                  maxWidthDiskCache: 1080,
+                  placeholder: (ctx, url) => Container(color: const Color(0xFF1E293B)),
+                  errorWidget: (ctx, url, err) => Container(
+                    color: const Color(0xFF1E293B),
+                    child: const Center(
+                      child: Icon(
+                        Icons.article_rounded,
+                        color: Colors.white38,
+                        size: 40,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -151,14 +175,14 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
                 color: const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(8),
                 border: const Border(
-                  left: BorderSide(color: Color(0xFF0284C7), width: 4),
+                  left: BorderSide(color: Color(0xFF0369A1), width: 4),
                 ),
               ),
               child: Text(
                 _currentArticle.excerpt,
                 style: const TextStyle(
                   color: Color(0xFF334155),
-                  fontSize: 13.5,
+                  fontSize: 13,
                   fontStyle: FontStyle.italic,
                   height: 1.45,
                 ),
@@ -170,15 +194,22 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
             // Nội dung chi tiết bài viết
             Text(
               _currentArticle.content,
-              style: const TextStyle(
-                color: Color(0xFF1E293B),
-                fontSize: 14.5,
+              style: TextStyle(
+                color: ThemeService.instance.isWindowsBlue
+                    ? Colors.white
+                    : const Color(0xFF1E293B),
+                fontSize: 15,
                 height: 1.65,
               ),
             ),
 
             const SizedBox(height: 24),
-            Divider(color: Colors.grey.shade200, height: 1),
+            Divider(
+              color: ThemeService.instance.isWindowsBlue
+                  ? Colors.white24
+                  : Colors.grey.shade200,
+              height: 1,
+            ),
             const SizedBox(height: 16),
 
             // Nút Thích bài viết
@@ -189,7 +220,9 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: _isLiked
                           ? const Color(0xFF1877F2)
@@ -206,14 +239,20 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
                       children: [
                         Icon(
                           Icons.thumb_up_rounded,
-                          color: _isLiked ? Colors.white : const Color(0xFF64748B),
+                          color: _isLiked
+                              ? Colors.white
+                              : const Color(0xFF64748B),
                           size: 16,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _isLiked ? 'Đã thích ($_likesCount)' : 'Thích ($_likesCount)',
+                          _isLiked
+                              ? 'Đã thích ($_likesCount)'
+                              : 'Thích ($_likesCount)',
                           style: TextStyle(
-                            color: _isLiked ? Colors.white : const Color(0xFF334155),
+                            color: _isLiked
+                                ? Colors.white
+                                : const Color(0xFF334155),
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -247,25 +286,29 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
           width: double.infinity,
           height: 46,
           child: ElevatedButton.icon(
-            icon: const Icon(Icons.confirmation_num_rounded,
-                color: Colors.white, size: 20),
+            icon: const Icon(
+              Icons.confirmation_num_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
             label: const Text(
               'ĐẶT VÉ PHIM NÀY NGAY',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 14.5,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
               ),
             ),
             onPressed: () {
               HapticFeedback.lightImpact();
-              final movieId = _currentArticle.relatedMovieId ??
+              final movieId =
+                  _currentArticle.relatedMovieId ??
                   CinemaService.instance.movies.first.id;
               context.push('/cinema/movie/$movieId');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
+              backgroundColor: const Color(0xFFC2410C),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -274,6 +317,7 @@ class _CinemaArticleDetailScreenState extends State<CinemaArticleDetailScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

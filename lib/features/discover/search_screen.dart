@@ -10,6 +10,7 @@ import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/pocketbase_service.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
@@ -180,8 +181,8 @@ class _SearchScreenState extends State<SearchScreen>
     final isSearching = _searchController.text.trim().isNotEmpty;
     final topPadding = MediaQuery.paddingOf(context).top;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    final scaffold = Scaffold(
+      backgroundColor: AppColors.scaffoldBackground,
       body: SafeArea(
         top: false,
         bottom: false,
@@ -200,6 +201,7 @@ class _SearchScreenState extends State<SearchScreen>
         ),
       ),
     );
+    return WavesBackground.wrapIfBlue(scaffold);
   }
 
   /// Tiêu đề "Tìm kiếm" và Thanh tìm kiếm kính mờ bo tròn (Glass Capsule)
@@ -219,7 +221,7 @@ class _SearchScreenState extends State<SearchScreen>
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                   ),
@@ -234,11 +236,23 @@ class _SearchScreenState extends State<SearchScreen>
               ),
             ],
           ),
-          // Thanh tìm kiếm kính mờ thích ứng quang học
-          GlassDynamicSearchBar(
+          const SizedBox(height: 12),
+          // Thanh tìm kiếm viền sáng quang học BorderBeam tích hợp cụm nút tìm kiếm viên thuốc
+          BorderBeamSearchBar(
             controller: _searchController,
+            debounceDuration: Duration.zero,
             onChanged: _onSearchChanged,
+            onSubmitted: (query) => _onSearchChanged(query, immediate: true),
+            onCancelTap: () {
+              setState(() {
+                _searchController.clear();
+                _searchResults = [];
+              });
+            },
             hintText: 'Tên phim, diễn viên, thể loại',
+            showSearchButton: true,
+            searchButtonLabel: 'Tìm',
+            showCancelButton: true,
           ),
         ],
       ),
@@ -252,6 +266,7 @@ class _SearchScreenState extends State<SearchScreen>
         : _allGenres.take(6).toList();
 
     return CustomScrollView(
+      cacheExtent: 500.0,
       physics: const BouncingScrollPhysics(),
       slivers: [
         // 1. Lưới 2 cột các thẻ Thể Loại (Genre Cards)
@@ -303,7 +318,7 @@ class _SearchScreenState extends State<SearchScreen>
                         _isCategoriesExpanded ? 'Thu gọn' : 'Xem thêm',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -323,7 +338,7 @@ class _SearchScreenState extends State<SearchScreen>
               'Có thể bạn quan tâm',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.2,
               ),
@@ -399,17 +414,24 @@ class _SearchScreenState extends State<SearchScreen>
                   top: 0,
                   bottom: 0,
                   width: 105,
-                  child: Opacity(
-                    opacity: 0.85,
-                    child: CachedNetworkImage(
-                      imageUrl: genre.imageUrl,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.centerRight,
-                      memCacheWidth: 260,
-                      memCacheHeight: 180,
-                      placeholder: (_, _) => const SizedBox.shrink(),
-                      errorWidget: (_, _, _) => const SizedBox.shrink(),
+                  child: CachedNetworkImage(
+                    imageUrl: genre.imageUrl,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.centerRight,
+                    memCacheWidth: 260,
+                    memCacheHeight: 180,
+                    imageBuilder: (context, imageProvider) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.centerRight,
+                          opacity: 0.85,
+                        ),
+                      ),
                     ),
+                    placeholder: (_, _) => const SizedBox.shrink(),
+                    errorWidget: (_, _, _) => const SizedBox.shrink(),
                   ),
                 ),
 
@@ -489,7 +511,7 @@ class _SearchScreenState extends State<SearchScreen>
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => context.push('/movie/${movie.id}'),
+        onTap: () => context.push('/movie/${movie.id}', extra: movie),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Container(
@@ -511,7 +533,7 @@ class _SearchScreenState extends State<SearchScreen>
                     memCacheWidth: 380,
                     memCacheHeight: 240,
                     placeholder: (_, _) =>
-                        const ColoredBox(color: AppColors.surfaceLight),
+                        ColoredBox(color: AppColors.surfaceLight),
                     errorWidget: (_, _, _) => Container(
                       color: AppColors.surface,
                       child: const Icon(
@@ -565,8 +587,8 @@ class _SearchScreenState extends State<SearchScreen>
   /// Badge tròn vàng rực rỡ "ĐỘC QUYỀN" chuẩn mẫu tham chiếu
   Widget _buildExclusiveBadge() {
     return Container(
-      width: 24,
-      height: 24,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
@@ -592,7 +614,7 @@ class _SearchScreenState extends State<SearchScreen>
               'ĐỘC',
               style: TextStyle(
                 color: Color(0xFFB71C1C),
-                fontSize: 6,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
                 height: 1.0,
               ),
@@ -601,7 +623,7 @@ class _SearchScreenState extends State<SearchScreen>
               'QUYỀN',
               style: TextStyle(
                 color: Color(0xFFB71C1C),
-                fontSize: 5,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
                 height: 1.0,
               ),
@@ -619,7 +641,7 @@ class _SearchScreenState extends State<SearchScreen>
   }) {
     if (isRental) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
           color: const Color(0xFF007AFF),
           borderRadius: BorderRadius.circular(3),
@@ -634,7 +656,7 @@ class _SearchScreenState extends State<SearchScreen>
           'PHIM THUÊ',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 8.5,
+            fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.2,
           ),
@@ -644,7 +666,7 @@ class _SearchScreenState extends State<SearchScreen>
 
     if (isFullSeries) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(3),
@@ -657,7 +679,7 @@ class _SearchScreenState extends State<SearchScreen>
           'TRỌN BỘ',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 8.5,
+            fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.2,
           ),
@@ -666,7 +688,7 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: ThemeService.instance.primaryColor,
         borderRadius: BorderRadius.circular(3),
@@ -675,7 +697,7 @@ class _SearchScreenState extends State<SearchScreen>
         'MỚI',
         style: TextStyle(
           color: Colors.white,
-          fontSize: 8.5,
+          fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.2,
         ),

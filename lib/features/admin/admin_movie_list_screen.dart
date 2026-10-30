@@ -10,6 +10,7 @@ import 'admin_movie_form_screen.dart';
 import 'services/admin_auth_service.dart';
 import 'widgets/admin_movie_tile.dart';
 import 'widgets/confirm_delete_dialog.dart';
+import '../../waves_background.dart';
 
 /// Màn hình Quản lý Kho Phim (AdminMovieListScreen)
 /// Trung tâm quản trị phim: tìm kiếm nhanh, lọc trạng thái, cập nhật tức thì (Optimistic update)
@@ -297,16 +298,16 @@ class _AdminMovieListScreenState extends State<AdminMovieListScreen> {
         ? 'Quản lý nội dung phim'
         : 'Quản lý nội dung phim (${_filteredMovies.length} phim)';
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: const GlassBackButton(fallbackRoute: '/home'),
+        leading: GlassBackButton(fallbackRoute: '/home'),
         title: Text(
           titleText,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -373,13 +374,13 @@ class _AdminMovieListScreenState extends State<AdminMovieListScreen> {
           Expanded(child: _buildBody()),
         ],
       ),
-    );
+    ));
   }
 
   /// Ô tìm kiếm phim tức thì có nút xóa nhanh (x)
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -388,7 +389,7 @@ class _AdminMovieListScreenState extends State<AdminMovieListScreen> {
         ),
         child: TextField(
           controller: _searchController,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
           cursorColor: AppColors.red,
           onChanged: (value) {
             setState(() {
@@ -398,18 +399,15 @@ class _AdminMovieListScreenState extends State<AdminMovieListScreen> {
           },
           decoration: InputDecoration(
             hintText: 'Tìm theo tên phim, đạo diễn...',
-            hintStyle: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
-            ),
-            prefixIcon: const Icon(
+            hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            prefixIcon: Icon(
               Icons.search,
               color: AppColors.textMuted,
               size: 20,
             ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.clear,
                       color: AppColors.textSecondary,
                       size: 18,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/theme_service.dart';
+import '../../theme/app_theme.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -18,17 +19,24 @@ class AppBottomNav extends StatelessWidget {
       listenable: ThemeService.instance,
       builder: (context, _) {
         final isWin11 = ThemeService.instance.isWindowsBlue;
-        final bg = ThemeService.instance.backgroundColor;
-        final primary = ThemeService.instance.primaryColor;
-        final textMuted = ThemeService.instance.textMuted;
-        final activeColor = isWin11 ? primary : Colors.white;
+        final isGold = ThemeService.instance.isLuxuryGold;
+        final homePalette = Theme.of(context).extension<HomeScreenPalette>();
+        final bg =
+            homePalette?.background ?? ThemeService.instance.backgroundColor;
+        final primary =
+            homePalette?.action ?? ThemeService.instance.primaryColor;
+        final textMuted =
+            homePalette?.textMuted ?? ThemeService.instance.textMuted;
+        final activeColor = (isWin11 || isGold) ? primary : Colors.white;
 
         return Container(
           decoration: BoxDecoration(
             color: bg,
             border: Border(
               top: BorderSide(
-                color: isWin11 ? const Color(0xFFE2E8F0) : Colors.white10,
+                color:
+                    homePalette?.divider ??
+                    (isWin11 ? const Color(0xFFE2E8F0) : Colors.white10),
                 width: 0.5,
               ),
             ),
@@ -63,8 +71,14 @@ class AppBottomNav extends StatelessWidget {
                 label: 'Mới & Hot',
               ),
               NavigationDestination(
-                icon: Icon(Icons.confirmation_number_outlined, color: textMuted),
-                selectedIcon: Icon(Icons.confirmation_number, color: activeColor),
+                icon: Icon(
+                  Icons.confirmation_number_outlined,
+                  color: textMuted,
+                ),
+                selectedIcon: Icon(
+                  Icons.confirmation_number,
+                  color: activeColor,
+                ),
                 label: 'Đặt vé',
               ),
             ],

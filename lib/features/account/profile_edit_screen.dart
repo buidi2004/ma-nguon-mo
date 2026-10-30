@@ -8,6 +8,7 @@ import '../../presentation/widgets/dialogs/user_avatar_dialog.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final String profileId;
@@ -63,14 +64,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   Widget build(BuildContext context) {
     final isNew = widget.profileId == 'new';
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const GlassBackButton(),
         title: Text(
           isNew ? 'Thêm hồ sơ' : 'Chỉnh sửa hồ sơ',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -89,10 +90,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 alignment: Alignment.center,
                 children: [
                   if (widget.profileId == 'p1' || !isNew)
-                    const UserAvatarCircle(
-                      size: 96,
-                      showGlow: true,
-                    )
+                    const UserAvatarCircle(size: 96, showGlow: true)
                   else
                     Container(
                       width: 96,
@@ -123,10 +121,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.85),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white38,
-                          width: 1.2,
-                        ),
+                        border: Border.all(color: Colors.white38, width: 1.2),
                       ),
                       child: const Icon(
                         Icons.edit_rounded,
@@ -138,27 +133,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             InkWell(
               onTap: () => UserAvatarDialog.show(context),
               borderRadius: BorderRadius.circular(12),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: Text(
                   'Chạm để đổi avatar (Chibi / Link ảnh / Đặt lại)',
                   style: TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 12.5,
+                    fontSize: 13,
                     decoration: TextDecoration.underline,
                     decorationColor: Colors.white24,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Chọn màu đại diện
-            const Text(
+            Text(
               'Chọn màu đại diện',
               style: TextStyle(
                 color: AppColors.textSecondary,
@@ -200,20 +195,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               prefixIcon: Icons.badge_outlined,
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // Chế độ trẻ em
             Material(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(24),
               child: SwitchListTile(
-                title: const Text(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                title: Text(
                   'Chế độ trẻ em',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 15,
+                  ),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Chỉ hiển thị các nội dung hoạt hình và phim phù hợp mọi lứa tuổi',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -228,7 +229,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
             PrimaryButton.white(
               text: isNew ? 'Tạo hồ sơ' : 'Lưu thay đổi',
@@ -236,15 +237,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             ),
 
             if (!isNew) ...[
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               TextButton(
                 onPressed: () {
                   context.pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa hồ sơ!')),
-                  );
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text('Đã xóa hồ sơ!')));
                 },
-                child: const Text(
+                child: Text(
                   'Xóa hồ sơ này',
                   style: TextStyle(color: AppColors.textMuted),
                 ),
@@ -253,6 +253,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

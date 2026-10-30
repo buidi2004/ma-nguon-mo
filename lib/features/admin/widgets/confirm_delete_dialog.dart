@@ -86,24 +86,24 @@ class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: AppColors.red.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.warning_amber_rounded,
               color: AppColors.red,
               size: 28,
             ),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: 12),
+          Expanded(
             child: Text(
               'Xác nhận xóa phim?',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -112,23 +112,21 @@ class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
       ),
       content: Text.rich(
         TextSpan(
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textSecondary,
-            fontSize: 14,
+            fontSize: 15,
             height: 1.5,
           ),
           children: [
-            const TextSpan(text: 'Bạn có chắc chắn muốn xóa phim '),
+            TextSpan(text: 'Bạn có chắc chắn muốn xóa phim '),
             TextSpan(
               text: '"${widget.movieTitle}"',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const TextSpan(
-              text: ' khỏi hệ thống? Hành động này không thể hoàn tác.',
-            ),
+            TextSpan(text: ' khỏi hệ thống? Hành động này không thể hoàn tác.'),
           ],
         ),
       ),
@@ -137,14 +135,14 @@ class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
           onPressed: _isBusy ? null : _handleCancel,
           style: TextButton.styleFrom(
             foregroundColor: AppColors.textSecondary,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            minimumSize: const Size(44, 44),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            minimumSize: Size(44, 44),
           ),
-          child: const Text(
+          child: Text(
             'Hủy',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -159,11 +157,11 @@ class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            minimumSize: const Size(44, 44),
+            padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            minimumSize: Size(44, 44),
           ),
           child: _isBusy
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
@@ -173,12 +171,12 @@ class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
                     ),
                   ),
                 )
-              : const Text(
+              : Text(
                   'Xác nhận xóa',
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 15,
                   ),
                 ),
         ),

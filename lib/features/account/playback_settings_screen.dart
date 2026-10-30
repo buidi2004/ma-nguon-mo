@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class PlaybackSettingsScreen extends StatefulWidget {
   const PlaybackSettingsScreen({super.key});
@@ -60,19 +61,22 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: const GlassBackButton(),
-        title: const Text(
+        leading: GlassBackButton(),
+        title: Text(
           'Phát lại & Chất lượng',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
-          const Text(
+          Text(
             'TỰ ĐỘNG PHÁT',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -104,8 +108,8 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
             },
           ),
 
-          const SizedBox(height: 20),
-          const Text(
+          SizedBox(height: 20),
+          Text(
             'CHẤT LƯỢNG VIDEO & DỮ LIỆU',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -141,7 +145,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
                   'Chất lượng hình ảnh mặc định',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -165,7 +169,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildSwitchTile({
@@ -184,9 +188,9 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -194,10 +198,7 @@ class _PlaybackSettingsScreenState extends State<PlaybackSettingsScreen> {
             subtitle,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           value: value,
           activeThumbColor: ThemeService.instance.primaryColor,

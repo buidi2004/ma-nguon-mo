@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class AudioSubtitleScreen extends StatefulWidget {
   final String movieId;
@@ -38,7 +39,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
 
   void _applySettings() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Đã cập nhật cài đặt âm thanh & phụ đề cho video'),
         backgroundColor: AppColors.surface,
         duration: Duration(seconds: 2),
@@ -53,7 +54,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -68,12 +69,12 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Âm thanh & Phụ đề',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
@@ -96,7 +97,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                       letterSpacing: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ..._audioOptions.map((opt) {
                     final isSelected = _selectedAudio == opt['id'];
                     return InkWell(
@@ -106,11 +107,11 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 8,
                         ),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
                               color: AppColors.divider,
@@ -133,14 +134,14 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
-                                      fontSize: 14,
+                                      fontSize: 15,
                                     ),
                                   ),
                                   if (opt['desc']!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2),
                                     Text(
                                       opt['desc']!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
                                       ),
@@ -170,7 +171,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                       letterSpacing: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ..._subtitleOptions.map((opt) {
                     final isSelected = _selectedSubtitle == opt['id'];
                     return InkWell(
@@ -180,11 +181,11 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 8,
                         ),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
                               color: AppColors.divider,
@@ -205,14 +206,14 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
-                                      fontSize: 14,
+                                      fontSize: 15,
                                     ),
                                   ),
                                   if (opt['desc']!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2),
                                     Text(
                                       opt['desc']!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
                                       ),
@@ -265,7 +266,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
                       'Xem trước: "Mẫu chữ phụ đề hiển thị khi đang xem phim."',
                       style: TextStyle(
                         color: Colors.yellowAccent,
-                        fontSize: 14 * _subtitleSize,
+                        fontSize: 15 * _subtitleSize,
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
@@ -284,7 +285,7 @@ class _AudioSubtitleScreenState extends State<AudioSubtitleScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildSizeOption(String label, double scale) {

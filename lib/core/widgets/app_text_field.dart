@@ -15,6 +15,7 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool autofocus;
   final int maxLines;
+  final double? borderRadius;
 
   const AppTextField({
     super.key,
@@ -28,6 +29,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.autofocus = false,
     this.maxLines = 1,
+    this.borderRadius,
   });
 
   @override
@@ -45,13 +47,14 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: isBlue ? const Color(0xFFE2F1FF) : AppColors.textSecondary,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -68,18 +71,24 @@ class _AppTextFieldState extends State<AppTextField> {
           textAlignVertical: TextAlignVertical.center,
           cursorColor: ThemeService.instance.primaryColor,
           cursorHeight: 18,
-          cursorRadius: const Radius.circular(1),
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          cursorRadius: Radius.circular(1),
+          style: TextStyle(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surface,
             hintText: widget.hintText,
-            hintStyle: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
+            hintStyle: TextStyle(
+              color: isBlue ? const Color(0xFFB8D4E8) : AppColors.textMuted,
+              fontSize: 15,
             ),
             prefixIcon: widget.prefixIcon != null
-                ? Icon(widget.prefixIcon, color: AppColors.textMuted, size: 20)
+                ? Icon(
+                    widget.prefixIcon,
+                    color: isBlue
+                        ? const Color(0xFFB8D4E8)
+                        : AppColors.textMuted,
+                    size: 20,
+                  )
                 : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
@@ -87,7 +96,9 @@ class _AppTextFieldState extends State<AppTextField> {
                       icon: _obscureText
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: AppColors.textMuted,
+                      color: isBlue
+                          ? const Color(0xFFB8D4E8)
+                          : AppColors.textMuted,
                       size: 20,
                     ),
                     onPressed: () {
@@ -97,21 +108,36 @@ class _AppTextFieldState extends State<AppTextField> {
                     },
                   )
                 : null,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? (isBlue ? 20 : 16)),
+              borderSide: BorderSide(
+                color: isBlue ? const Color(0x4D5AD2F4) : Colors.white12,
+                width: 1.0,
+              ),
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? (isBlue ? 20 : 16)),
+              borderSide: BorderSide(
+                color: isBlue ? const Color(0x4D5AD2F4) : Colors.white12,
+                width: 1.0,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: Colors.white60, width: 1.2),
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? (isBlue ? 20 : 16)),
+              borderSide: BorderSide(
+                color: isBlue
+                    ? const Color(0xFF66C7F4)
+                    : ThemeService.instance.primaryColor,
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: AppColors.red, width: 1.2),
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? (isBlue ? 20 : 16)),
+              borderSide: const BorderSide(color: AppColors.red, width: 1.0),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: AppColors.red, width: 1.4),
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? (isBlue ? 20 : 16)),
+              borderSide: const BorderSide(color: AppColors.red, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,

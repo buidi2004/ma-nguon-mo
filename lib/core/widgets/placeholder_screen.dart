@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String code;
@@ -39,15 +40,15 @@ class PlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final canPop = context.canPop();
 
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         leading: canPop ? const GlassBackButton() : null,
@@ -86,7 +87,7 @@ class PlaceholderScreen extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 14,
+                        fontSize: 15,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -113,29 +114,29 @@ class PlaceholderScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'Nhóm $group',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               if (description.isNotEmpty) ...[
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(6),
@@ -143,7 +144,7 @@ class PlaceholderScreen extends StatelessWidget {
                   child: Text(
                     description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                       height: 1.4,
@@ -193,6 +194,6 @@ class PlaceholderScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }

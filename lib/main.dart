@@ -5,10 +5,17 @@ import 'package:transit_kit/transit_kit.dart';
 import 'core/router/app_router.dart';
 import 'services/theme_service.dart';
 import 'theme/app_theme.dart';
+import 'waves_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeService.instance.init();
+
+  // Tối ưu bộ nhớ đệm hình ảnh cho mobile:
+  // Giới hạn 120 ảnh bitmap và 96MB để tránh tình trạng tràn RAM và GC thrashing
+  // trên các thiết bị Android tầm trung, đảm bảo duy trì 60-120 FPS mượt mà.
+  PaintingBinding.instance.imageCache.maximumSize = 120;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 96 << 20; // 96 MB
 
   // Đặt thanh trạng thái trong suốt phù hợp giao diện Dark Mode Netflix
   SystemChrome.setSystemUIOverlayStyle(
@@ -78,6 +85,12 @@ class OpenFlixApp extends StatelessWidget {
             ThemeService.instance.primaryColor,
             ThemeService.instance.isLight,
           ),
+          builder: (context, child) {
+            // Một nền động duy nhất cho toàn app. Lớp nền là sibling của nội
+            // dung nên đổi theme ("chuyển màu") chỉ dựng lại lớp nền, không
+            // remount Navigator / các tab đang giữ trong IndexedStack.
+            return ThemedBackdrop(child: child ?? const SizedBox.shrink());
+          },
           routerConfig: AppRouter.router,
         );
       },

@@ -166,5 +166,44 @@ void main() {
       final grad = boxDec.gradient as LinearGradient;
       expect(grad.colors, const [Color(0xFFFF2E3D), Color(0xFFE50914)]);
     });
+
+    testWidgets('FloatingGlassBottomBar reflects gold gradient when luxuryGold is selected', (tester) async {
+      await ThemeService.instance.setThemeMode(AppThemeMode.luxuryGold);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                FloatingGlassBottomBar(
+                  selectedIndex: 0,
+                  onTabSelected: (_) {},
+                  onQuickActionPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FloatingGlassBottomBar), findsOneWidget);
+      expect(ThemeService.instance.isLuxuryGold, isTrue);
+
+      final containers = tester.widgetList<Container>(find.byType(Container));
+      final pillContainer = containers.firstWhere(
+        (c) {
+          final dec = c.decoration;
+          if (dec is BoxDecoration && dec.gradient is LinearGradient) {
+            final grad = dec.gradient as LinearGradient;
+            return grad.colors.contains(const Color(0xFFD4AF37));
+          }
+          return false;
+        },
+      );
+      final boxDec = pillContainer.decoration as BoxDecoration;
+      final grad = boxDec.gradient as LinearGradient;
+      expect(grad.colors, const [Color(0xFFF6E2A8), Color(0xFFD4AF37), Color(0xFF9E782F)]);
+    });
   });
 }

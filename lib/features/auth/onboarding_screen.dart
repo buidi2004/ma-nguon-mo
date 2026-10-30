@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -53,15 +54,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         actions: [
           TextButton(
             onPressed: () => context.go('/welcome'),
-            child: const Text(
+            child: Text(
               'Bỏ qua',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
         ],
@@ -88,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.surface,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white12),
+                            border: Border.all(color: AppColors.divider),
                           ),
                           child: Icon(
                             _getIcon(page['icon']!),
@@ -96,23 +97,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             color: ThemeService.instance.primaryColor,
                           ),
                         ),
-                        const SizedBox(height: 36),
+                        SizedBox(height: 36),
                         Text(
                           page['title']!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         Text(
                           page['desc']!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 14,
+                            fontSize: 15,
                             height: 1.45,
                           ),
                         ),
@@ -170,6 +171,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

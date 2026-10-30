@@ -32,7 +32,7 @@ class GlassDestructiveButton extends StatefulWidget {
     this.isLoading = false,
     this.height = 48.0,
     this.width,
-    this.borderRadius = 12.0,
+    this.borderRadius = 24.0,
     this.requiresConfirmation = false,
     this.confirmationTitle,
     this.confirmationMessage,
@@ -46,12 +46,14 @@ class GlassDestructiveButton extends StatefulWidget {
     Key? key,
     required VoidCallback? onPressed,
     bool isLoading = false,
+    double borderRadius = 24.0,
   }) {
     return GlassDestructiveButton(
       key: key,
       text: 'Đăng xuất tài khoản',
       icon: Icons.logout_rounded,
       isLoading: isLoading,
+      borderRadius: borderRadius,
       requiresConfirmation: true,
       confirmationTitle: 'Đăng xuất',
       confirmationMessage: 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản OpenFlix trên thiết bị này?',
@@ -66,16 +68,17 @@ class GlassDestructiveButton extends StatefulWidget {
     required String profileName,
     required VoidCallback? onPressed,
     bool isLoading = false,
+    double borderRadius = 24.0,
   }) {
     return GlassDestructiveButton(
       key: key,
       text: 'Xóa hồ sơ này',
       icon: Icons.delete_forever_rounded,
       isLoading: isLoading,
+      borderRadius: borderRadius,
       requiresConfirmation: true,
       confirmationTitle: 'Xóa hồ sơ $profileName',
-      confirmationMessage:
-          'Toàn bộ lịch sử xem và danh sách phim của hồ sơ này sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.',
+      confirmationMessage: 'Toàn bộ lịch sử xem và danh sách phim của hồ sơ này sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.',
       confirmActionLabel: 'Xác nhận xóa',
       onPressed: onPressed,
     );
@@ -123,28 +126,27 @@ class _GlassDestructiveButtonState extends State<GlassDestructiveButton> {
           ),
           title: Text(
             widget.confirmationTitle ?? 'Xác nhận thao tác',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 17,
             ),
           ),
           content: Text(
-            widget.confirmationMessage ??
-                'Hành động này có thể xóa vĩnh viễn dữ liệu. Bạn có chắc chắn muốn tiếp tục?',
-            style: const TextStyle(
+            widget.confirmationMessage ?? 'Hành động này có thể xóa vĩnh viễn dữ liệu. Bạn có chắc chắn muốn tiếp tục?',
+            style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 14,
+              fontSize: 15,
               height: 1.4,
             ),
           ),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actionsPadding: EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(
                 widget.cancelActionLabel,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
             ElevatedButton(
@@ -178,8 +180,8 @@ class _GlassDestructiveButtonState extends State<GlassDestructiveButton> {
     final Color backgroundColor = _isPressed
         ? AppColors.red.withValues(alpha: 0.32)
         : (_isHovered
-            ? AppColors.red.withValues(alpha: 0.22)
-            : AppColors.red.withValues(alpha: 0.12));
+              ? AppColors.red.withValues(alpha: 0.22)
+              : AppColors.red.withValues(alpha: 0.12));
 
     final Color borderColor = _isHovered || _isPressed
         ? AppColors.red.withValues(alpha: 0.85)
@@ -217,7 +219,9 @@ class _GlassDestructiveButtonState extends State<GlassDestructiveButton> {
                 border: Border.all(color: borderColor, width: 1.0),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.red.withValues(alpha: _isHovered ? 0.30 : 0.12),
+                    color: AppColors.red.withValues(
+                      alpha: _isHovered ? 0.30 : 0.12,
+                    ),
                     blurRadius: _isHovered ? 14 : 6,
                     offset: const Offset(0, 2),
                   ),
@@ -230,7 +234,9 @@ class _GlassDestructiveButtonState extends State<GlassDestructiveButton> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFFFF5252),
+                          ),
                         ),
                       )
                     : Row(
@@ -245,7 +251,7 @@ class _GlassDestructiveButtonState extends State<GlassDestructiveButton> {
                             widget.text,
                             style: TextStyle(
                               color: contentColor,
-                              fontSize: 14.5,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.2,
                             ),

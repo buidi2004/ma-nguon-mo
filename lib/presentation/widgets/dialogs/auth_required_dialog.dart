@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -106,8 +107,9 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
       duration: const Duration(milliseconds: 1800),
     );
 
-    final isTesting =
-        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    final isTesting = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
     if (isTesting) {
       _pulseController.forward();
     } else {
@@ -142,15 +144,13 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
       ),
     );
 
-    _contentSlideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.20, 1.0, curve: Curves.easeOutCubic),
-      ),
-    );
+    _contentSlideAnim =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: const Interval(0.20, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _entranceController.forward();
   }
@@ -214,10 +214,7 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
               gradient: const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF222222),
-                  Color(0xFF161616),
-                ],
+                colors: [Color(0xFF222222), Color(0xFF161616)],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -312,7 +309,7 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 19,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: -0.4,
                                     ),
@@ -330,10 +327,14 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                         vertical: 3.5,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withValues(alpha: 0.14),
+                                        color: primaryColor.withValues(
+                                          alpha: 0.14,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: primaryColor.withValues(alpha: 0.35),
+                                          color: primaryColor.withValues(
+                                            alpha: 0.35,
+                                          ),
                                           width: 0.8,
                                         ),
                                       ),
@@ -352,12 +353,12 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                   ],
 
                                   // Đoạn mô tả cô đọng
-                                  const Text(
+                                  Text(
                                     'Bạn đang duyệt ở chế độ Khách. Đăng nhập để mở khóa trải nghiệm điện ảnh chuẩn rạp:',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                       height: 1.35,
                                     ),
                                   ),
@@ -378,9 +379,13 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                         backgroundColor: primaryColor,
                                         foregroundColor: Colors.white,
                                         elevation: 0,
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                       ),
                                       child: const Row(
@@ -422,17 +427,22 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                           backgroundColor: Colors.white
                                               .withValues(alpha: 0.06),
                                           side: BorderSide(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.16),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.16,
+                                            ),
                                           ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Icon(
@@ -448,7 +458,7 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 13.5,
+                                                  fontSize: 13,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -466,13 +476,15 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
                                     onPressed: _handleDismiss,
                                     style: TextButton.styleFrom(
                                       foregroundColor: AppColors.textMuted,
-                                      minimumSize:
-                                          const Size(double.infinity, 32),
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        32,
+                                      ),
                                     ),
                                     child: const Text(
                                       'Để sau',
                                       style: TextStyle(
-                                        fontSize: 12.5,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -584,11 +596,7 @@ class _AuthRequiredDialogState extends State<AuthRequiredDialog>
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: iconColor,
-        ),
+        Icon(icon, size: 15, color: iconColor),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

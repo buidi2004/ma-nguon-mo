@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 enum CinemaMovieStatus {
   nowShowing, // Đang chiếu
   comingSoon, // Sắp chiếu
-  imax,       // Suất chiếu IMAX / Đặc biệt
+  imax, // Suất chiếu IMAX / Đặc biệt
 }
 
 /// Loại ghế trong rạp
 enum SeatType {
   standard, // Ghế thường (90k)
-  vip,      // Ghế VIP trung tâm (110k)
+  vip, // Ghế VIP trung tâm (110k)
   sweetbox, // Ghế đôi Sweetbox cuối phòng (220k/cặp)
 }
 
 /// Trạng thái của ghế
 enum SeatStatus {
   available, // Còn trống
-  selected,  // Đang chọn
-  reserved,  // Đã bán / Khóa
+  selected, // Đang chọn
+  reserved, // Đã bán / Khóa
 }
 
 /// Model Phim Chiếu Rạp
@@ -118,8 +118,8 @@ class CinemaShowtimeModel {
   final String movieId;
   final String theaterId;
   final String hallName; // 'VIP - AQUALIS', 'VIP - LAURUS', 'HALL 01'
-  final String format;   // '2D Phụ Đề', '2D Lồng Tiếng', 'IMAX 2D'
-  final String time;     // '14:45', '16:15', '19:30'
+  final String format; // '2D Phụ Đề', '2D Lồng Tiếng', 'IMAX 2D'
+  final String time; // '14:45', '16:15', '19:30'
   final DateTime date;
   final int basePrice;
 

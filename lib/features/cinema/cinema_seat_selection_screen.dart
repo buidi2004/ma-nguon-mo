@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/cinema/cinema_models.dart';
 import '../../presentation/widgets/glass/glass_components.dart';
 import '../../services/cinema/cinema_service.dart';
+import '../../services/theme_service.dart';
+import '../../waves_background.dart';
 
 /// S45: Sơ Đồ Chọn Ghế Ngồi Rạp (Cinema Seat Selection Screen) — Nền Trắng Sắc Nét
 class CinemaSeatSelectionScreen extends StatefulWidget {
@@ -31,8 +33,9 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    _seats = CinemaService.instance
-        .generateSeatsForShowtime(widget.showtime.id);
+    _seats = CinemaService.instance.generateSeatsForShowtime(
+      widget.showtime.id,
+    );
   }
 
   int get _totalPrice {
@@ -89,10 +92,13 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFFF97316); // Cam CineFlix
+    const primaryColor = Color(
+      0xFFC2410C,
+    ); // Cam đậm để chữ trắng đạt tương phản
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return WavesBackground.wrapIfBlue(
+      Scaffold(
+      backgroundColor: ThemeService.instance.isWindowsBlue ? Colors.transparent : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -112,10 +118,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
             ),
             Text(
               '${widget.theater.name} • ${widget.showtime.time} • ${widget.showtime.hallName}',
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 11.5,
-              ),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -233,7 +236,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                             : 'Ghế: ${_selectedSeatLabels.join(", ")}',
                         style: TextStyle(
                           color: _selectedSeatIds.isEmpty
-                              ? const Color(0xFF94A3B8)
+                              ? const Color(0xFF64748B)
                               : const Color(0xFF0F172A),
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -245,8 +248,8 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                       Text(
                         '${_formatCurrency(_totalPrice)} đ',
                         style: const TextStyle(
-                          color: Color(0xFFF97316),
-                          fontSize: 18,
+                          color: Color(0xFFC2410C),
+                          fontSize: 17,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -272,10 +275,12 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                           );
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
+                    backgroundColor: const Color(0xFFC2410C),
                     disabledBackgroundColor: Colors.grey.shade300,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 13),
+                      horizontal: 24,
+                      vertical: 13,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -285,7 +290,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                     'Tiếp tục >',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -295,6 +300,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -319,8 +325,8 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
           Text(
             price,
             style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 10,
+              color: Color(0xFF64748B),
+              fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -346,8 +352,10 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                 width: 20,
                 child: Text(
                   rowLetter,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                  style: TextStyle(
+                    color: ThemeService.instance.isWindowsBlue
+                        ? Colors.white
+                        : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -362,7 +370,9 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
 
                 Color seatColor;
                 if (isSelected) {
-                  seatColor = const Color(0xFFF97316); // Cam nổi bật
+                  seatColor = const Color(
+                    0xFFC2410C,
+                  ); // Cam nổi bật, tương phản tốt
                 } else if (isReserved) {
                   seatColor = const Color(0xFFCBD5E1); // Đã bán xám
                 } else if (seat.type == SeatType.vip) {
@@ -387,16 +397,16 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFFEA580C)
+                            ? const Color(0xFF9A3412)
                             : isReserved
-                                ? Colors.transparent
-                                : const Color(0xFF94A3B8),
+                            ? Colors.transparent
+                            : const Color(0xFF64748B),
                         width: isSelected ? 1.5 : 0.8,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFF97316)
+                                color: const Color(0xFFC2410C)
                                     .withValues(alpha: 0.4),
                                 blurRadius: 4,
                               ),
@@ -405,21 +415,27 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                     ),
                     child: Center(
                       child: isReserved
-                          ? const Icon(Icons.close_rounded,
-                              size: 13, color: Colors.white)
+                          ? const Icon(
+                              Icons.close_rounded,
+                              size: 13,
+                              color: Colors.white,
+                            )
                           : isSweetbox
-                              ? const Icon(Icons.favorite_rounded,
-                                  size: 11, color: Color(0xFFEC4899))
-                              : Text(
-                                  '${seat.number}',
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF334155),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                          ? const Icon(
+                              Icons.favorite_rounded,
+                              size: 11,
+                              color: Color(0xFFEC4899),
+                            )
+                          : Text(
+                              '${seat.number}',
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF334155),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 );
@@ -431,8 +447,10 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                 width: 20,
                 child: Text(
                   rowLetter,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                  style: TextStyle(
+                    color: ThemeService.instance.isWindowsBlue
+                        ? Colors.white
+                        : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -447,8 +465,8 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
 
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

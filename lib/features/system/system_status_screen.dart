@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../services/theme_service.dart';
 import '../../theme/app_theme.dart';
+import '../../waves_background.dart';
 
 class SystemStatusScreen extends StatelessWidget {
   final String code;
@@ -60,7 +61,7 @@ class SystemStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WavesBackground.wrapIfBlue(Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
@@ -73,7 +74,7 @@ class SystemStatusScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white12),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: Icon(
                   icon,
@@ -93,31 +94,31 @@ class SystemStatusScreen extends StatelessWidget {
                 ),
                 child: Text(
                   code,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Text(
                 message,
                 softWrap: true,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
+                  fontSize: 15,
                   height: 1.4,
                 ),
               ),
@@ -146,15 +147,15 @@ class SystemStatusScreen extends StatelessWidget {
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => context.go('/'),
-                child: const Text(
+                child: Text(
                   'Về Trang chủ',
-                  style: TextStyle(color: Colors.white60),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
+    ));
   }
 }

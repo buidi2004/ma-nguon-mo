@@ -237,11 +237,12 @@ class _GlassButtonState extends State<GlassButton>
   }
 
   _StyleConfig _resolveStyleConfig(GlassButtonStyle style) {
+    final isBlue = ThemeService.instance.isWindowsBlue;
     switch (style) {
       case GlassButtonStyle.primaryWhite:
         return _StyleConfig(
-          tintColor: const Color(0xE6FFFFFF), // Kính trắng phủ mờ cao
-          textColor: const Color(0xFF141414), // Chữ đen tương phản sắc nét
+          tintColor: const Color(0xF2FFFFFF), // Kính trắng phủ mờ cao
+          textColor: const Color(0xFF0F172A), // Chữ tối tương phản sắc nét
           blur: 10.0,
           refractiveIndex: 1.82,
           thickness: 56.0,
@@ -251,38 +252,36 @@ class _GlassButtonState extends State<GlassButton>
 
       case GlassButtonStyle.brandRed:
         final primary = ThemeService.instance.primaryColor;
-        final isBlue = ThemeService.instance.currentMode == AppThemeMode.windowsBlue;
         return _StyleConfig(
-          tintColor: primary.withValues(alpha: 0.40),
+          tintColor: isBlue
+              ? const Color(0xE6006BA6)
+              : primary.withValues(alpha: 0.82),
           textColor: Colors.white,
           blur: 8.5,
           refractiveIndex: 1.80,
           thickness: 52.0,
           border: Border.all(
             color: isBlue
-                ? const Color(0xFF66C7F4).withValues(alpha: 0.65)
-                : const Color(0xFFFF4D4D).withValues(alpha: 0.55),
+                ? const Color(0xFF66C7F4).withValues(alpha: 0.75)
+                : const Color(0xFFFF4D4D).withValues(alpha: 0.65),
             width: GlassOpticalTokens.hairlineRimWidth,
           ),
-          textShadow: [
-            Shadow(
-              color: isBlue
-                  ? const Color(0xFF00A2ED).withValues(alpha: 0.6)
-                  : const Color(0x88000000),
-              blurRadius: 4,
-            ),
-          ],
+          textShadow: const [Shadow(color: Color(0x99000000), blurRadius: 4)],
         );
 
       case GlassButtonStyle.neutralDark:
         return _StyleConfig(
-          tintColor: const Color(0x352A2A2A),
+          tintColor: isBlue
+              ? const Color(0xCC0A2433)
+              : const Color(0x99262626),
           textColor: Colors.white,
           blur: 8.5,
           refractiveIndex: 1.78,
           thickness: 48.0,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.22),
+            color: isBlue
+                ? const Color(0x665AD2F4)
+                : Colors.white.withValues(alpha: 0.28),
             width: GlassOpticalTokens.hairlineRimWidth,
           ),
           textShadow: const [Shadow(color: Color(0xAA000000), blurRadius: 4)],
@@ -290,13 +289,17 @@ class _GlassButtonState extends State<GlassButton>
 
       case GlassButtonStyle.ghost:
         return _StyleConfig(
-          tintColor: const Color(0x12FFFFFF),
+          tintColor: isBlue
+              ? const Color(0x80071E2C)
+              : const Color(0x331E1E1E),
           textColor: Colors.white,
           blur: 6.0,
           refractiveIndex: 1.65,
           thickness: 30.0,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: isBlue
+                ? const Color(0x4D5AD2F4)
+                : Colors.white.withValues(alpha: 0.22),
             width: GlassOpticalTokens.subtleRimWidth,
           ),
           textShadow: const [Shadow(color: Color(0xAA000000), blurRadius: 3)],
