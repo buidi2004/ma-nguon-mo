@@ -4,13 +4,45 @@ const LOCAL_POCKETBASE_URL = 'http://127.0.0.1:8090';
 export const POCKETBASE_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || VPS_POCKETBASE_URL;
 
 /**
+ * Chuẩn hóa URL ảnh và video sang relative path để đi qua Next.js rewrite proxy trên HTTPS (tránh lỗi Mixed Content trên Vercel)
+ */
+export function secureMediaUrl(url) {
+    if (!url || typeof url !== 'string') return '/placeholder.webp';
+
+    // Xử lý ảnh posters VPS
+    if (url.includes('180.93.120.246/posters/')) {
+        return url.replace(/^https?:\/\/180\.93\.120\.246\/posters\//, '/posters/');
+    }
+
+    // Xử lý video VPS
+    if (url.includes('180.93.120.246/videos/')) {
+        return url.replace(/^https?:\/\/180\.93\.120\.246\/videos\//, '/videos/');
+    }
+
+    // Xử lý tệp PocketBase files
+    if (url.includes('180.93.120.246:8090/api/files/')) {
+        return url.replace(/^https?:\/\/180\.93\.120\.246:8090\/api\/files\//, '/api/pocketbase/files/');
+    }
+
+    return url;
+}
+
+/**
  * Fetch helper for PocketBase with automatic fallback and error handling
  */
 export async function fetchPocketBase(endpoint, options = {}) {
-    const urls = [
-        `${POCKETBASE_URL}${endpoint}`,
-        `${LOCAL_POCKETBASE_URL}${endpoint}`,
-    ];
+    const isBrowser = typeof window !== 'undefined';
+    const isHttps = isBrowser && window.location.protocol === 'https:';
+
+    const urls = [];
+    if (isHttps) {
+        // Trên Vercel HTTPS, gọi qua Next.js rewrite proxy để không bị Mixed Content chặn
+        urls.push(`/api/pocketbase${endpoint.replace(/^\/api/, '')}`);
+    }
+    urls.push(`${POCKETBASE_URL}${endpoint}`);
+    if (!isBrowser) {
+        urls.push(`${LOCAL_POCKETBASE_URL}${endpoint}`);
+    }
 
     let lastError = null;
     for (const url of urls) {
@@ -44,7 +76,7 @@ export async function fetchPocketBase(endpoint, options = {}) {
 export function mapMovieToCard(item) {
     if (!item) return null;
 
-    const poster = item.poster_url || '/placeholder.webp';
+    const poster = secureMediaUrl(item.poster_url || '/placeholder.webp');
     const duration = item.duration_minutes ? `${item.duration_minutes} phút` : '90 phút';
 
     return {
@@ -86,9 +118,9 @@ export function mapMovieToDetail(item) {
         ? item.cast.split(',').map((s) => s.trim()).filter(Boolean)
         : ['Đang cập nhật'];
 
-    const poster = item.poster_url || '/placeholder.webp';
-    const videoUrl = item.video_url || 'https://vjs.zencdn.net/v/oceans.mp4';
-    const trailerUrl = item.trailer_url || '';
+    const poster = secureMediaUrl(item.poster_url || '/placeholder.webp');
+    const videoUrl = secureMediaUrl(item.video_url || 'https://vjs.zencdn.net/v/oceans.mp4');
+    const trailerUrl = secureMediaUrl(item.trailer_url || '');
     const duration = item.duration_minutes ? `${item.duration_minutes} phút` : '90 phút';
 
     return {

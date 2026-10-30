@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import Carousel3 from '../Carousel3/Carousel3'
 import 'react-responsive-carousel/lib/styles/carousel.min.css'
@@ -88,9 +90,10 @@ const CarouselThumbnails = ({ movies }) => {
 
                             {/* ------ Carousel Background (landscape art first, portrait poster as fallback) ------ */}
                             <img
-                                src={item.thumb_url || item.poster_url}
+                                src={item.thumb_url || item.poster_url || '/placeholder.webp'}
                                 alt={item.name}
                                 loading={item.lazy}
+                                onError={(e) => { e.currentTarget.src = '/placeholder.webp'; }}
                                 className='absolute inset-0 w-full h-full object-cover filter brightness-[85%]'
                             />
 

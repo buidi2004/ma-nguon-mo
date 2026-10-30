@@ -30,6 +30,22 @@ const nextConfig = {
             },
         ],
     },
+    async rewrites() {
+        return [
+            {
+                source: '/posters/:path*',
+                destination: 'http://180.93.120.246/posters/:path*',
+            },
+            {
+                source: '/videos/:path*',
+                destination: 'http://180.93.120.246/videos/:path*',
+            },
+            {
+                source: '/api/pocketbase/:path*',
+                destination: 'http://180.93.120.246:8090/api/:path*',
+            },
+        ];
+    },
 }
 
 module.exports = nextConfig
