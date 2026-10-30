@@ -1,6 +1,6 @@
 class AppConfig {
   static const appName = 'OpenFlix';
-  static const appVersion = '11.0.0+11';
+  static const appVersion = '13.0.0+13';
 
   static const pbUrl = String.fromEnvironment(
     'PB_URL',

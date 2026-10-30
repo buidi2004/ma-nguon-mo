@@ -92,7 +92,7 @@ class SettingsSection extends StatelessWidget {
   final String? title;
   final List<Widget> children;
 
-  SettingsSection({super.key, this.title, required this.children});
+  const SettingsSection({super.key, this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {

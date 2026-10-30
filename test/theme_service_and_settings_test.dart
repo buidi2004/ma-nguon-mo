@@ -10,7 +10,6 @@ import 'package:openflix/features/cinema/cinema_news_screen.dart';
 import 'package:openflix/features/discover/filter_screen.dart';
 import 'package:openflix/features/discover/genres_screen.dart';
 import 'package:openflix/presentation/widgets/glass/glass_components.dart';
-import 'package:openflix/presentation/widgets/glass/silk_background.dart';
 import 'package:openflix/services/cinema/cinema_service.dart';
 import 'package:openflix/services/theme_service.dart';
 import 'package:openflix/theme/app_theme.dart';
