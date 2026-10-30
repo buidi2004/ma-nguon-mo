@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    scroll-behavior: smooth;
+}
+
+/* Custom Cinema Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #08090c;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #0ea5e9;
+}
+
+body {
+    background-color: #08090c;
+    color: #cbd5e1;
+    overflow-x: hidden;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.loader {
+    width: 44px;
+    aspect-ratio: 1;
+    --_g: no-repeat radial-gradient(farthest-side, #38bdf8 90%, #08090c); /* taste-skill-ignore */
+    background:
+        var(--_g) 0 0,
+        var(--_g) 100% 0,
+        var(--_g) 100% 100%,
+        var(--_g) 0 100%;
+    background-size: 30% 30%;
+    animation: l38 .6s infinite;
+}
+
+@keyframes l38 {
+    100% {
+        background-position: 100% 0, 100% 100%, 0 100%, 0 0;
+    }
+}
+
+.skeleton {
+    width: 100%;
+    height: 100%;
+    background-color: #121620;
+    animation: skeletonfade 1.6s ease-in-out infinite;
+}
+
+@keyframes skeletonfade {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* Hide scrollbar for clean horizontal rails */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@layer components {
+
+    /* [Header] Navigation Link Button */
+    .header-link {
+        @apply block py-2 px-2.5 whitespace-nowrap font-medium text-sm text-slate-300 hover:text-white rounded-lg transition-colors duration-200 hover:bg-white/5;
+    }
+
+    .header-link-active {
+        @apply text-sky-400 font-semibold bg-sky-500/10 border-b-2 border-sky-400;
+    }
+
+    /* [Footer] Link Button */
+    .footer-link {
+        @apply py-1 sm:py-0 sm:ml-8 text-sm text-slate-400 hover:text-sky-400 transition-colors duration-200;
+    }
+
+    .intro-title {
+        @apply mt-4 md:mt-0 text-white text-xl md:text-2xl font-bold;
+    }
+
+    .intro-paragraph {
+        @apply mt-2 text-slate-300 text-justify text-base leading-relaxed;
+    }
+
+    .intro-left-section {
+        @apply md:mx-5 md:basis-2/5 lg:basis-1/3;
+    }
+
+    .intro-right-section {
+        @apply md:mx-5 md:basis-3/5 lg:basis-2/3;
+    }
+
+    /* [Movie] Movie Grid */
+    .movies-grid {
+        @apply grid gap-4 sm:gap-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6;
+    }
+
+    /* Cinema Streaming Action Buttons */
+    .play-button-color {
+        @apply relative inline-flex items-center justify-center gap-2.5 font-bold text-slate-950 bg-sky-500 hover:bg-sky-400 rounded-xl transition-colors duration-200 cursor-pointer;
+    }
+
+    .add-button-color {
+        @apply relative inline-flex items-center justify-center gap-2 font-medium text-white bg-white/10 hover:bg-white/20 rounded-xl transition-colors duration-200 hover:text-sky-200 cursor-pointer;
+    }
+
+    .page-container-0topside {
+        @apply bg-background h-fit min-h-[100dvh] pb-20 pt-20;
+    }
+
+    /* [Page] Section Container */
+    .section-container {
+        @apply container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8;
+    }
+
+    .section-container-no-py {
+        @apply container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+
+    /* [Page] Section Title */
+    .section-title {
+        @apply text-white font-bold text-xl sm:text-2xl tracking-wide flex items-center gap-2.5;
+    }
+
+    .section-title-no-up {
+        @apply text-white font-bold text-xl sm:text-2xl tracking-wide;
+    }
+
+    /* [Home Page] Section Title LINK */
+    .section-title-link {
+        @apply text-white font-bold text-xl sm:text-2xl tracking-wide flex items-center gap-2.5 hover:text-sky-400 transition-colors duration-200;
+    }
+
+    /* [Page] Section 'More' button */
+    .section-more {
+        @apply inline-flex mt-6 font-semibold text-sm text-sky-400 hover:text-sky-300 hover:underline underline-offset-4 transition-colors;
+    }
+
+    /* [Page] Section Divider */
+    .section-divider {
+        @apply my-8 md:my-10 h-0 border-0;
+    }
+
+    /* [Movie] Title Name */
+    .movie-name {
+        @apply text-white font-bold text-2xl md:text-3xl lg:text-4xl mb-2 leading-tight;
+    }
+
+    /* [Movie] Title Origin Name */
+    .movie-origin-name {
+        @apply text-slate-400 text-base md:text-lg mb-3;
+    }
+
+    /* [Movie] Title other Info */
+    .movie-normal-text {
+        @apply text-base text-slate-300 mb-2 leading-relaxed;
+    }
+
+    .movie-primary-text {
+        @apply text-base text-sky-400 font-medium;
+    }
+
+    /* [Movie Media] Frosted Glass Server Tabs */
+    .server-tab {
+        @apply inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-t-xl text-slate-400 bg-[#0c0e14] hover:bg-[#161a24] hover:text-white transition-colors duration-200 cursor-pointer;
+    }
+
+    .server-tab-active {
+        @apply text-sky-400 bg-[#161a24] font-bold;
+    }
+
+    /* [Movie Media] Episode & Pagination Button */
+    .episode-btn {
+        @apply min-w-[50px] px-3.5 h-10 m-1 inline-flex justify-center items-center text-sm font-medium rounded-xl text-slate-200 bg-[#121620] hover:bg-sky-500/20 hover:text-sky-300 active:scale-95 transition-colors duration-200 cursor-pointer;
+    }
+
+    .episode-btn-active {
+        @apply text-slate-950 bg-sky-500 font-bold hover:bg-sky-400;
+    }
+
+    /* [Movie Media] Feature Button */
+    .feature-btn {
+        @apply py-2 px-3.5 flex items-center gap-1.5 rounded-xl text-sm font-medium text-slate-200 bg-[#121620] hover:bg-[#1a2234] hover:text-white active:scale-95 transition-colors duration-200 cursor-pointer;
+    }
+
+}

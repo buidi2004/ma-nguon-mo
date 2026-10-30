@@ -87,7 +87,11 @@ aidlc/diagnostics/
 .claude/settings.local.json
 # END AI-DLC:gitignore
 stremio-web/
-fe-web/
+# Next.js web app ignore rules (allow fe-web source)
+**/node_modules/
+**/.next/
+**/.vercel/
+**/fe-web/.taste-skill/
 aidlc-workflows/
 codegraph/
 .codegraph/
