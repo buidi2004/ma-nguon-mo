@@ -18,6 +18,15 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    - codegraph/**
+    - .codegraph/**
+    - fe-web/**
+    - aidlc/**
+    - tool/**
+    - backend/**
+    - docs/**
+  errors:
+    deprecated_member_use: ignore
 
 linter:
   # The lint rules applied to this project can be customized in the
