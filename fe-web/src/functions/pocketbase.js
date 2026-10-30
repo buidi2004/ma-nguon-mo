@@ -9,14 +9,14 @@ export const POCKETBASE_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || VPS_POCK
 export function secureMediaUrl(url) {
     if (!url || typeof url !== 'string') return '/placeholder.webp';
 
-    // Xử lý ảnh posters VPS
-    if (url.includes('180.93.120.246/posters/')) {
-        return url.replace(/^https?:\/\/180\.93\.120\.246\/posters\//, '/posters/');
+    // Xử lý ảnh posters VPS (chấp nhận cả có hoặc không có port)
+    if (/180\.93\.120\.246(:\d+)?\/posters\//.test(url)) {
+        return url.replace(/^https?:\/\/180\.93\.120\.246(:\d+)?\/posters\//, '/posters/');
     }
 
-    // Xử lý video VPS
-    if (url.includes('180.93.120.246/videos/')) {
-        return url.replace(/^https?:\/\/180\.93\.120\.246\/videos\//, '/videos/');
+    // Xử lý video VPS (chấp nhận cả có hoặc không có port)
+    if (/180\.93\.120\.246(:\d+)?\/videos\//.test(url)) {
+        return url.replace(/^https?:\/\/180\.93\.120\.246(:\d+)?\/videos\//, '/videos/');
     }
 
     // Xử lý tệp PocketBase files

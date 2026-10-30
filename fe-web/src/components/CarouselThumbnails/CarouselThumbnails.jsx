@@ -83,6 +83,31 @@ const CarouselThumbnails = ({ movies }) => {
                 thumbWidth='23%'
                 transitionTime={700}
                 interval={5000}
+                renderThumbs={() =>
+                    items.map((item, idx) => (
+                        <div
+                            key={item.id || idx}
+                            className="relative w-full h-full aspect-video overflow-hidden rounded-xl bg-slate-900 group"
+                        >
+                            <img
+                                src={item.thumb_url || item.poster_url || '/placeholder.webp'}
+                                alt={item.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                onError={(e) => {
+                                    e.currentTarget.src = '/placeholder.webp';
+                                }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-2 sm:p-2.5 pointer-events-none text-left">
+                                <span className="text-[11px] sm:text-xs font-bold text-white line-clamp-1 leading-tight drop-shadow">
+                                    {item.name}
+                                </span>
+                                <span className="text-[10px] text-sky-400 font-medium mt-0.5 line-clamp-1">
+                                    {item.category}
+                                </span>
+                            </div>
+                        </div>
+                    ))
+                }
             >
                 {
                     items.map((item, idx) => (
