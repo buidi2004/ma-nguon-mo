@@ -24,6 +24,17 @@ const Footer = () => {
                         <p className="text-base text-slate-300 leading-relaxed">
                             Nền tảng xem phim trực tuyến mã nguồn mở chất lượng cao Full HD & 4K. Tích hợp trung tâm đặt vé rạp và quản lý thư viện thông minh.
                         </p>
+
+                        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 space-y-1">
+                            <span className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider block">Sinh viên thực hiện</span>
+                            <p className="text-sm font-bold text-white flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                                Bùi Văn Dĩ
+                            </p>
+                            <p className="text-xs text-sky-400 font-mono font-medium">
+                                MSSV: 0023414259
+                            </p>
+                        </div>
                         
                         <Link
                             href="/trang-thai-he-thong"
@@ -137,8 +148,10 @@ const Footer = () => {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="pt-10 flex flex-col sm:flex-row items-center justify-between text-[13px] text-slate-400 gap-4">
-                    <p>© {new Date().getFullYear()} OpenFlix. Bản quyền thuộc dự án mã nguồn mở điện ảnh.</p>
+                <div className="pt-10 flex flex-col sm:flex-row items-center justify-between text-[13px] text-slate-400 gap-4 border-t border-white/10">
+                    <p>
+                        © {new Date().getFullYear()} OpenFlix. Sinh viên thực hiện: <span className="text-white font-semibold">Bùi Văn Dĩ</span> (MSSV: <span className="text-sky-400 font-mono font-semibold">0023414259</span>) — Đồ án Mã nguồn mở.
+                    </p>
                     <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                         <Link href="/" className="hover:text-sky-400 transition-colors">Trang chủ</Link>
                         <Link href="/rap-chieu-phim" className="hover:text-sky-400 transition-colors">Rạp chiếu</Link>

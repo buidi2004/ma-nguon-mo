@@ -24,6 +24,12 @@ export default function Page() {
                     <p className="max-w-2xl mx-auto text-slate-400 text-sm sm:text-base leading-relaxed">
                         Nền tảng xem phim trực tuyến hiện đại, mượt mà chuẩn phong cách điện ảnh cao cấp với tốc độ streaming tối ưu và nguồn dữ liệu phong phú.
                     </p>
+                    <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-sm">
+                        <span className="text-slate-400">Sinh viên thực hiện:</span>
+                        <span className="text-white font-bold">Bùi Văn Dĩ</span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-sky-400 font-mono font-semibold">MSSV: 0023414259</span>
+                    </div>
                 </div>
 
                 {/* Section 1: Overview Card */}

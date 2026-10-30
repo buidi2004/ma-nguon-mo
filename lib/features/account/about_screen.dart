@@ -73,6 +73,14 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _card(
+            title: 'Thông tin sinh viên thực hiện',
+            content:
+                '• Họ và tên: Bùi Văn Dĩ\n'
+                '• Mã số sinh viên (MSSV): 0023414259\n'
+                '• Đề tài: Nền tảng xem phim trực tuyến OpenFlix (Flutter & Next.js)',
+          ),
+          const SizedBox(height: 12),
+          _card(
             title: 'Giấy phép mã nguồn mở MIT',
             content:
                 'Copyright (c) 2026 OpenFlix Contributors.\n\n'
@@ -183,7 +191,7 @@ class AboutScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'github.com/your-username/openflix',
+                        'github.com/buidi2004/ma-nguon-mo',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -200,7 +208,7 @@ class AboutScreen extends StatelessWidget {
                   onPressed: () {
                     Clipboard.setData(
                       const ClipboardData(
-                        text: 'https://github.com/openflix/openflix',
+                        text: 'https://github.com/buidi2004/ma-nguon-mo',
                       ),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
