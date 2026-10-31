@@ -142,31 +142,35 @@ class _SearchScreenState extends State<SearchScreen>
 
   void _onSearchChanged(String query, {bool immediate = false}) {
     _debounceTimer?.cancel();
-    final lower = query.trim().toLowerCase();
-    if (lower.isEmpty) {
-      setState(() {
-        _searchResults = [];
-      });
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      if (_searchResults.isNotEmpty) {
+        setState(() {
+          _searchResults = [];
+        });
+      }
       return;
     }
 
+    final lower = trimmed.toLowerCase();
     void executeSearch() {
       if (!mounted) return;
+      final results = _allMovies.where((m) {
+        return m.title.toLowerCase().contains(lower) ||
+            m.description.toLowerCase().contains(lower) ||
+            m.category.toLowerCase().contains(lower) ||
+            m.director.toLowerCase().contains(lower) ||
+            m.cast.toLowerCase().contains(lower);
+      }).toList();
       setState(() {
-        _searchResults = _allMovies.where((m) {
-          return m.title.toLowerCase().contains(lower) ||
-              m.description.toLowerCase().contains(lower) ||
-              m.category.toLowerCase().contains(lower) ||
-              m.director.toLowerCase().contains(lower) ||
-              m.cast.toLowerCase().contains(lower);
-        }).toList();
+        _searchResults = results;
       });
     }
 
     if (immediate) {
       executeSearch();
     } else {
-      _debounceTimer = Timer(const Duration(milliseconds: 280), executeSearch);
+      _debounceTimer = Timer(const Duration(milliseconds: 220), executeSearch);
     }
   }
 
@@ -241,6 +245,7 @@ class _SearchScreenState extends State<SearchScreen>
           BorderBeamSearchBar(
             controller: _searchController,
             debounceDuration: Duration.zero,
+            activeOnFocusOnly: true,
             onChanged: _onSearchChanged,
             onSubmitted: (query) => _onSearchChanged(query, immediate: true),
             onCancelTap: () {
@@ -268,6 +273,7 @@ class _SearchScreenState extends State<SearchScreen>
     return CustomScrollView(
       cacheExtent: 500.0,
       physics: const BouncingScrollPhysics(),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
         // 1. Lưới 2 cột các thẻ Thể Loại (Genre Cards)
         SliverPadding(
@@ -384,29 +390,33 @@ class _SearchScreenState extends State<SearchScreen>
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () => _onGenreTapped(genre.title),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                colors: genre.gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: genre.gradientColors.first.withValues(alpha: 0.30),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 0.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: genre.gradientColors.first.withValues(alpha: 0.35),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: genre.gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: Stack(
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 0.8,
+                ),
+              ),
+              child: Stack(
               children: [
                 // 1. Hình ảnh nền nhân vật/poster nghệ thuật cắt cúp bên phải
                 Positioned(
@@ -499,7 +509,8 @@ class _SearchScreenState extends State<SearchScreen>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   /// Thẻ phim 16:9 mục "Có thể bạn quan tâm" với Badge Độc Quyền & Format Pill
@@ -726,6 +737,7 @@ class _SearchScreenState extends State<SearchScreen>
             movies: _searchResults,
             isLoading: _isLoading,
             showCategory: true,
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 110),
             emptyTitle: 'Không tìm thấy phim phù hợp',
             emptyMessage:
                 'Hãy thử tìm kiếm với tên phim, đạo diễn hoặc thể loại khác.',

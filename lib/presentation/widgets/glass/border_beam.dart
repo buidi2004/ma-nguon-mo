@@ -366,65 +366,64 @@ class _BorderBeamPainter extends CustomPainter {
         reverse ? (1.0 - currentProgress) : currentProgress;
     final startDistance = (effectiveProgress * totalLength) % totalLength;
 
-    // Phân tích thành 32 phân đoạn nhỏ để tạo dải màu mượt mà tuyệt đối dọc theo đường cong
-    const int segmentsCount = 32;
-    final stepLength = beamLength / segmentsCount;
-    final segments = <({Path path, Color color, double alphaFactor})>[];
-    for (int i = 0; i < segmentsCount; i++) {
-      final t2 = (i + 1) / segmentsCount;
-      final dist1 = (startDistance + i * stepLength) % totalLength;
-      final dist2 = (startDistance + (i + 1) * stepLength) % totalLength;
-      final segmentPath = dist1 <= dist2
-          ? metric.extractPath(dist1, dist2)
-          : (Path()
-            ..addPath(metric.extractPath(dist1, totalLength), Offset.zero)
-            ..addPath(metric.extractPath(0, dist2), Offset.zero));
-
-      segments.add((
-        path: segmentPath,
-        color: _sampleColor(t2),
-        alphaFactor: math.pow(t2, 2.2).toDouble().clamp(0.0, 1.0),
-      ));
+    // Hàm trích xuất đoạn path an toàn (xử lý điểm nối vòng khép kín)
+    Path extractSubPath(double start, double length) {
+      final dist1 = start % totalLength;
+      final dist2 = (start + length) % totalLength;
+      if (dist1 <= dist2) {
+        return metric.extractPath(dist1, dist2);
+      } else {
+        return Path()
+          ..addPath(metric.extractPath(dist1, totalLength), Offset.zero)
+          ..addPath(metric.extractPath(0, dist2), Offset.zero);
+      }
     }
 
+    final leadColor = colors.isNotEmpty ? colors.last : Colors.white;
+
     // Lớp 1: Hiệu ứng ánh sáng toả rộng ngoài viền (Outer Glow)
+    // Tối ưu hóa: 1 pass Gaussian blur duy nhất cho toàn bộ chùm sáng thay vì 32 pass
     if (showGlow && glowRadius > 0) {
+      final fullBeamPath = extractSubPath(startDistance, beamLength);
       final glowPaint = Paint()
+        ..color = leadColor.withValues(alpha: 0.55)
         ..style = PaintingStyle.stroke
         ..strokeWidth = borderWidth + 2.0
         ..strokeCap = StrokeCap.round
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowRadius);
-      for (final segment in segments) {
-        glowPaint.color = segment.color.withValues(
-          alpha: segment.color.a * (segment.alphaFactor * 0.50),
-        );
-        canvas.drawPath(segment.path, glowPaint);
-      }
+      canvas.drawPath(fullBeamPath, glowPaint);
     }
 
-    // Lớp 2: Lõi sáng sắc nét chạy chính xác trên viền (Sharp Core)
+    // Lớp 2: Lõi sáng sắc nét với chuyển dải màu mượt mà (6 phân đoạn siêu nhẹ)
+    const int segmentsCount = 6;
+    final stepLength = beamLength / segmentsCount;
     final corePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth
       ..strokeCap = StrokeCap.round;
-    for (final segment in segments) {
-      corePaint.color = segment.color.withValues(alpha: segment.color.a * segment.alphaFactor);
-      canvas.drawPath(segment.path, corePaint);
+
+    for (int i = 0; i < segmentsCount; i++) {
+      final t2 = (i + 1) / segmentsCount;
+      final segStart = (startDistance + i * stepLength) % totalLength;
+      final segmentPath = extractSubPath(segStart, stepLength);
+      final col = _sampleColor(t2);
+      final alphaFactor = math.pow(t2, 2.0).toDouble().clamp(0.0, 1.0);
+      corePaint.color = col.withValues(alpha: col.a * alphaFactor);
+      canvas.drawPath(segmentPath, corePaint);
     }
 
     // Lớp 3: Đầu chùm sáng (Spark Head) tạo cảm giác nguồn sáng dẫn đường
     final headDist = (startDistance + beamLength) % totalLength;
     final headTangent = metric.getTangentForOffset(headDist);
     if (headTangent != null) {
-      final headColor = colors.last;
       final sparkPaint = Paint()
         ..color = Colors.white.withValues(alpha: 0.90)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(headTangent.position, borderWidth * 0.85, sparkPaint);
 
-      if (showGlow) {
+      if (showGlow && glowRadius > 0) {
         final sparkGlow = Paint()
-          ..color = headColor.withValues(alpha: 0.65)
+          ..color = leadColor.withValues(alpha: 0.65)
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowRadius * 0.8);
         canvas.drawCircle(headTangent.position, borderWidth * 1.8, sparkGlow);
       }
